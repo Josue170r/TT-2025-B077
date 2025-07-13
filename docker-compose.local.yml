@@ -1,0 +1,22 @@
+volumes:
+  huellas_por_mexico_db:
+    driver: local
+
+networks:
+  huellas_por_mexico_network:
+    driver: bridge
+
+services:
+  postgres-db:
+    image: postgres:15.4-alpine
+    container_name: huellas_por_mexico_db
+    restart: unless-stopped
+
+    env_file:
+      - ./.envs/.local/.postgresql
+    volumes:
+      - huellas_por_mexico_db:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - huellas_por_mexico_network
