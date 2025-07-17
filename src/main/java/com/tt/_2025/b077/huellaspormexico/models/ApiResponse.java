@@ -2,7 +2,8 @@ package com.tt._2025.b077.huellaspormexico.models;
 
 import lombok.Data;
 import org.springframework.http.HttpStatus;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 
 @Data
 public class ApiResponse<T> {
@@ -10,9 +11,9 @@ public class ApiResponse<T> {
     private final String message;
     private final T data;
     private final int code;
-    private final LocalDateTime timestamp;
+    private final Instant timestamp;
 
-    private ApiResponse(String status, String message, T data, int code, LocalDateTime timestamp) {
+    private ApiResponse(String status, String message, T data, int code, Instant timestamp) {
         this.status = status;
         this.message = message;
         this.data = data;
@@ -26,7 +27,7 @@ public class ApiResponse<T> {
                 message,
                 data,
                 httpStatus.value(),
-                LocalDateTime.now()
+                Instant.now()
         );
     }
 
@@ -36,7 +37,7 @@ public class ApiResponse<T> {
                 message,
                 null,
                 httpStatus.value(),
-                LocalDateTime.now()
+                Instant.now()
         );
     }
 }
