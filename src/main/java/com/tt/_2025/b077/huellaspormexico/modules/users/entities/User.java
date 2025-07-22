@@ -1,15 +1,17 @@
 package com.tt._2025.b077.huellaspormexico.modules.users.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+@Builder
 @Entity
 @Table(name = "users")
 @Data
@@ -49,7 +51,10 @@ public class User {
     @Column(length = 10)
     private String phoneNumber;
 
-    @JsonIgnore
+    @Builder.Default
+    private boolean isVerified = false;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 8, max = 100, message = "Debe tener entre 8 y 100 caracteres")
     @Pattern(
