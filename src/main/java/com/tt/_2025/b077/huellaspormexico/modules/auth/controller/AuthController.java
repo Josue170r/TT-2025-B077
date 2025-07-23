@@ -1,10 +1,7 @@
 package com.tt._2025.b077.huellaspormexico.modules.auth.controller;
 
 import com.tt._2025.b077.huellaspormexico.models.ApiResponse;
-import com.tt._2025.b077.huellaspormexico.modules.auth.dto.LoginRequest;
-import com.tt._2025.b077.huellaspormexico.modules.auth.dto.LoginResponse;
-import com.tt._2025.b077.huellaspormexico.modules.auth.dto.RefreshTokenRequest;
-import com.tt._2025.b077.huellaspormexico.modules.auth.dto.RefreshTokenResponse;
+import com.tt._2025.b077.huellaspormexico.modules.auth.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.auth.services.AuthService;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import jakarta.validation.Valid;
@@ -16,23 +13,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final AuthService authService;
+
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-    private final AuthService authService;
-
     @RequestMapping(path = "/register", method = RequestMethod.POST)
     public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody User user) {
-        try {
-            User registeredUser = authService.registerUser(user);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(ApiResponse.of(HttpStatus.CREATED, "Usuario registrado correctamente", registeredUser));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.of(HttpStatus.BAD_REQUEST, e.getMessage()));
-        }
+        User registeredUser = authService.registerUser(user);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.of(HttpStatus.CREATED, "Usuario registrado correctamente", registeredUser));
     }
 
     @RequestMapping(path = "/login", method = RequestMethod.POST)
@@ -43,12 +35,42 @@ public class AuthController {
 
     @RequestMapping(path = "/refresh", method = RequestMethod.POST)
     public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        try {
-            RefreshTokenResponse response = authService.refreshToken(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.of(HttpStatus.UNAUTHORIZED, "Error en la petición"));
-        }
+        RefreshTokenResponse response = authService.refreshToken(request);
+        return ResponseEntity.ok(response);
     }
+
+    @RequestMapping(path = "/resend-verification", method = RequestMethod.POST)
+    public ResponseEntity<ApiResponse<?>> resendVerificationEmail(@Valid @RequestBody ResendVerificationRequest request) {
+        authService.resendVerificationEmail(request.getEmail());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Correo enviado exitosamente"));
+    }
+
+    @RequestMapping(path = "/verify-account", method = RequestMethod.GET)
+    public ResponseEntity<ApiResponse<?>> verifyUserAccount(@RequestParam String token) {
+        authService.verifyUserAccount(token);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Usuario verificado correctamente"));
+    }
+
+    @RequestMapping(path = "/forgot-password", method = RequestMethod.POST)
+    public ResponseEntity<ApiResponse<?>>  forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.CREATED, "Correo enviado exitosamente"));
+    }
+
+    @RequestMapping(path = "/recover-password", method = RequestMethod.POST)
+    public ResponseEntity<ApiResponse<?>> recoverPassword(
+            @RequestParam String token,
+            @Valid @RequestBody RecoverPasswordRequest request) {
+        authService.recoverPassword(token, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Contraseña modificada correctamente"));
+    }
+
 }
