@@ -7,13 +7,13 @@ import java.time.Instant;
 
 @Data
 public class ApiResponse<T> {
-    private final String status;
+    private final int status;
     private final String message;
     private final T data;
-    private final int code;
+    private final String code;
     private final Instant timestamp;
 
-    private ApiResponse(String status, String message, T data, int code, Instant timestamp) {
+    private ApiResponse(int status, String message, T data, String code, Instant timestamp) {
         this.status = status;
         this.message = message;
         this.data = data;
@@ -23,20 +23,20 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> of(HttpStatus httpStatus, String message, T data) {
         return new ApiResponse<>(
-                httpStatus.name(),
+                httpStatus.value(),
                 message,
                 data,
-                httpStatus.value(),
+                httpStatus.name(),
                 Instant.now()
         );
     }
 
     public static ApiResponse<Void> of(HttpStatus httpStatus, String message) {
         return new ApiResponse<>(
-                httpStatus.name(),
+                httpStatus.value(),
                 message,
                 null,
-                httpStatus.value(),
+                httpStatus.name(),
                 Instant.now()
         );
     }
