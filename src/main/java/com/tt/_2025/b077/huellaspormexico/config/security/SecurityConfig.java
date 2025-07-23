@@ -2,6 +2,7 @@ package com.tt._2025.b077.huellaspormexico.config.security;
 
 import com.tt._2025.b077.huellaspormexico.modules.users.services.UserService;
 import com.tt._2025.b077.huellaspormexico.utils.JwtEntryPoint;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,7 +14,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -55,12 +55,7 @@ public class SecurityConfig {
     }
     
     @Bean public JwtEntryPoint jwtEntryPoint() {
-        return new  JwtEntryPoint();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return userService;
+        return new JwtEntryPoint();
     }
 
     @Bean
@@ -71,7 +66,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setUserDetailsService(userService);
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
