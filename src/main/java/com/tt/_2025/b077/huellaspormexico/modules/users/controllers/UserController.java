@@ -1,37 +1,47 @@
 package com.tt._2025.b077.huellaspormexico.modules.users.controllers;
 
 import com.tt._2025.b077.huellaspormexico.models.ApiResponse;
+import com.tt._2025.b077.huellaspormexico.modules.auth.dto.ChangePasswordRequest;
+import com.tt._2025.b077.huellaspormexico.modules.auth.services.AuthService;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
-import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
+import com.tt._2025.b077.huellaspormexico.modules.users.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserService userService;
+    private final AuthService authService;
+
+    public UserController(UserService userService, AuthService authService) {
+        this.userService = userService;
+        this.authService = authService;
+    }
 
     @RequestMapping(path = "/profile", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<?>> getProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        User user = optionalUser.orElseThrow(
-                () -> new UsernameNotFoundException("Usuario no encontrado")
-        );
+    public ResponseEntity<ApiResponse<User>> getProfile(Authentication authentication) {
+        User user = userService.getUserProfile(authentication.getName());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, null, user));
+    }
+
+    @RequestMapping(path = "/change-password", method = RequestMethod.POST)
+    public ResponseEntity<ApiResponse<?>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            Authentication authentication) {
+        authService.changePassword(authentication.getName(), request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Contraseña actualizada correctamente"));
     }
 }

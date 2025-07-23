@@ -26,13 +26,6 @@ public class GlobalResponseHandler {
                 .body(ApiResponse.of(HttpStatus.UNAUTHORIZED, ex.getMessage()));
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage()));
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity
