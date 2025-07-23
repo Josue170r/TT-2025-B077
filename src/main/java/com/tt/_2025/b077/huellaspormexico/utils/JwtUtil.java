@@ -1,5 +1,6 @@
 package com.tt._2025.b077.huellaspormexico.utils;
 
+import com.tt._2025.b077.huellaspormexico.modules.auth.exceptions.InvalidToken;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,7 +91,7 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (JwtException e) {
-            throw new RuntimeException("Token JWT inválido", e);
+            throw new InvalidToken("Token Inválido");
         }
     }
 
