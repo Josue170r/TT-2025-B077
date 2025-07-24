@@ -53,9 +53,10 @@ public class AuthService {
             }
 
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.createUserProfile();
             String token = jwtUtil.generateAccessToken(user.getUsername());
-
             User savedUser = userRepository.save(user);
+
             userEmailService.send_verification_email(savedUser, token);
             return savedUser;
         } catch (Exception e) {
