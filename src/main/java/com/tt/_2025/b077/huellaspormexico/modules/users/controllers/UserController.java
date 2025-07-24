@@ -6,17 +6,15 @@ import com.tt._2025.b077.huellaspormexico.modules.auth.services.AuthService;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import com.tt._2025.b077.huellaspormexico.modules.users.services.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/user")
+@CrossOrigin("*")
 public class UserController {
 
     private final UserService userService;
@@ -43,5 +41,16 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Contraseña actualizada correctamente"));
+    }
+
+    @RequestMapping(path = "/profile/picture", method = RequestMethod.PUT)
+    public ResponseEntity<ApiResponse<?>> updateProfilePicture(
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+
+        userService.updateProfilePicture(authentication.getName(), file);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Foto de perfil actualizada correctamente"));
     }
 }
