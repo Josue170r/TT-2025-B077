@@ -3,7 +3,6 @@ package com.tt._2025.b077.huellaspormexico.modules.auth.services;
 import com.tt._2025.b077.huellaspormexico.modules.auth.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.auth.exceptions.*;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
-import com.tt._2025.b077.huellaspormexico.modules.users.entities.UserProfile;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
 import com.tt._2025.b077.huellaspormexico.modules.users.tasks.UserEmailService;
 import com.tt._2025.b077.huellaspormexico.utils.JwtUtil;
