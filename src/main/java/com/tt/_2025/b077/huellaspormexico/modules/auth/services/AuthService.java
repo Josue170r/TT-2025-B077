@@ -3,6 +3,7 @@ package com.tt._2025.b077.huellaspormexico.modules.auth.services;
 import com.tt._2025.b077.huellaspormexico.modules.auth.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.auth.exceptions.*;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
+import com.tt._2025.b077.huellaspormexico.modules.users.entities.UserProfile;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
 import com.tt._2025.b077.huellaspormexico.modules.users.tasks.UserEmailService;
 import com.tt._2025.b077.huellaspormexico.utils.JwtUtil;
@@ -52,10 +53,13 @@ public class AuthService {
                 throw new UserAlreadyExists("El nombre de usuario ya está registrado");
             }
 
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            String token = jwtUtil.generateAccessToken(user.getUsername());
+            UserProfile userProfile = new UserProfile();
 
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.createUserProfile();
+            String token = jwtUtil.generateAccessToken(user.getUsername());
             User savedUser = userRepository.save(user);
+
             userEmailService.send_verification_email(savedUser, token);
             return savedUser;
         } catch (Exception e) {
