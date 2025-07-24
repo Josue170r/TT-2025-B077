@@ -53,8 +53,6 @@ public class AuthService {
                 throw new UserAlreadyExists("El nombre de usuario ya está registrado");
             }
 
-            UserProfile userProfile = new UserProfile();
-
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.createUserProfile();
             String token = jwtUtil.generateAccessToken(user.getUsername());
