@@ -62,4 +62,13 @@ public class User {
             message = "Incluye mayúscula, minúscula, número y símbolo"
     )
     private String password;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserProfile userProfile;
+
+    public void createUserProfile() {
+        UserProfile newProfile = new UserProfile();
+        this.setUserProfile(newProfile);
+        newProfile.setUser(this);
+    }
 }
