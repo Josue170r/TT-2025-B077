@@ -2,7 +2,6 @@ package com.tt._2025.b077.huellaspormexico.config.security;
 
 import com.tt._2025.b077.huellaspormexico.modules.users.services.UserService;
 import com.tt._2025.b077.huellaspormexico.utils.JwtEntryPoint;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,7 +38,8 @@ public class SecurityConfig {
                                 "/documentation/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/profile-pictures/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
