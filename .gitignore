@@ -34,4 +34,5 @@ build/
 
 .envs/.local/.jwt
 .envs/.local/.smtp
+/src/main/resources/profile-pictures
 
