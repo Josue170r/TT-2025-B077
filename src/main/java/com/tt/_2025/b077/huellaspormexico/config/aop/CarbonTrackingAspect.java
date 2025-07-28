@@ -38,7 +38,6 @@ public class CarbonTrackingAspect {
 
     @Around("CarbonTrackingPointcuts.trackableExecution()")
     public Object trackCarbonFootprint(ProceedingJoinPoint joinPoint) throws Throwable {
-        log.info("HOLAAAAAAAAAAAAAAAAA");
         long startTime = System.currentTimeMillis();
         Runtime runtime = Runtime.getRuntime();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
