@@ -12,14 +12,4 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CarbonActivityRepository extends JpaRepository<CarbonActivity, Long>, JpaSpecificationExecutor<CarbonActivity> {
-
-    @Query("SELECT COALESCE(SUM(ca.co2Generated), 0) FROM CarbonActivity ca " +
-            "WHERE (:userId IS NULL OR ca.user.id = :userId) " +
-            "AND (:activityType IS NULL OR ca.activityType = :activityType) " +
-            "AND (:startDate IS NULL OR ca.registeredAt >= :startDate) " +
-            "AND (:endDate IS NULL OR ca.registeredAt <= :endDate)")
-    BigDecimal calculateTotalCo2(@Param("userId") Long userId,
-                                 @Param("activityType") String activityType,
-                                 @Param("startDate") java.time.LocalDateTime startDate,
-                                 @Param("endDate") java.time.LocalDateTime endDate);
 }
