@@ -1,16 +1,19 @@
 package com.tt._2025.b077.huellaspormexico.modules.users.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tt._2025.b077.huellaspormexico.utils.BaseModel;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-@Builder
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @Entity
 @Table(name = "user_profiles")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserProfile {
+public class UserProfile extends BaseModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,4 +26,10 @@ public class UserProfile {
 
     @Column(length = 500)
     private String picture;
+
+    @Override
+    @JsonIgnore
+    public Boolean getIsActive() {
+        return super.getIsActive();
+    }
 }
