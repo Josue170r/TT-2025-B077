@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface PlaceRepository extends JpaRepository<Place, Long> {
     Optional<Place> findByPlaceId(String placeId);
     Page<Place> findByIdIn(List<Long> ids, Pageable pageable);
+    List<Place> findAllByPlaceIdIn(List<String> placeIds);
 }
