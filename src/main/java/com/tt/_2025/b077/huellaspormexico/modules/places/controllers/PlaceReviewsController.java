@@ -35,7 +35,7 @@ public class PlaceReviewsController {
             @PathVariable Long placeId,
             @Valid @RequestBody PlaceReviewRequest request,
             Authentication auth) {
-        PlaceReview review = reviewService.save(placeId, request, auth);
+        PlaceReview review = reviewService.save(placeId, request, auth.getName());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Contraseña guardada correctamente", review));
