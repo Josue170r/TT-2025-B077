@@ -6,14 +6,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-@EqualsAndHashCode(callSuper = false)
-@SuperBuilder
+@Builder
 @Entity
 @Table(name = "place_images")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaceImage extends BaseModel {
+public class PlaceImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

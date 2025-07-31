@@ -78,6 +78,27 @@ public class User extends BaseModel {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPreferences> preferences;
 
+    public String getFullName() {
+        StringBuilder fullName = new StringBuilder();
+
+        if (name != null && !name.trim().isEmpty()) {
+            fullName.append(name.trim());
+        }
+        if (lastName != null && !lastName.trim().isEmpty()) {
+            if (!fullName.isEmpty()) {
+                fullName.append(" ");
+            }
+            fullName.append(lastName.trim());
+        }
+        if (secondLastName != null && !secondLastName.trim().isEmpty()) {
+            if (!fullName.isEmpty()) {
+                fullName.append(" ");
+            }
+            fullName.append(secondLastName.trim());
+        }
+        return fullName.toString();
+    }
+
     public void setPreferences(List<UserPreferences> preferences) {
         this.preferences = new ArrayList<>();
         if (preferences != null) {
