@@ -213,7 +213,7 @@ public class PlaceApiServiceImpl implements PlaceApiService {
     private JsonNode getTripAdvisorReviews(String locationId) {
         try {
             String url = UriComponentsBuilder
-                    .fromUriString(tripAdvisorBaseUrl + locationId + "/reviews")
+                    .fromUriString(tripAdvisorBaseUrl + "/" + locationId + "/reviews")
                     .queryParam("key", tripAdvisorApiKey)
                     .queryParam("language", "es")
                     .toUriString();
@@ -229,7 +229,7 @@ public class PlaceApiServiceImpl implements PlaceApiService {
     private JsonNode getTripAdvisorImages(String locationId) {
         try {
             String url = UriComponentsBuilder
-                    .fromUriString(tripAdvisorBaseUrl + locationId + "/photos")
+                    .fromUriString(tripAdvisorBaseUrl + "/" + locationId + "/photos")
                     .queryParam("key", tripAdvisorApiKey)
                     .queryParam("language", "es")
                     .toUriString();
