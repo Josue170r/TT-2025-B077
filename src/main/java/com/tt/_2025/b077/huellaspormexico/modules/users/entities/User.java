@@ -1,6 +1,9 @@
 package com.tt._2025.b077.huellaspormexico.modules.users.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.CategoryPlacesCatalog;
+import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceTypes;
 import com.tt._2025.b077.huellaspormexico.utils.BaseModel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -9,6 +12,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
@@ -66,9 +74,56 @@ public class User extends BaseModel {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserProfile userProfile;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPreferences> preferences;
+
+    public void setPreferences(List<UserPreferences> preferences) {
+        this.preferences = new ArrayList<>();
+        if (preferences != null) {
+            for (UserPreferences preference : preferences) {
+                this.preferences.add(preference);
+                preference.setUser(this);
+            }
+        }
+    }
+
+    public void addPreference(CategoryPlacesCatalog category) {
+        if (this.preferences == null) {
+            this.preferences = new ArrayList<>();
+        }
+        UserPreferences preference = new UserPreferences();
+        preference.setUser(this);
+        preference.setCategory(category);
+        this.preferences.add(preference);
+    }
+
     public void createUserProfile() {
         UserProfile newProfile = new UserProfile();
         this.setUserProfile(newProfile);
         newProfile.setUser(this);
     }
+
+    @JsonIgnore
+    public List<String> getPlaceTypesFromPreferences() {
+        Set<String> result = new HashSet<>();
+
+        if (preferences == null || preferences.isEmpty()) {
+            result.add("tourist_attraction");
+            return new ArrayList<>(result);
+        }
+
+        for (UserPreferences pref : preferences) {
+            CategoryPlacesCatalog category = pref.getCategory();
+            if (category != null && category.getPlaceTypes() != null) {
+                for (PlaceTypes pt : category.getPlaceTypes()) {
+                    if (pt != null && pt.getType() != null) {
+                        result.add(pt.getType());
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(result);
+    }
+
 }
