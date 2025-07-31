@@ -9,7 +9,6 @@ import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRevi
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceReviewService;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -41,12 +40,12 @@ public class PlaceReviewServiceImpl implements PlaceReviewService {
     }
 
     @Override
-    public PlaceReview save(Long id, PlaceReviewRequest request, Authentication auth) {
-        Place place = placeRepository.findById( id).orElseThrow(
+    public PlaceReview save(Long id, PlaceReviewRequest request, String username) {
+        Place place = placeRepository.findById(id).orElseThrow(
                 () -> new PlaceNotFoundException("Place not found with id: " + id)
         );
-        User user = userRepository.findByUsername(auth.getName()).orElseThrow(
-                () -> new UsernameNotFoundException("User no encontrado " + auth.getName())
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("User no encontrado " + username)
         );
         PlaceReview review = PlaceReview.builder()
                 .origin("Huellas por México")
