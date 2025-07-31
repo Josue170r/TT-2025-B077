@@ -3,7 +3,6 @@ package com.tt._2025.b077.huellaspormexico.modules.places.services.impl;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearByPreferencesRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
-import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceTypes;
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRepository;
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceApiService;
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceService;
