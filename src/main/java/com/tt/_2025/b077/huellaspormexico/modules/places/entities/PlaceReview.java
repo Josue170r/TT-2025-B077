@@ -11,14 +11,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@EqualsAndHashCode(callSuper = false)
-@SuperBuilder
+@Builder
 @Entity
 @Table(name = "place_reviews")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaceReview extends BaseModel {
+public class PlaceReview {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
