@@ -13,11 +13,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/catalogs")
-public class CategoryPlaceController {
+public class CatalogController {
 
     private final CategoryPlaceService categoryPlaceService;
 
-    public CategoryPlaceController(CategoryPlaceService categoryPlaceService) {
+    public CatalogController(CategoryPlaceService categoryPlaceService) {
         this.categoryPlaceService = categoryPlaceService;
     }
 

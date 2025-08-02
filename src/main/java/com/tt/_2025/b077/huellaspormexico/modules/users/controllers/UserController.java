@@ -3,6 +3,7 @@ package com.tt._2025.b077.huellaspormexico.modules.users.controllers;
 import com.tt._2025.b077.huellaspormexico.models.ApiResponse;
 import com.tt._2025.b077.huellaspormexico.modules.auth.dto.ChangePasswordRequest;
 import com.tt._2025.b077.huellaspormexico.modules.auth.services.AuthService;
+import com.tt._2025.b077.huellaspormexico.modules.users.dto.UpdateUserRequest;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import com.tt._2025.b077.huellaspormexico.modules.users.services.UserService;
 import jakarta.validation.Valid;
@@ -33,10 +34,22 @@ public class UserController {
                 .body(ApiResponse.of(HttpStatus.OK, null, user));
     }
 
+    @RequestMapping(path = "/{id}", method = RequestMethod.PATCH)
+    public ResponseEntity<ApiResponse<?>> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserRequest request) {
+
+        User user =  userService.updateUser(id, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Usuario actualizado correctamente", user));
+    }
+
     @RequestMapping(path = "/change-password", method = RequestMethod.POST)
     public ResponseEntity<ApiResponse<?>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,
             Authentication authentication) {
+
         authService.changePassword(authentication.getName(), request);
         return ResponseEntity
                 .status(HttpStatus.OK)

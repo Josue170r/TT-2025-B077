@@ -15,7 +15,7 @@ public class ApiResponse<T> {
 
     private ApiResponse(int status, String message, T data, String code, Instant timestamp) {
         this.status = status;
-        this.message = message;
+        this.message = message != null ? message : "Success";
         this.data = data;
         this.code = code;
         this.timestamp = timestamp;
