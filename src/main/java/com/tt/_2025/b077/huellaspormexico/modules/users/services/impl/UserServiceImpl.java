@@ -1,5 +1,6 @@
 package com.tt._2025.b077.huellaspormexico.modules.users.services.impl;
 
+import com.tt._2025.b077.huellaspormexico.modules.users.dto.UpdateUserRequest;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
 import com.tt._2025.b077.huellaspormexico.modules.users.services.FileStorageService;
@@ -45,12 +46,29 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * Finds a user by username
+     * Update user using patch
      */
-    @Transactional(readOnly = true)
     @Override
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public User updateUser(Long userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UsernameNotFoundException("Usuario no encontrado: " + userId)
+        );
+        if (request.getName() != null && !request.getName().isEmpty()) {
+            user.setName(request.getName());
+        }
+
+        if (request.getLastName() != null  && !request.getLastName().isEmpty()) {
+            user.setLastName(request.getLastName());
+        }
+
+        if (request.getSecondLastName() != null && !request.getSecondLastName().isEmpty()) {
+            user.setSecondLastName(request.getSecondLastName());
+        }
+
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isEmpty()) {
+            user.setPhoneNumber(request.getPhoneNumber());
+        }
+        return userRepository.save(user);
     }
 
     /**
@@ -61,15 +79,6 @@ public class UserServiceImpl implements UserService {
     public User getUserProfile(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
-    }
-
-    /**
-     * Finds a user by email
-     */
-    @Transactional(readOnly = true)
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
     }
 
     /**
