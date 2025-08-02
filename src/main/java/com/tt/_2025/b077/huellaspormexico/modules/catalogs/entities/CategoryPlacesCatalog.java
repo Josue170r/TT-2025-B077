@@ -28,7 +28,7 @@ public class CategoryPlacesCatalog extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "category", nullable = false, length = 150)
+    @Column(name = "category", unique = true, nullable = false, length = 150)
     private String category;
 
     @ManyToMany(fetch = FetchType.LAZY)
