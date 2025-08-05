@@ -36,17 +36,16 @@ public class UserPreferencesServiceImpl implements UserPreferencesService {
 
     @Override
     public List<UserPreferences> findByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("Usuario no encontrado: " + username)
-        );
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
         return preferencesRepository.findByUserId(user.getId());
     }
 
     @Override
     public void saveUserPreferences(String username, UserPreferencesRequest request) {
-        User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("User not found: " + username)
-        );
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         Set<Long> currentCategoryIds = user.getPreferences().stream()
                 .map(pref -> pref.getCategory().getId())

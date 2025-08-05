@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
@@ -50,9 +50,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User updateUser(Long userId, UpdateUserRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new UsernameNotFoundException("Usuario no encontrado: " + userId)
-        );
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
         if (request.getName() != null && !request.getName().isEmpty()) {
             user.setName(request.getName());
         }
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserProfile(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     /**
@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
     public void updateProfilePicture(String username, MultipartFile file) {
         try {
             User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
             if (user.getUserProfile() == null) {
                 user.createUserProfile();

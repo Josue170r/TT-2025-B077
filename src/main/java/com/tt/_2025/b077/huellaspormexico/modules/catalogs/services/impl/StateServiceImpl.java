@@ -24,15 +24,13 @@ public class StateServiceImpl implements StateService {
 
     @Override
     public StateCatalog findById(Long id) {
-        return stateRepository.findById(id).orElseThrow(
-                () -> new StateNotFound("Estado no encontrado: " +id)
-        );
+        return stateRepository.findById(id)
+                .orElseThrow(() -> new StateNotFound("Estado no encontrado: " + id));
     }
 
     @Override
     public StateCatalog findByState(String state) {
-        return stateRepository.findByState(state).orElseThrow(
-                () -> new StateNotFound("Estado no encontrado: " +state)
-        );
+        return stateRepository.findByState(state)
+                .orElseThrow(() -> new StateNotFound("Estado no encontrado: " +state));
     }
 }

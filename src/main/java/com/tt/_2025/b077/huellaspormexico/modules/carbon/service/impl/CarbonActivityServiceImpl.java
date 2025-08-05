@@ -66,8 +66,7 @@ public class CarbonActivityServiceImpl implements CarbonActivityService {
 
     @Override
     public User findUserById(Long userID) {
-        return userRepository.findById(userID).orElseThrow(
-                () -> new UsernameNotFoundException("Usuario no encontrado")
-        );
+        return userRepository.findById(userID)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 }
