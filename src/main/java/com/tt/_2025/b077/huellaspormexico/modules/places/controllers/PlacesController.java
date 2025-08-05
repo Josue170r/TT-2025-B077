@@ -29,14 +29,14 @@ public class PlacesController {
     }
 
     @RequestMapping(path = "/details", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<?>> getPlaceDetails(@RequestParam String place_id) {
-        Place place = placeService.getPlaceDetails(place_id);
+    public ResponseEntity<ApiResponse<?>> getPlaceDetails(@RequestParam(name = "place_id") String placeId) {
+        Place place = placeService.getPlaceDetails(placeId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, null, place));
     }
 
-    @RequestMapping(path = "/nearby-search", method = RequestMethod.GET)
+    @RequestMapping(path = "/nearby-search", method = RequestMethod.POST)
     public ResponseEntity<ApiResponse<List<Long>>> getNearBySearchPlacesIds(@Valid @RequestBody NearBySearchRequest request) {
         List<Long> response = placeService.getNearBySearchPlaces(request);
         return ResponseEntity
@@ -44,7 +44,7 @@ public class PlacesController {
                 .body(ApiResponse.of(HttpStatus.OK, null, response));
     }
 
-    @RequestMapping(path = "/nearby-preferences", method = RequestMethod.GET)
+    @RequestMapping(path = "/nearby-preferences", method = RequestMethod.POST)
     public ResponseEntity<ApiResponse<?>> getNearByPreferences(
             @Valid @RequestBody NearByPreferencesRequest request,
             Authentication auth) {
@@ -54,11 +54,11 @@ public class PlacesController {
                 .body(ApiResponse.of(HttpStatus.OK, null, response));
     }
 
-    @RequestMapping(path = "/allById", method = RequestMethod.GET)
+    @RequestMapping(path = "/allById", method = RequestMethod.POST)
     public Page<Place> getAllPlaces(
             @RequestBody PlaceIdsRequest placeIds,
             @PageableDefault(
-                    sort = {"rating", "name"},
+                    sort = {"rating"},
                     direction = Sort.Direction.DESC
             ) Pageable pageable) {
         return placeService.getAllByIdList(placeIds.getPlaceIds(), pageable);
