@@ -91,9 +91,8 @@ public class CarbonTrackingAspect {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && !authentication.getName().equals("anonymousUser")) {
                 String username = authentication.getName();
-                return userRepository.findByUsername(username).orElseThrow(
-                        () -> new UsernameNotFoundException("Usuario no encontrado")
-                );
+                return userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
             }
         } catch (Exception e) {
             log.warn("Could not extract user ID: {}", e.getMessage());

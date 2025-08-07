@@ -52,9 +52,8 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public List<Long> getNearByPreferences(String username, NearByPreferencesRequest request) {
-        User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("Usuario no encontrado: " + username)
-        );
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
         List<String> placeTypes = user.getPlaceTypesFromPreferences();
         NearBySearchRequest dto = NearBySearchRequest.builder()
                 .latitude(request.getLatitude())
