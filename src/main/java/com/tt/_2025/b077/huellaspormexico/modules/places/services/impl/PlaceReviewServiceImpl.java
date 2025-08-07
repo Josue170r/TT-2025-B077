@@ -33,20 +33,20 @@ public class PlaceReviewServiceImpl implements PlaceReviewService {
 
     @Override
     public List<PlaceReview> findAllByPlaceId(Long id) {
-        Place place = placeRepository.findById( id).orElseThrow(
-                () -> new PlaceNotFoundException("Place not found with id: " + id)
-        );
+        Place place = placeRepository.findById(id)
+                .orElseThrow(() -> new PlaceNotFoundException("Lugar no encontrado: " + id));
+
         return reviewRepository.findAllByPlaceId(place.getId());
     }
 
     @Override
     public PlaceReview save(Long id, PlaceReviewRequest request, String username) {
-        Place place = placeRepository.findById(id).orElseThrow(
-                () -> new PlaceNotFoundException("Place not found with id: " + id)
-        );
-        User user = userRepository.findByUsername(username).orElseThrow(
-                () -> new UsernameNotFoundException("User no encontrado " + username)
-        );
+        Place place = placeRepository.findById( id)
+                .orElseThrow(() -> new PlaceNotFoundException("Lugar no encontrado: " + id));
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User no encontrado " + username));
+
         PlaceReview review = PlaceReview.builder()
                 .origin("Huellas por México")
                 .text(request.getText())
