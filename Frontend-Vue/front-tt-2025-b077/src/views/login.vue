@@ -86,7 +86,7 @@
                       </div>
                     </form>
 
-                    <!-- Registrarse: ahora usa método para animar antes de navegar -->
+                    <!-- Registrarse -->
                     <div class="mt-4 mb-5 d-flex justify-content-end align-items-center">
                       <h6 class="title mb-0 me-1">No tengo una cuenta</h6>
                       <a href="#" class="link-verde" @click.prevent="irARegistro">
@@ -132,7 +132,6 @@
                       </div>
                     </form>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -156,7 +155,7 @@ export default {
       passwordFocused: false,
       email: '',
       emailFocused: false,
-      isNavigating: false // evita doble click en "Registrarse"
+      isNavigating: false
     };
   },
   mounted() {
@@ -167,8 +166,6 @@ export default {
   },
   methods: {
     iniciarSesion() {
-      // Si quieres que el login también haga fade antes de navegar,
-      // podemos replicar la lógica de irARegistro aquí.
       alert(`Usuario: ${this.usuario}\nContraseña: ${this.password}`);
     },
     recuperarContrasena() {
@@ -193,33 +190,24 @@ export default {
     irARegistro() {
       if (this.isNavigating) return;
       this.isNavigating = true;
-
-      // Disparamos la animación de salida del contenedor
       this.showLogin = false;
 
       // Esperamos a que termine la transición CSS (0.6s)
       setTimeout(() => {
-        // Navegamos a la ruta de registro
         this.$router.push('/registro').catch(() => {});
-        // No necesitamos resetear isNavigating porque el componente se destruye al cambiar de ruta
-      }, 600); // coincide con .fade-enter-active (0.6s)
+      }, 600);
     }
   }
 };
 </script>
 
 <style scoped>
-/* Transición de fade (principal) */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.6s ease;
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
-
-/* (Si tienes transición interna, mantenla igual si quieres) */
-/* ...si usas fade-inner, lo puedes mantener; no lo incluí aquí porque tu request pedía
-   que no se quiten transiciones existentes. Si quieres, lo vuelvo a añadir. */
 
 .min-vh-400 {
   min-height: 400px;

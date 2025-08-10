@@ -1,27 +1,23 @@
 <template>
   <div class="d-flex justify-content-center align-items-center vh-100 bg-white">
     <transition name="fade" mode="out-in">
-
-      <!-- Login -->
-      <div class="container">
+      <div v-if="showRegister" class="container" key="register">
         <div class="row justify-content-center">
           <div class="col-12 col-lg-10">
             <div class="card shadow-lg overflow-hidden">
               <div class="row g-0 min-vh-400">
-                
-                <!-- Logo: arriba en móviles, derecha en desktop -->
+                <!-- Logo -->
                 <div class="mb-0 col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white">
                   <img :src="logoUrl" alt="Logo letras" class="img-fluid logo-size" />
                 </div>
 
-                <!-- Formulario: abajo en móviles, izquierda en desktop -->
+                <!-- Formulario -->
                 <div class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2">
-                <h4 class="text-center mb-2 sub-text">
+                  <h4 class="text-center mb-2 sub-text">
                     Completa los campos para crear tu cuenta.
-                </h4>
-                  <hr>
+                  </h4>
+                  <hr />
                   <form @submit.prevent="registroDatos">
-                    <!-- Campo Usuario -->
                     <div class="mb-4 position-relative">
                       <input
                         type="text"
@@ -33,8 +29,8 @@
                         @blur="setFocus('usuario', false)"
                         required
                       />
-                      <label 
-                        for="usuario" 
+                      <label
+                        for="usuario"
                         class="floating-label position-absolute fs-6"
                         :class="{ 'active': usuarioFocused || usuario }"
                       >
@@ -53,8 +49,8 @@
                         @blur="setFocus('nombre', false)"
                         required
                       />
-                      <label 
-                        for="nombre" 
+                      <label
+                        for="nombre"
                         class="floating-label position-absolute fs-6"
                         :class="{ 'active': nombreFocused || nombre }"
                       >
@@ -73,8 +69,8 @@
                         @blur="setFocus('apellidos', false)"
                         required
                       />
-                      <label 
-                        for="apellidos" 
+                      <label
+                        for="apellidos"
                         class="floating-label position-absolute fs-6"
                         :class="{ 'active': apellidosFocused || apellidos }"
                       >
@@ -84,25 +80,24 @@
 
                     <div class="mb-4 position-relative">
                       <input
-                        type="text"
-                        id="correoElectrónico"
-                        v-model="correoElectrónico"
+                        type="email"
+                        id="correoElectronico"
+                        v-model="correoElectronico"
                         class="form-control floating-input mt-4"
-                        :class="{ 'has-content': correoElectrónico }"
-                        @focus="setFocus('correoElectrónico', true)"
-                        @blur="setFocus('correoElectrónico', false)"
+                        :class="{ 'has-content': correoElectronico }"
+                        @focus="setFocus('correoElectronico', true)"
+                        @blur="setFocus('correoElectronico', false)"
                         required
                       />
-                      <label 
-                        for="correoElectrónico" 
+                      <label
+                        for="correoElectronico"
                         class="floating-label position-absolute fs-6"
-                        :class="{ 'active': correoElectrónicoFocused || correoElectrónico }"
+                        :class="{ 'active': correoElectronicoFocused || correoElectronico }"
                       >
                         Correo electrónico
                       </label>
                     </div>
 
-                    <!-- Campo Contraseña -->
                     <div class="mb-4 position-relative">
                       <input
                         type="password"
@@ -114,8 +109,8 @@
                         @blur="setFocus('password', false)"
                         required
                       />
-                      <label 
-                        for="password" 
+                      <label
+                        for="password"
                         class="floating-label position-absolute fs-6"
                         :class="{ 'active': passwordFocused || password }"
                       >
@@ -134,16 +129,17 @@
                         @blur="setFocus('confirpassword', false)"
                         required
                       />
-                      <label 
-                        for="confirpassword" 
+                      <label
+                        for="confirpassword"
                         class="floating-label position-absolute fs-6"
                         :class="{ 'active': confirpasswordFocused || confirpassword }"
                       >
                         Confirme su contraseña
                       </label>
                     </div>
+
                     <div class="d-flex justify-content-between mt-3">
-                      <button type="button" class="btn btn-outline-secondary" @click="cancelar">
+                      <button type="button" class="btn btn-outline-secondary" @click="irALogin">
                         Cancelar
                       </button>
                       <button type="submit" class="btn btn-success">
@@ -152,7 +148,8 @@
                     </div>
                   </form>
                   <div class="mt-4 mb-5 d-flex justify-content-end align-items-center">
-                    <h6 class="title mb-0 me-1">Ya tengo una cuenta. </h6><router-link to="/" class="link-verde">Iniciar sesión</router-link>
+                    <h6 class="title mb-0 me-1">Ya tengo una cuenta. </h6>
+                    <a href="#" class="link-verde" @click.prevent="irALogin">Iniciar sesión</a>
                   </div>
                 </div>
               </div>
@@ -168,53 +165,62 @@
 export default {
   data() {
     return {
-      showImage: true,
+      showRegister: false,
       logoUrl: '/logo-letras.png',
       usuario: '',
       nombre: '',
       apellidos: '',
-      correoElectrónico: '',
+      correoElectronico: '',
       password: '',
       confirpassword: '',
 
       usuarioFocused: false,
       nombreFocused: false,
       apellidosFocused: false,
-      CorreoelectrónicoFocused: false,
+      correoElectronicoFocused: false,
       passwordFocused: false,
       confirpasswordFocused: false,
+
+      isNavigating: false,
     };
   },
   mounted() {
     setTimeout(() => {
-      this.showImage = false;
-    }, 2000);
+      this.showRegister = true;
+    }, 100);
   },
   methods: {
     registroDatos() {
       alert(`Usuario: ${this.usuario}\nContraseña: ${this.password}`);
     },
+    setFocus(field, focused) {
+      this[`${field}Focused`] = focused;
+    },
     cancelar() {
       this.usuario = '';
       this.nombre = '';
       this.apellidos = '';
-      this.Correoelectrónico = '';
+      this.correoElectronico = '';
       this.password = '';
       this.confirpassword = '';
 
       this.usuarioFocused = false;
       this.nombreFocused = false;
       this.apellidosFocused = false;
-      this.CorreoelectrónicoFocused = false;
+      this.correoElectronicoFocused = false;
       this.passwordFocused = false;
       this.confirpasswordFocused = false;
     },
-    setFocus(field, focused) {
-      this[`${field}Focused`] = focused;
+    irALogin() {
+      if (this.isNavigating) return;
+      this.isNavigating = true;
+      this.showRegister = false;
+      setTimeout(() => {
+        this.$router.push('/login').catch(() => {});
+      }, 600);
     }
-  },
+  }
 };
-
 </script>
 
 <style scoped>
@@ -279,9 +285,9 @@ export default {
 }
 
 hr{
-    height: 4px;
-    background-color: #35aa06;
-    border-color: #35aa06;
+  height: 4px;
+  background-color: #35aa06;
+  border-color: #35aa06;
 }
 
 .sub-text {
@@ -311,7 +317,7 @@ hr{
   border-color: #1B515E !important;
 }
 
-/* Botón Iniciar Sesión: letra #ABCD9E, fondo #1B515E */
+/* Botón Registrarse: letra #ABCD9E, fondo #1B515E */
 .btn-success {
   color: #ABCD9E !important;
   background-color: #1B515E !important;
@@ -331,5 +337,4 @@ hr{
 .link-verde:hover {
   color: #2e9005 !important;
 }
-
 </style>
