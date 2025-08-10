@@ -104,35 +104,45 @@
                       Introduce tu correo electrónico, te enviaremos un correo de validación para cambiar tu contraseña.
                     </h4>
                     <hr />
-                    <form @submit.prevent="recuperarContrasena">
-                      <div class="mb-4 position-relative">
+                    <form @submit.prevent="recuperarPassword">
+                    <div class="mb-4 position-relative">
                         <input
-                          type="email"
-                          id="email"
-                          v-model="email"
-                          class="form-control floating-input mt-4"
-                          :class="{ 'has-content': email }"
-                          @focus="setFocus('email', true)"
-                          @blur="setFocus('email', false)"
-                          required
+                        type="email"
+                        id="correoRecuperacion"
+                        v-model="correoRecuperacion"
+                        class="form-control floating-input mt-4"
+                        :class="{ 'has-content': correoRecuperacion }"
+                        @focus="setFocus('correoRecuperacion', true)"
+                        @blur="setFocus('correoRecuperacion', false)"
+                        required
                         />
                         <label 
-                          for="email" 
-                          class="floating-label position-absolute fs-6"
-                          :class="{ 'active': emailFocused || email }"
+                        for="correoRecuperacion" 
+                        class="floating-label position-absolute fs-6"
+                        :class="{ 'active': correoRecuperacionFocused || correoRecuperacion }"
                         >
-                          Correo electrónico
+                        Correo electrónico
                         </label>
-                      </div>
+                    </div>
 
-                      <div class="d-flex justify-content-between mt-3">
+                    <div class="d-flex justify-content-between mt-3">
                         <button type="button" class="btn btn-outline-secondary" @click="viewMode = 'login'">
-                          Volver
+                        Volver
                         </button>
                         <button type="submit" class="btn btn-success">
-                          Recuperar mi contraseña
+                        Recuperar mi contraseña
                         </button>
-                      </div>
+                    </div>
+
+                    <!-- Mensaje dinámico -->
+                    <div 
+                        v-if="mensajeRecuperacion" 
+                        class="alert-success-custom mt-4 d-flex align-items-start text-justify"
+                        >
+                        <i class="fa-regular fa-circle-check check-icon me-2"></i>
+                        <span>{{ mensajeRecuperacion }}</span>
+                    </div>
+
                     </form>
                     <div class="mt-5 mb-5 d-flex justify-content-end align-items-center">
                       <h6 class="title mb-0 me-1">No tengo una cuenta</h6>
@@ -156,7 +166,7 @@ export default {
   data() {
     return {
       showLogin: false,
-      viewMode: 'login', // 'login' o 'forgot'
+      viewMode: 'login',
       logoUrl: '/logo-letras.png',
       usuario: '',
       password: '',
@@ -164,7 +174,10 @@ export default {
       passwordFocused: false,
       email: '',
       emailFocused: false,
-      isNavigating: false
+      isNavigating: false,
+      correoRecuperacion: '',
+      correoRecuperacionFocused: false,
+      mensajeRecuperacion: ''
     };
   },
   mounted() {
@@ -192,7 +205,7 @@ export default {
         this.usuarioFocused = focused;
       } else if (field === 'password') {
         this.passwordFocused = focused;
-      } else if (field === 'email') {
+      } else if (field === 'correoRecuperacion') {
         this.emailFocused = focused;
       }
     },
@@ -205,6 +218,23 @@ export default {
       setTimeout(() => {
         this.$router.push('/crearcuenta').catch(() => {});
       }, 600);
+    },
+    recuperarPassword() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!this.correoRecuperacion) {
+        this.mensajeRecuperacion = "Por favor, ingresa tu correo electrónico.";
+        return;
+        }
+
+        if (!emailRegex.test(this.correoRecuperacion)) {
+        this.mensajeRecuperacion = "Por favor, ingresa un correo electrónico válido.";
+        return;
+        }
+
+        // Si el correo es válido, mostrar mensaje solicitado
+        this.mensajeRecuperacion =
+        "Si hay una cuenta asociada a esta dirección de correo electrónico, se enviará un mensaje con información acerca de cómo restablecer la contraseña de inicio de sesión.";
     }
   }
 };
@@ -318,4 +348,23 @@ hr{
 .link-verde:hover {
   color: #2e9005 !important;
 }
+
+.alert-success-custom {
+  background-color: #d4edda; /* verde claro */
+  border: 1px solid #28a745; /* borde verde */
+  color: #155724; /* texto verde oscuro */
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.check-icon {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
 </style>
