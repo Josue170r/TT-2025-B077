@@ -1,28 +1,26 @@
 <template>
   <div class="d-flex justify-content-center align-items-center vh-100 bg-white">
     <transition name="fade" mode="out-in">
-      <div v-if="showLogin" key="login" class="container">
+
+      <!-- Login -->
+      <div class="container">
         <div class="row justify-content-center">
           <div class="col-12 col-lg-10">
             <div class="card shadow-lg overflow-hidden">
               <div class="row g-0 min-vh-400">
                 
                 <!-- Logo: arriba en móviles, derecha en desktop -->
-                <div class="col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white">
+                <div class="mb-0 col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white">
                   <img :src="logoUrl" alt="Logo letras" class="img-fluid logo-size" />
                 </div>
 
                 <!-- Formulario: abajo en móviles, izquierda en desktop -->
                 <div class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2">
-                  <h4 class="text-center mb-2 sub-text">
-                    Iniciar sesión o registrate
-                  </h4>
-                  <hr />
-
-                  <h4 class="text-center mb-2 title mt-4">
-                    ¡Te damos la bienvenida!
-                  </h4>
-                  <form @submit.prevent="iniciarSesion">
+                <h4 class="text-center mb-2 sub-text">
+                    Completa los campos para crear tu cuenta.
+                </h4>
+                  <hr>
+                  <form @submit.prevent="registroDatos">
                     <!-- Campo Usuario -->
                     <div class="mb-4 position-relative">
                       <input
@@ -40,7 +38,67 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ 'active': usuarioFocused || usuario }"
                       >
-                        Nombre de usuario o correo electrónico
+                        Nombre de usuario
+                      </label>
+                    </div>
+
+                    <div class="mb-4 position-relative">
+                      <input
+                        type="text"
+                        id="nombre"
+                        v-model="nombre"
+                        class="form-control floating-input mt-4"
+                        :class="{ 'has-content': nombre }"
+                        @focus="setFocus('nombre', true)"
+                        @blur="setFocus('nombre', false)"
+                        required
+                      />
+                      <label 
+                        for="nombre" 
+                        class="floating-label position-absolute fs-6"
+                        :class="{ 'active': nombreFocused || nombre }"
+                      >
+                        Nombre(s)
+                      </label>
+                    </div>
+
+                    <div class="mb-4 position-relative">
+                      <input
+                        type="text"
+                        id="apellidos"
+                        v-model="apellidos"
+                        class="form-control floating-input mt-4"
+                        :class="{ 'has-content': apellidos }"
+                        @focus="setFocus('apellidos', true)"
+                        @blur="setFocus('apellidos', false)"
+                        required
+                      />
+                      <label 
+                        for="apellidos" 
+                        class="floating-label position-absolute fs-6"
+                        :class="{ 'active': apellidosFocused || apellidos }"
+                      >
+                        Apellidos(s)
+                      </label>
+                    </div>
+
+                    <div class="mb-4 position-relative">
+                      <input
+                        type="text"
+                        id="correoElectrónico"
+                        v-model="correoElectrónico"
+                        class="form-control floating-input mt-4"
+                        :class="{ 'has-content': correoElectrónico }"
+                        @focus="setFocus('correoElectrónico', true)"
+                        @blur="setFocus('correoElectrónico', false)"
+                        required
+                      />
+                      <label 
+                        for="correoElectrónico" 
+                        class="floating-label position-absolute fs-6"
+                        :class="{ 'active': correoElectrónicoFocused || correoElectrónico }"
+                      >
+                        Correo electrónico
                       </label>
                     </div>
 
@@ -65,21 +123,36 @@
                       </label>
                     </div>
 
-                    <div class="mt-0 mb-5 d-flex justify-content-end align-items-center">
-                      <h6 class="title mb-0 me-1">¿Necesitas ayuda?</h6><a class="link-verde" href="">Olvidé mi contraseña</a>
+                    <div class="mb-4 position-relative">
+                      <input
+                        type="password"
+                        id="confirpassword"
+                        v-model="confirpassword"
+                        class="form-control floating-input"
+                        :class="{ 'has-content': confirpassword }"
+                        @focus="setFocus('confirpassword', true)"
+                        @blur="setFocus('confirpassword', false)"
+                        required
+                      />
+                      <label 
+                        for="confirpassword" 
+                        class="floating-label position-absolute fs-6"
+                        :class="{ 'active': confirpasswordFocused || confirpassword }"
+                      >
+                        Confirme su contraseña
+                      </label>
                     </div>
-
                     <div class="d-flex justify-content-between mt-3">
                       <button type="button" class="btn btn-outline-secondary" @click="cancelar">
                         Cancelar
                       </button>
                       <button type="submit" class="btn btn-success">
-                        Iniciar sesión
+                        Registrarse
                       </button>
                     </div>
                   </form>
                   <div class="mt-4 mb-5 d-flex justify-content-end align-items-center">
-                    <h6 class="title mb-0 me-1">No tengo una cuenta</h6><a class="link-verde" href="">Registrarse</a>
+                    <h6 class="title mb-0 me-1">Ya tengo una cuenta. </h6><router-link to="/" class="link-verde">Iniciar sesión</router-link>
                   </div>
                 </div>
               </div>
@@ -95,48 +168,56 @@
 export default {
   data() {
     return {
-      showLogin: false,
+      showImage: true,
       logoUrl: '/logo-letras.png',
       usuario: '',
+      nombre: '',
+      apellidos: '',
+      correoElectrónico: '',
       password: '',
+      confirpassword: '',
+
       usuarioFocused: false,
+      nombreFocused: false,
+      apellidosFocused: false,
+      CorreoelectrónicoFocused: false,
       passwordFocused: false,
+      confirpasswordFocused: false,
     };
   },
   mounted() {
     setTimeout(() => {
-      this.showLogin = true;
-    }, 100); // pequeño delay para activar transición
+      this.showImage = false;
+    }, 2000);
   },
   methods: {
-    iniciarSesion() {
+    registroDatos() {
       alert(`Usuario: ${this.usuario}\nContraseña: ${this.password}`);
     },
     cancelar() {
       this.usuario = '';
+      this.nombre = '';
+      this.apellidos = '';
+      this.Correoelectrónico = '';
       this.password = '';
+      this.confirpassword = '';
+
       this.usuarioFocused = false;
+      this.nombreFocused = false;
+      this.apellidosFocused = false;
+      this.CorreoelectrónicoFocused = false;
       this.passwordFocused = false;
+      this.confirpasswordFocused = false;
     },
     setFocus(field, focused) {
-      if (field === 'usuario') {
-        this.usuarioFocused = focused;
-      } else if (field === 'password') {
-        this.passwordFocused = focused;
-      }
+      this[`${field}Focused`] = focused;
     }
   },
 };
+
 </script>
 
 <style scoped>
-/* Transición de fade */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.6s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
 /* Altura mínima personalizada */
 .min-vh-400 {
   min-height: 400px;
@@ -241,13 +322,6 @@ hr{
   color: #1B515E !important;
   background-color: #ABCD9E !important;
   border-color: #ABCD9E !important;
-}
-
-.portada-background {
-  width: 100%;
-  height: 100vh;
-  object-fit: cover;
-  object-position: center;
 }
 
 .link-verde {
