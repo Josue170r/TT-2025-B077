@@ -10,7 +10,7 @@ const routes = [
     component: () => import('@/views/login.vue')
   },
   {
-    path: '/registro',
+    path: '/crearcuenta',
     component: () => import('@/views/registration.vue')
   }
 ]

@@ -100,6 +100,9 @@
                     <h4 class="text-center mb-2 sub-text">
                       Recuperar contraseña
                     </h4>
+                    <h4 class="text-center mb-2 title mt-4">
+                      Introduce tu correo electrónico, te enviaremos un correo de validación para cambiar tu contraseña.
+                    </h4>
                     <hr />
                     <form @submit.prevent="recuperarContrasena">
                       <div class="mb-4 position-relative">
@@ -127,10 +130,16 @@
                           Volver
                         </button>
                         <button type="submit" class="btn btn-success">
-                          Enviar
+                          Recuperar mi contraseña
                         </button>
                       </div>
                     </form>
+                    <div class="mt-5 mb-5 d-flex justify-content-end align-items-center">
+                      <h6 class="title mb-0 me-1">No tengo una cuenta</h6>
+                        <a href="#" class="link-verde" @click.prevent="irARegistro">
+                            Registrarse
+                        </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -194,7 +203,7 @@ export default {
 
       // Esperamos a que termine la transición CSS (0.6s)
       setTimeout(() => {
-        this.$router.push('/registro').catch(() => {});
+        this.$router.push('/crearcuenta').catch(() => {});
       }, 600);
     }
   }
