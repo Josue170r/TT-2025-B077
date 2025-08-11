@@ -11,6 +11,6 @@ public class ApiErrorResponseConfig {
 
     @Bean
     public ApiErrorResponseCustomizer timestampErrorResponseCustomizer() {
-        return response -> response.addErrorProperty("instant", Instant.now());
+        return response -> response.addErrorProperty("timestamp", Instant.now());
     }
 }
