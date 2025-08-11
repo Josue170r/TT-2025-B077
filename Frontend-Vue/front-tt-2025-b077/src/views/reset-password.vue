@@ -65,7 +65,7 @@
                     </div>
                     <!-- Mensaje de éxito -->
                     <div v-if="successMessage" class="alert alert-success-custom py-2 px-3 mb-3 d-flex align-items-start">
-                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <i class="fa-regular fa-circle-check check-icon me-2"></i>
                         <span>{{ successMessage }}</span>
                     </div>
                     <div class="d-flex justify-content-between mt-5">
@@ -120,32 +120,33 @@ export default {
       this.successMessage = '';
     },
     guardarContraseña() {
-      // Limpiar error previo
-      this.errorMessage = '';
+        this.errorMessage = '';
 
-      if (this.password.length < 8) {
-        this.errorMessage = 'La contraseña debe tener al menos 8 caracteres';
-        return;
-      }
+        if (this.password.length < 8) {
+            this.errorMessage = 'La contraseña debe tener al menos 8 caracteres';
+            return;
+        }
 
-      if (this.password !== this.confirmPassword) {
-        this.errorMessage = 'Las contraseñas no coinciden';
-        return;
-      }
+        if (this.password !== this.confirmPassword) {
+            this.errorMessage = 'Las contraseñas no coinciden';
+            return;
+        }
 
-      this.successMessage = 'Contraseña guardada correctamente, serás redirigido al inicio de sesión...';
-      this.cancelar();
+        this.successMessage = 'Contraseña guardada correctamente, serás redirigido al inicio de sesión...';
+        this.password = '';
+        this.confirmPassword = '';
+        this.passwordFocused = false;
+        this.confirmPasswordFocused = false;
 
-      setTimeout(() => {
-        this.$router.push('/login');
-      }, 3000);
-    },
+        setTimeout(() => {
+            this.$router.push('/login');
+        }, 3000);
+        },
   },
 };
 </script>
 
 <style scoped>
-/* Igual que en tu login */
 
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.6s ease;
@@ -251,4 +252,13 @@ hr{
   color: #155724;
   border-radius: 8px;
 }
+
+.check-icon {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
 </style>
