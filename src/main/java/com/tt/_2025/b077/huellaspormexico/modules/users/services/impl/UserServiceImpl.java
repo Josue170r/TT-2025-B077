@@ -107,4 +107,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Error al actualizar la foto de perfil: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public void deleteById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        userRepository.delete(user);
+    }
 }
