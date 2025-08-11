@@ -12,6 +12,10 @@ const routes = [
   {
     path: '/crearcuenta',
     component: () => import('@/views/registration.vue')
+  },
+  {
+    path: '/re-contrasena',
+    component: () => import('@/views/reset-password.vue')
   }
 ]
 
