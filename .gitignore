@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local envs ###
+.envs/.local/.jwt
+.envs/.local/.smtp
+.envs/.local/.spring
+
+### Directories ###
+/src/main/resources/profile-pictures
+/src/main/resources/fixtures
+
