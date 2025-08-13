@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Data
 @Entity
-@Table(name = "state")
+@Table(name = "states")
 @AllArgsConstructor
 @NoArgsConstructor
 public class StateCatalog extends BaseModel {
