@@ -12,4 +12,5 @@ public interface UserService extends UserDetailsService {
     User updateUser(Long userId, UpdateUserRequest request);
     User getUserProfile(String username);
     void updateProfilePicture(String username, MultipartFile file);
+    void deleteById(Long id);
 }

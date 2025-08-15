@@ -19,7 +19,7 @@ import java.util.List;
 @SuperBuilder
 @Data
 @Entity
-@Table(name = "category_place")
+@Table(name = "category_places")
 @AllArgsConstructor
 @NoArgsConstructor
 public class CategoryPlacesCatalog extends BaseModel {

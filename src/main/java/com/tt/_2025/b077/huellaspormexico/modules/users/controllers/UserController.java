@@ -66,4 +66,12 @@ public class UserController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Foto de perfil actualizada correctamente"));
     }
+
+    @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<ApiResponse<?>> deleteUserById(@PathVariable Long id) {
+        userService.deleteById(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Usuario eliminado correctamente"));
+    }
 }
