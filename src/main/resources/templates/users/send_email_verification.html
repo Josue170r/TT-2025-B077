@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifica tu cuenta</title>
+    <title>Verifica tu cuenta - Huellas por México</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f9f7f4;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             color: #333;
         }
         .email-container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: #ffffff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #43a487, #ABCD9E);
+            color:#1B515E;
             text-align: center;
             padding: 40px 20px;
         }
+        .header img {
+            width: 100px;
+            margin-bottom: 15px;
+        }
         .header h1 {
             margin: 0;
-            font-size: 28px;
-            font-weight: 300;
+            font-weight: 600;
+            font-size: 26px;
         }
         .content {
             padding: 40px 30px;
@@ -35,99 +41,80 @@
         }
         .welcome-text {
             font-size: 18px;
-            color: #555;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+            color: #1B515E;
         }
         .username {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
-            color: #667eea;
-            margin-bottom: 30px;
+            color: #1B515E;
+            margin-bottom: 25px;
         }
         .message {
             font-size: 16px;
             line-height: 1.6;
-            color: #666;
-            margin-bottom: 40px;
+            color: #1B515E;
+            margin-bottom: 35px;
         }
         .verify-button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1B515E, #21859e);
             color: white;
             text-decoration: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-size: 18px;
+            padding: 14px 35px;
+            border-radius: 30px;
+            font-size: 16px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgb(21, 63, 74);
+            transition: all 0.3s ease;
+            margin-top: 20px;
         }
         .verify-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 6px 20px rgb(27, 81, 94);
         }
         .alternative-link {
             margin-top: 30px;
-            padding: 20px;
-            background-color: #f8f9fa;
+            padding: 15px;
+            background-color: #f4f8f7;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        .alternative-link p {
-            margin: 0 0 10px 0;
+            border-left: 4px solid #1b515e;
             font-size: 14px;
-            color: #666;
+            text-align: center;
         }
         .link-text {
             word-break: break-all;
             font-size: 13px;
-            color: #667eea;
+            color: #e76f51;
             text-decoration: none;
-            background-color: #e9ecef;
+            background-color: #fef5f3;
             padding: 8px;
             border-radius: 4px;
             display: inline-block;
         }
         .footer {
-            background-color: #f8f9fa;
+            background-color: #bbe0ab;
             text-align: center;
-            padding: 30px 20px;
-            border-top: 1px solid #dee2e6;
-        }
-        .footer p {
-            margin: 0;
-            font-size: 14px;
-            color: #6c757d;
-        }
-        .security-notice {
-            margin-top: 30px;
-            padding: 15px;
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
+            padding: 20px;
+            font-size: 13px;
+            color: #1B515E;
             border-radius: 8px;
-            font-size: 14px;
-            color: #856404;
-        }
-        .icon {
-            font-size: 48px;
-            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
 <div class="email-container">
-    <!-- Header -->
     <div class="header">
-        <div class="icon">🛡️</div>
+        <img src="https://i.imgur.com/6KOR09e.png" alt="Huellas por México">
         <h1>Verifica tu cuenta</h1>
     </div>
 
-    <!-- Content -->
     <div class="content">
-        <p class="welcome-text">¡Hola!</p>
-        <div class="username" th:text="${username}">Usuario</div>
+        <p class="welcome-text">
+            Hola <span class="username" th:text="${username}">Usuario</span>
+        </p>
 
         <div class="message">
             <p>¡Bienvenido a <strong>Huellas por México</strong>! 🎉</p>
@@ -135,29 +122,24 @@
             <p>Haz clic en el botón de abajo para verificar tu cuenta:</p>
         </div>
 
-        <!-- TODO: Cambiar localhost:8080 por la URL del frontend -->
-        <a th:href="'https://localhost:8080/verify?token=' + ${token}"
-           class="verify-button">
+        <a th:href="${host} + '/verify?token=' + ${token}" class="verify-button">
             Verificar mi cuenta
         </a>
 
-        <!-- Alternative link section -->
         <div class="alternative-link">
-            <p><strong>¿El botón no funciona?</strong></p>
+            <strong style="color: #1B515E;">¿El botón no funciona?</strong>
             <p>Copia y pega este enlace en tu navegador:</p>
-            <!-- TODO: Cambiar localhost:8080 por la URL del frontend -->
-            <a th:href="'https://localhost:8080/verify?token=' + ${token}"
-               th:text="'https://localhost:8080/verify?token=' + ${token}"
+            <a th:href="${host} + '/verify?token=' + ${token}"
+               th:text="${host} + '/verify?token=' + ${token}"
                class="link-text">
-                https://localhost:8080/verify?token=token_aqui
+                ${host}/verify?token=token_aqui
             </a>
         </div>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
         <p>© 2025 Huellas por México. Todos los derechos reservados.</p>
-        <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+        <p>Este es un mensaje automático, por favor no respondas.</p>
     </div>
 </div>
 </body>
