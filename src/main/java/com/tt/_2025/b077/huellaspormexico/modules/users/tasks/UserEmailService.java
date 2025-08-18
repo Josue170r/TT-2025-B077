@@ -4,6 +4,7 @@ import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,9 @@ public class UserEmailService {
     @Autowired
     private TemplateEngine templateEngine;
 
+    @Value("${front.admin.url}")
+    private String adminFrontUrl;
+
     /**
      * Send verification account email
      *
@@ -31,6 +35,7 @@ public class UserEmailService {
             Context context = new Context();
             context.setVariable("username", user.getUsername());
             context.setVariable("token", token);
+            context.setVariable("host", adminFrontUrl);
             String html = templateEngine.process("users/send_email_verification.html", context);
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -54,6 +59,7 @@ public class UserEmailService {
             Context context = new Context();
             context.setVariable("username", user.getUsername());
             context.setVariable("token", token);
+            context.setVariable("host", adminFrontUrl);
             String html = templateEngine.process("users/send_forgot_password.html", context);
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
