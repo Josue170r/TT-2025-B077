@@ -16,6 +16,10 @@ const routes = [
   {
     path: '/re-contrasena',
     component: () => import('@/views/reset-password.vue')
+  },
+  {
+    path: '/preferencias',
+    component: () => import('@/views/preferences.vue')
   }
 ]
 
