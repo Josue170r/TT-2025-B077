@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huellas por México</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #1b515e 0%, #2c6b73 50%, #1b515e 100%);
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 4px 12px rgba(27, 81, 94, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .admin-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .admin-header h6 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-header h6 i {
+            font-size: 18px;
+            color: #abcd9e;
+        }
+
+        .header-badge {
+            background: rgba(171, 205, 158, 0.2);
+            color: #abcd9e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(171, 205, 158, 0.3);
+        }
+
+        .map-container {
+            position: relative;
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .sidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 340px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: calc(100vh - 100px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e0e0e0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: #abcd9e;
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .sidebar-header h5 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-header h5 i {
+            margin-right: 10px;
+            color: #1b515e;
+        }
+
+        .filters-container {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1b515e;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: #495057;
+            cursor: pointer;
+            padding: 8px 0;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+
+        .filter-checkbox:hover {
+            color: #1b515e;
+            background: rgba(171, 205, 158, 0.1);
+            padding-left: 4px;
+        }
+
+        .filter-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+            accent-color: #1b515e;
+            transform: scale(1.2);
+        }
+
+        .filter-checkbox input[type="checkbox"]:checked + label {
+            color: #1b515e;
+            font-weight: 500;
+        }
+
+        .search-range {
+            margin-top: 20px;
+        }
+
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1b515e;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .range-value {
+            text-align: center;
+            background: #1b515e;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 12px;
+        }
+
+        .places-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            background: #f8f9fa;
+        }
+
+        .place-card {
+            background: white;
+            margin: 12px;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        .place-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border-color: #abcd9e;
+        }
+
+        .place-card-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .place-name {
+            font-weight: 600;
+            color: #1b515e;
+            font-size: 15px;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .place-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .rating-stars {
+            color: #ffc107;
+            font-size: 14px;
+        }
+
+        .rating-number {
+            background: #1b515e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .place-address {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .place-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .place-type-tag {
+            background: #abcd9e;
+            color: #1b515e;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .place-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f3f5;
+        }
+
+        .place-distance {
+            font-size: 11px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .place-status {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .no-results i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .places-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .places-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .places-list::-webkit-scrollbar-thumb {
+            background: #abcd9e;
+            border-radius: 3px;
+        }
+
+        .places-list::-webkit-scrollbar-thumb:hover {
+            background: #1b515e;
+        }
+
+        .info-window-content {
+            max-width: 280px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #1b515e;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .info-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .info-rating .stars {
+            color: #ffc107;
+        }
+
+        .info-rating .number {
+            background: #1b515e;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .info-address {
+            color: #6c757d;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-description {
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .info-links {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .info-links a {
+            color: #1b515e;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .info-links a:hover {
+            text-decoration: underline;
+        }
+
+        .info-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .info-type-tag {
+            background: #abcd9e;
+            color: #1b515e;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: auto;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                max-height: 60vh;
+                border-radius: 16px 16px 0 0;
+            }
+
+            .admin-header h6 {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="admin-header">
+    <div class="container-fluid">
+        <div class="admin-header-content">
+            <h6><i class="fas fa-map-marked-alt"></i>Huellas por México</h6>
+        </div>
+    </div>
+</div>
+
+<div class="map-container">
+    <div id="map"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h5><i class="fas fa-map-marker-alt"></i>Huellas por México</h5>
+        </div>
+
+        <div class="filters-container">
+            <div class="filter-group">
+                <label class="filter-label">Categorías</label>
+                <div class="filter-grid">
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="all-categories" checked data-category="">
+                        <label for="all-categories">Todos</label>
+                    </div>
+                    <th:block th:each="category : ${categories}">
+                        <div class="filter-checkbox">
+                            <input type="checkbox" th:id="'cat-' + ${category.id}" th:data-category="${category.id}">
+                            <label th:for="'cat-' + ${category.id}" th:text="${category.category}">Categoría</label>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+
+            <div class="search-range">
+                <label class="filter-label">Rango de búsqueda</label>
+                <input type="range" class="range-slider" id="rangeSlider" min="500" max="5000" value="2000" step="100">
+                <div class="range-value" id="rangeValue">2000 m</div>
+            </div>
+        </div>
+
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando lugares...</p>
+        </div>
+
+        <div class="places-list" id="placesList">
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let map;
+    let currentPlaces = [];
+    let markers = [];
+    let infoWindow;
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 11,
+            center: { lat: 19.4326, lng: -99.1332 },
+            disableDefaultUI: false,
+            zoomControl: true,
+            mapTypeControl: true,
+            scaleControl: true,
+            streetViewControl: true,
+            rotateControl: false,
+            fullscreenControl: true,
+            zoomControlOptions: {
+                position: google.maps.ControlPosition.RIGHT_BOTTOM
+            },
+            mapTypeControlOptions: {
+                position: google.maps.ControlPosition.TOP_LEFT
+            },
+            fullscreenControlOptions: {
+                position: google.maps.ControlPosition.TOP_RIGHT
+            }
+        });
+
+        infoWindow = new google.maps.InfoWindow();
+        loadPlaces();
+        initEventListeners();
+    }
+
+    function loadPlaces(categoryId = null) {
+        showLoading(true);
+
+        let url = '/map/places';
+        if (categoryId) {
+            url += `?categoryId=${categoryId}`;
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(places => {
+                currentPlaces = places;
+                displayPlacesOnMap(places);
+                displayPlacesList(places);
+                showLoading(false);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showLoading(false);
+            });
+    }
+
+    function displayPlacesOnMap(places) {
+        markers.forEach(marker => marker.setMap(null));
+        markers = [];
+
+        const bounds = new google.maps.LatLngBounds();
+
+        places.forEach(place => {
+            if (place.lat && place.lng) {
+                const position = { lat: place.lat, lng: place.lng };
+
+                const marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    title: place.name
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.setContent(createInfoWindowContent(place));
+                    infoWindow.open(map, marker);
+                });
+
+                markers.push(marker);
+                bounds.extend(position);
+            }
+        });
+
+        if (places.length > 0 && places.length < 50) {
+            map.fitBounds(bounds);
+        }
+    }
+
+    function createInfoWindowContent(place) {
+        const rating = place.rating ? place.rating.toFixed(1) : 'Sin rating';
+        const stars = place.rating ? '★'.repeat(Math.floor(place.rating)) + '☆'.repeat(5 - Math.floor(place.rating)) : '☆☆☆☆☆';
+
+        return `
+                <div class="info-window-content">
+                    <div class="info-title">${place.name}</div>
+                    <div class="info-rating">
+                        <span class="stars">${stars}</span>
+                        <span class="number">${rating}</span>
+                    </div>
+                    ${place.formattedAddress ? `<div class="info-address"><i class="fas fa-map-marker-alt"></i> ${place.formattedAddress}</div>` : ''}
+                    ${place.description ? `<div class="info-description">${place.description.substring(0, 120)}${place.description.length > 120 ? '...' : ''}</div>` : ''}
+                    <div class="info-links">
+                        ${place.website ? `<a href="${place.website}" target="_blank"><i class="fas fa-external-link-alt"></i> Sitio Web</a>` : ''}
+                        ${place.googleMapsUrl ? `<a href="${place.googleMapsUrl}" target="_blank"><i class="fab fa-google"></i> Google Maps</a>` : ''}
+                    </div>
+                    ${place.placeTypes && place.placeTypes.length > 0 ?
+            `<div class="info-types">
+                            ${place.placeTypes.slice(0, 4).map(type => `<span class="info-type-tag">${type}</span>`).join('')}
+                        </div>` : ''
+        }
+                </div>
+            `;
+    }
+
+    function displayPlacesList(places) {
+        const container = document.getElementById('placesList');
+
+        if (places.length === 0) {
+            container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <div>No se encontraron lugares</div>
+                        <small>Intenta con otra categoría</small>
+                    </div>
+                `;
+            return;
+        }
+
+        container.innerHTML = places.map(place => {
+            const rating = place.rating ? place.rating.toFixed(1) : 'N/A';
+            const stars = place.rating ? '★'.repeat(Math.floor(place.rating)) + '☆'.repeat(5 - Math.floor(place.rating)) : '☆☆☆☆☆';
+            const status = Math.random() > 0.8 ? 'pending' : 'active';
+            const statusText = status === 'active' ? 'Activo' : 'Pendiente';
+            const distance = Math.floor(Math.random() * 2000) + 100;
+
+            return `
+                    <div class="place-card" onclick="focusOnPlace(${place.lat}, ${place.lng})">
+                        <div class="place-card-header">
+                            <div class="place-name">${place.name}</div>
+                        </div>
+
+                        <div class="place-rating">
+                            <span class="rating-stars">${stars}</span>
+                            <span class="rating-number">${rating}</span>
+                        </div>
+
+                        ${place.formattedAddress ? `
+                        <div class="place-address">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${place.formattedAddress.length > 50 ? place.formattedAddress.substring(0, 50) + '...' : place.formattedAddress}
+                        </div>
+                        ` : ''}
+
+                        ${place.placeTypes && place.placeTypes.length > 0 ? `
+                        <div class="place-types">
+                            ${place.placeTypes.slice(0, 3).map(type => `<span class="place-type-tag">${type}</span>`).join('')}
+                        </div>
+                        ` : ''}
+
+                        <div class="place-actions">
+                            <span class="place-distance">${distance}m</span>
+                            <span class="place-status status-${status}">${statusText}</span>
+                        </div>
+                    </div>
+                `;
+        }).join('');
+    }
+
+    function focusOnPlace(lat, lng) {
+        map.setCenter({ lat: lat, lng: lng });
+        map.setZoom(16);
+
+        const targetMarker = markers.find(marker =>
+            marker.getPosition().lat() === lat && marker.getPosition().lng() === lng
+        );
+
+        if (targetMarker) {
+            google.maps.event.trigger(targetMarker, 'click');
+        }
+    }
+
+    function showLoading(show) {
+        const spinner = document.getElementById('loadingSpinner');
+        const placesList = document.getElementById('placesList');
+
+        if (show) {
+            spinner.style.display = 'block';
+            placesList.style.display = 'none';
+        } else {
+            spinner.style.display = 'none';
+            placesList.style.display = 'block';
+        }
+    }
+
+    function initEventListeners() {
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.id === 'all-categories') {
+                    if (this.checked) {
+                        document.querySelectorAll('input[type="checkbox"]:not(#all-categories)').forEach(cb => cb.checked = false);
+                        loadPlaces();
+                    }
+                } else {
+                    document.getElementById('all-categories').checked = false;
+                    const categoryId = this.dataset.category;
+                    if (this.checked) {
+                        document.querySelectorAll('input[type="checkbox"]:not([data-category="' + categoryId + '"])').forEach(cb => cb.checked = false);
+                        loadPlaces(categoryId);
+                    } else {
+                        document.getElementById('all-categories').checked = true;
+                        loadPlaces();
+                    }
+                }
+            });
+        });
+
+        const rangeSlider = document.getElementById('rangeSlider');
+        const rangeValue = document.getElementById('rangeValue');
+
+        rangeSlider.addEventListener('input', function() {
+            rangeValue.textContent = this.value + ' m';
+        });
+    }
+
+    window.initMap = initMap;
+</script>
+
+<script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapKey} + '&callback=initMap'" async defer></script>
+</body>
+</html>
