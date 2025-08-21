@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import BottomNavbar from "@/components/navbar.vue";
+import BottomNavbar from "@/components/bottomnavbar.vue";
 import hamburgermenu from "@/components/hamburgermenu.vue";
 
 export default {
