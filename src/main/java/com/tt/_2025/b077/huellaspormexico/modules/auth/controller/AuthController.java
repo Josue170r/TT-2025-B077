@@ -61,7 +61,7 @@ public class AuthController {
         authService.forgotPassword(request);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.CREATED, "Correo enviado exitosamente"));
+                .body(ApiResponse.of(HttpStatus.OK, "Correo enviado exitosamente"));
     }
 
     @RequestMapping(path = "/recover-password", method = RequestMethod.POST)
