@@ -20,6 +20,26 @@ const routes = [
   {
     path: '/preferencias',
     component: () => import('@/views/preferences.vue')
+  },
+  {
+    path: '/inicio',
+    component: () => import('@/views/home.vue')
+  },
+  {
+    path: '/favoritos',
+    component: () => import('@/views/favorites.vue')
+  },
+  {
+    path: '/generaritinerario',
+    component: () => import('@/views/itinerary.vue')
+  },
+  {
+    path: '/misviajes',
+    component: () => import('@/views/mytrips.vue')
+  },
+  {
+    path: '/micuenta',
+    component: () => import('@/views/acount.vue')
   }
 ]
 
