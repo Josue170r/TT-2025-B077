@@ -369,6 +369,36 @@ export default {
   }
 }
 
+/* Móviles pequeños (320px - 480px) */
+@media (max-width: 480px) {
+  .hamburger {
+    width: 24px;
+    height: 18px;
+  }
+  
+  .line {
+    height: 3px;
+  }
+  
+  .menu {
+    width: 240px;
+    max-width: calc(100vw - 40px);
+    top: 42px;
+    border-radius: 8px;
+    box-shadow: 0px 6px 20px rgba(27, 81, 94, 0.2);
+  }
+  
+  .menu-text {
+    font-size: 13px;
+    padding: 12px 16px;
+    line-height: 1.3;
+  }
+  
+  .separator {
+    width: 60%;
+  }
+}
+
 /* Pantallas grandes (más de 1024px) */
 @media (min-width: 1025px) {
   .hamburger:hover {

@@ -174,6 +174,7 @@ export default {
 @media (max-width: 576px) {
   .search-wrapper {
     height: 42px;
+    border-radius: 20px !important;
   }
   
   .search-input {
@@ -192,7 +193,7 @@ export default {
 
 @media (min-width: 768px) {
   .search-wrapper {
-    height: 52px;
+    height: 50px;
     max-width: 1000px;
   }
   
@@ -212,8 +213,8 @@ export default {
 
 @media (min-width: 1200px) {
   .search-wrapper {
-    height: 58px;
-    border-radius: 30px;
+    height: 35px;
+    border-radius: 20px;
   }
   
   .search-input {
@@ -237,9 +238,8 @@ export default {
 
 @media (min-width: 1400px) {
   .search-wrapper {
-    height: 64px;
-    border-radius: 32px;
-    max-width: 1000px;
+    height: 38px;
+    border-radius: 20px;
     margin: 0 auto;
   }
   

@@ -69,8 +69,6 @@ export default {
 </script>
 
 <style scoped>
-/* Solo los estilos personalizados que Bootstrap no cubre */
-
 
 .navbar-nav.nav-pills-custom {
   border-radius: 50px;
@@ -165,17 +163,6 @@ export default {
   transform: translateY(0) scale(0.98) !important;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* Responsive con Bootstrap breakpoints */
 @media (max-width: 576px) {
   .navbar-nav.nav-pills-custom {
@@ -199,7 +186,7 @@ export default {
   }
   
   .navbar-nav.nav-pills-custom {
-    padding: 4px 6px;
+    padding: 2px 4px;
     gap: 1px;
   }
   
@@ -218,18 +205,18 @@ export default {
 
 @media (min-width: 992px) {
   .nav-filter-btn {
-    padding: 14px 28px !important;
+    padding: 6px 40px !important;
     font-size: 16px;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.6px;
   }
   
   .navbar-nav.nav-pills-custom {
-    padding: 10px 16px;
-    gap: 6px;
+    padding: 5px 10%;
+    gap: 50px;
   }
   
   .active-indicator {
-    height: 4px;
+    height: 3px;
   }
 }
 </style>

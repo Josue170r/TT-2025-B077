@@ -93,6 +93,14 @@ export default {
 
 /* Desktop pequeño */
 @media (min-width: 1025px) and (max-width: 1440px) {
+  .search-container {
+    gap: 100px;
+  }
+  
+  .input-container {
+    margin: 0 !important;
+  }
+  
   .map-text {
     font-size: 18px;
   }
