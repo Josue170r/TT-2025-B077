@@ -191,12 +191,12 @@ public class AuthServiceImpl implements AuthService {
      */
     @Transactional
     @Override
-    public void recoverPassword(String token, RecoverPasswordRequest request) {
-        if (token == null || token.trim().isEmpty()) {
+    public void recoverPassword(RecoverPasswordRequest request) {
+        if (request.getToken() == null || request.getToken().trim().isEmpty()) {
             throw new InvalidToken("No se proporcionó el token");
         }
 
-        if (!jwtUtil.isTokenValid(token)) {
+        if (!jwtUtil.isTokenValid(request.getToken())) {
             throw new InvalidToken("El token ha expirado");
         }
 
@@ -204,7 +204,7 @@ public class AuthServiceImpl implements AuthService {
             throw new PasswordMismatchException("Las contraseñas no coinciden");
         }
 
-        String username = jwtUtil.extractUsername(token);
+        String username = jwtUtil.extractUsername(request.getToken());
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 

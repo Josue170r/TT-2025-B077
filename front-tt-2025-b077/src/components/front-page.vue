@@ -64,7 +64,7 @@ export default {
     setTimeout(() => {
       this.fading = true;
       setTimeout(() => {
-        this.$router.push('/login');
+        this.$router.push({ name: 'authLogin' });
       }, 600);
     }, 2500);
 

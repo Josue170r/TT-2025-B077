@@ -35,8 +35,15 @@ export default {
       this.updateTitle(to)
     }
   },
+  created() {
+    if (this.isLogged) {
+      this.getProfile().then((response) => {
+        this.setUser(response.data)
+      })
+    }
+  },
   methods: {
-    ...mapActions('auth', { me: 'me' }),
+    ...mapActions('auth', { getProfile: 'getProfile' }),
     ...mapMutations('auth', { setUser: 'setUser' }),
     updateTitle(route) {
       const nearest = route.matched.slice().reverse().find(r => r.meta && r.meta.title)
