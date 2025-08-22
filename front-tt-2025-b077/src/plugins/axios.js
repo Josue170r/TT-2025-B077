@@ -26,9 +26,10 @@ axios.interceptors.request.use(
   (config) => {
     const tokenAccess = store.state['auth']['tokenAccess']
     switch (config.url) {
-      case '/auth/login/':
-      case '/auth/verify-account/':
-      case '/auth/refresh/':
+      case '/auth/login':
+      case '/auth/verify-account':
+      case '/auth/refresh':
+      case '/auth/recover-password':
         return config
     }
     if (tokenAccess) {
