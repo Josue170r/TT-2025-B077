@@ -72,16 +72,16 @@ public class AuthServiceImpl implements AuthService {
             User user = userRepository.findByEmailOrUsername(loginRequest.getEmailOrUsername())
                     .orElseThrow(() -> new BadCredentialsException("Revise sus credenciales"));
 
-            if (!user.isVerified()) {
-                throw new UserNotVerified("Debe verificar su cuenta");
-            }
-
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             user.getUsername(),
                             loginRequest.getPassword()
                     )
             );
+
+            if (!user.isVerified()) {
+                throw new UserNotVerified("Debe verificar su cuenta");
+            }
 
             String accessToken = jwtUtil.generateAccessToken(user.getUsername());
             String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
