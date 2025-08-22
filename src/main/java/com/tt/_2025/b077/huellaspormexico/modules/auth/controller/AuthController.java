@@ -48,9 +48,9 @@ public class AuthController {
                 .body(ApiResponse.of(HttpStatus.OK, "Correo enviado exitosamente"));
     }
 
-    @RequestMapping(path = "/verify-account", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<?>> verifyUserAccount(@RequestParam String token) {
-        authService.verifyUserAccount(token);
+    @RequestMapping(path = "/verify-account", method = RequestMethod.POST)
+    public ResponseEntity<ApiResponse<?>> verifyUserAccount(@Valid @RequestBody VerifyAccountRequest request) {
+        authService.verifyUserAccount(request.getToken());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Usuario verificado correctamente"));
@@ -65,10 +65,8 @@ public class AuthController {
     }
 
     @RequestMapping(path = "/recover-password", method = RequestMethod.POST)
-    public ResponseEntity<ApiResponse<?>> recoverPassword(
-            @RequestParam String token,
-            @Valid @RequestBody RecoverPasswordRequest request) {
-        authService.recoverPassword(token, request);
+    public ResponseEntity<ApiResponse<?>> recoverPassword(@Valid @RequestBody RecoverPasswordRequest request) {
+        authService.recoverPassword(request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Contraseña modificada correctamente"));
