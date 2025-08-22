@@ -19,7 +19,7 @@
           </li>
           <li @click="goTo('huella')">
             <span class="menu-text d-flex align-items-center">
-                <img src="/huella.png" alt="icono huella" class="me-2" width="23" height="22" />
+                <img src="/huella.png" alt="icono huella" class="me-2" width="23" height="23" />
                 Huella de carbono por uso de la app
             </span>
             <div class="separator"></div>
@@ -40,16 +40,20 @@
 <script>
 export default {
   name: "HamburgerMenu",
+  emits: ['menu-opened', 'menu-closed'], // Declarar los eventos que emite el componente
   data() {
     return {
       isOpen: false,
     };
   },
   mounted() {
+    // Agregar listener para clicks fuera del menú
     document.addEventListener('click', this.handleClickOutside);
   },
   beforeUnmount() {
+    // Limpiar listener al destruir el componente
     document.removeEventListener('click', this.handleClickOutside);
+    // Asegurar que se remueva el blur al destruir el componente
     this.removeBlurFromSiblings();
   },
   watch: {
@@ -57,8 +61,12 @@ export default {
       // Aplicar o remover blur cuando cambie el estado del menú
       if (newVal) {
         this.applyBlurToSiblings();
+        // Emitir evento cuando se abre el menú
+        this.$emit('menu-opened');
       } else {
         this.removeBlurFromSiblings();
+        // Emitir evento cuando se cierra el menú
+        this.$emit('menu-closed');
       }
     }
   },
@@ -97,6 +105,8 @@ export default {
           child.classList.add('blur-siblings');
         }
       });
+
+      // También aplicar a elementos específicos si están en el body
       const commonSelectors = [
         'main', 'section', 'article', 'aside', 'nav:not(.hamburger-container *)',
         '.content', '.main-content', '.page-content', '.container:not(.hamburger-container *)',
@@ -113,6 +123,7 @@ export default {
       });
     },
     removeBlurFromSiblings() {
+      // Remover la clase blur-siblings de todos los elementos
       const blurredElements = document.querySelectorAll('.blur-siblings');
       blurredElements.forEach(el => {
         el.classList.remove('blur-siblings');
@@ -123,17 +134,16 @@ export default {
 </script>
 
 <style scoped>
-/* Overlay con efecto blur */
 .blur-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.09);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px); /* Safari */
-  z-index: 150; /* Debajo del menú pero encima del contenido */
+  z-index: 150; 
   cursor: pointer;
 }
 
@@ -169,9 +179,7 @@ export default {
 }
 
 .hamburger-container {
-  position: absolute;
-  top: 15px;
-  left: 15px;
+  position: relative;
   z-index: 200;
 }
 
@@ -280,9 +288,9 @@ export default {
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(27, 81, 94, 0.3),
-    rgba(27, 81, 94, 0.3),
-    rgba(27, 81, 94, 0.3),
+    rgba(27, 81, 94, 0.1) 20%,
+    rgba(27, 81, 94, 0.3) 50%,
+    rgba(27, 81, 94, 0.1) 80%,
     transparent 100%
   );
 }
@@ -320,15 +328,8 @@ export default {
   transform: translateY(-5px) scale(0.98);
 }
 
-/* ===== RESPONSIVIDAD ===== */
-
 /* Tablets (768px - 1024px) */
 @media (max-width: 1024px) and (min-width: 768px) {
-  .hamburger-container {
-    top: 20px;
-    left: 20px;
-  }
-  
   .hamburger {
     width: 32px;
     height: 24px;
@@ -347,11 +348,6 @@ export default {
 
 /* Móviles grandes (481px - 767px) */
 @media (max-width: 767px) and (min-width: 481px) {
-  .hamburger-container {
-    top: 18px;
-    left: 18px;
-  }
-  
   .hamburger {
     width: 28px;
     height: 21px;
@@ -400,20 +396,15 @@ export default {
 
 /* Orientación landscape en móviles */
 @media (max-height: 500px) and (orientation: landscape) {
-  .hamburger-container {
-    top: 10px;
-    left: 15px;
-  }
-  
   .menu {
     top: 35px;
-    max-height: calc(70vh - 50px);
+    max-height: calc(100vh - 50px);
     overflow-y: auto;
   }
   
   .menu-text {
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 10px 18px;
+    font-size: 13px;
   }
 }
 
