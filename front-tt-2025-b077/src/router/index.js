@@ -1,23 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import FrontPage from '@/components/front-page.vue'
+import authRoutes from '@/modules/auth/router/index'
 
-const routes = [
+
+let baseRoutes = [
   {
     path: '/',
-    component: () => import('@/views/portada.vue'),
+    name: 'index',
+    component: FrontPage,
   },
-  {
-    path: '/login',
-    component: () => import('@/views/login.vue')
-  },
-  {
-    path: '/crearcuenta',
-    component: () => import('@/views/registration.vue')
-  },
-  {
-    path: '/re-contrasena',
-    component: () => import('@/views/reset-password.vue')
-  }
 ]
+
+const routes = baseRoutes.concat(
+  authRoutes
+)
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
