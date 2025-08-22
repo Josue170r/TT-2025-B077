@@ -122,17 +122,17 @@
             <p>Haz clic en el botón de abajo para verificar tu cuenta:</p>
         </div>
 
-        <a th:href="${host} + '/verify?token=' + ${token}" class="verify-button">
+        <a th:href="${host} + '/auth/login?token=' + ${token}" class="verify-button">
             Verificar mi cuenta
         </a>
 
         <div class="alternative-link">
             <strong style="color: #1B515E;">¿El botón no funciona?</strong>
             <p>Copia y pega este enlace en tu navegador:</p>
-            <a th:href="${host} + '/verify?token=' + ${token}"
-               th:text="${host} + '/verify?token=' + ${token}"
+            <a th:href="${host} + '/auth/login?token=' + ${token}"
+               th:text="${host} + '/auth/login?token=' + ${token}"
                class="link-text">
-                ${host}/verify?token=token_aqui
+                ${host}/auth/login?token=token_aqui
             </a>
         </div>
     </div>

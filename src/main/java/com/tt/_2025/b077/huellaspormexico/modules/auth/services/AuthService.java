@@ -10,6 +10,6 @@ public interface AuthService {
     void resendVerificationEmail(String email);
     void verifyUserAccount(String token);
     void forgotPassword(ForgotPasswordRequest request);
-    void recoverPassword(String token, RecoverPasswordRequest request);
+    void recoverPassword(RecoverPasswordRequest request);
     void changePassword(String username, ChangePasswordRequest request);
 }

@@ -18,15 +18,15 @@
                   <hr />
                   <h6 class="sub-text mt-2 mb-5">Introduce tu nueva contraseña</h6>
 
-                  <form @submit.prevent="guardarContraseña">
+                  <form @submit.prevent="savePassword">
                     <!-- Contraseña -->
                     <div class="mb-4 position-relative">
                       <input
                         type="password"
                         id="password"
-                        v-model="password"
+                        v-model="passwordForm.password"
                         class="form-control floating-input"
-                        :class="{ 'has-content': password }"
+                        :class="{ 'has-content': passwordForm.password }"
                         @focus="setFocus('password', true)"
                         @blur="setFocus('password', false)"
                         required
@@ -34,7 +34,7 @@
                       <label
                         for="password"
                         class="floating-label position-absolute fs-6"
-                        :class="{ 'active': passwordFocused || password }"
+                        :class="{ active: passwordFocused || !!passwordForm.password }"
                       >
                         Nueva contraseña
                       </label>
@@ -44,9 +44,9 @@
                       <input
                         type="password"
                         id="confirmPassword"
-                        v-model="confirmPassword"
+                        v-model="passwordForm.confirmPassword"
                         class="form-control floating-input"
-                        :class="{ 'has-content': confirmPassword }"
+                        :class="{ 'has-content': passwordForm.confirmPassword }"
                         @focus="setFocus('confirmPassword', true)"
                         @blur="setFocus('confirmPassword', false)"
                         required
@@ -54,19 +54,19 @@
                       <label
                         for="confirmPassword"
                         class="floating-label position-absolute fs-6"
-                        :class="{ 'active': confirmPasswordFocused || confirmPassword }"
+                        :class="{ active: confirmPasswordFocused || !!passwordForm.confirmPassword }"
                       >
                         Confirma tu contraseña
                       </label>
                     </div>
                      <!-- Mensaje de error -->
                     <div v-if="errorMessage" class="alert alert-danger py-2 px-3 mb-3">
-                        {{ errorMessage }}
+                      {{ errorMessage }}
                     </div>
                     <!-- Mensaje de éxito -->
                     <div v-if="successMessage" class="alert alert-success-custom py-2 px-3 mb-3 d-flex align-items-start">
-                        <i class="fa-regular fa-circle-check check-icon me-2"></i>
-                        <span>{{ successMessage }}</span>
+                      <i class="fa-regular fa-circle-check check-icon me-2"></i>
+                      <span>{{ successMessage }}</span>
                     </div>
                     <div class="d-flex justify-content-between mt-5">
                       <button type="button" class="btn btn-outline-secondary" @click="cancelar">
@@ -88,66 +88,69 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+import { getUrlVars } from '@/utils/utils'
+import { getErrorDetails } from '@/utils/utils'
+
 export default {
   data() {
     return {
       showForm: false,
       logoUrl: '/logo-letras.png',
-      password: '',
-      confirmPassword: '',
+      passwordForm: {
+        password: '',
+        confirmPassword: '',
+        token: '',
+      },
       passwordFocused: false,
       confirmPasswordFocused: false,
       errorMessage: '',
       successMessage: ''
-    };
+    }
+  },
+  created() {
+    const token = getUrlVars('token')?.token
+    if (token !== undefined) {
+      this.passwordForm.token = token
+    }
   },
   mounted() {
     setTimeout(() => {
-      this.showForm = true;
-    }, 100);
+      this.showForm = true
+    }, 100)
   },
   methods: {
+    ...mapActions('auth', {
+      recoverPassword: 'recoverPassword',
+    }),
     setFocus(field, focused) {
-      if (field === 'password') this.passwordFocused = focused;
-      else if (field === 'confirmPassword') this.confirmPasswordFocused = focused;
+      if (field === 'password') this.passwordFocused = focused
+      else if (field === 'confirmPassword') this.confirmPasswordFocused = focused
     },
     cancelar() {
-      this.password = '';
-      this.confirmPassword = '';
-      this.passwordFocused = false;
-      this.confirmPasswordFocused = false;
-      this.errorMessage = '';
-      this.successMessage = '';
+      this.passwordFocused = false
+      this.confirmPasswordFocused = false
+      this.errorMessage = ''
+      this.successMessage = ''
+      this.$router.push({ name: 'authLogin' })
     },
-    guardarContraseña() {
-        this.errorMessage = '';
-
-        if (this.password.length < 8) {
-            this.errorMessage = 'La contraseña debe tener al menos 8 caracteres';
-            return;
-        }
-
-        if (this.password !== this.confirmPassword) {
-            this.errorMessage = 'Las contraseñas no coinciden';
-            return;
-        }
-
-        this.successMessage = 'Contraseña guardada correctamente, serás redirigido al inicio de sesión...';
-        this.password = '';
-        this.confirmPassword = '';
-        this.passwordFocused = false;
-        this.confirmPasswordFocused = false;
-
-        setTimeout(() => {
-            this.$router.push('/login');
-        }, 3000);
-        },
+    savePassword() {
+      this.recoverPassword(this.passwordForm)
+        .then((response) => {
+          this.$alert.success({
+            message: response.data.message,
+            nextRoute: 'authLogin'
+          })
+        })
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
+    }
   },
-};
+}
 </script>
 
 <style scoped>
-
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.6s ease;
 }
@@ -229,7 +232,7 @@ export default {
 }
 
 .title{
-    color: #1B515E;
+  color: #1B515E;
 }
 
 .sub-text {
@@ -260,5 +263,4 @@ hr{
   line-height: 1;
   margin-top: 2px;
 }
-
 </style>
