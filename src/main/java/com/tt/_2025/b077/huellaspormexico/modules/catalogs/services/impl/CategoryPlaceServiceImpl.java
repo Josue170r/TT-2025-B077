@@ -19,6 +19,6 @@ public class CategoryPlaceServiceImpl implements CategoryPlaceService {
 
     @Override
     public List<CategoryPlacesCatalog> findAll() {
-        return categoryRepository.findAll(Sort.by("id").ascending());
+        return categoryRepository.findAll(Sort.by("category").ascending());
     }
 }
