@@ -3,13 +3,13 @@
     <ul class="nav w-100 justify-content-around">
       <li class="nav-item">
         <router-link to="/inicio" class="nav-link" :class="{ active: isActive('/inicio') }">
-          <font-awesome-icon icon="search" class="icon icon-large" />
+          <i class="fa-solid fa-magnifying-glass icon icon-large"></i>
           <span>Buscar</span>
         </router-link>
       </li>
       <li class="nav-item">
         <router-link to="/favoritos" class="nav-link" :class="{ active: isActive('/favoritos') }">
-          <font-awesome-icon :icon="['far','heart']" class="icon icon-large" />
+          <i class="fa-regular fa-heart icon icon-large"></i>
           <span>Favoritos</span>
         </router-link>
       </li>
@@ -21,13 +21,13 @@
       </li>
       <li class="nav-item">
         <router-link to="/misviajes" class="nav-link" :class="{ active: isActive('/misviajes') }">
-          <font-awesome-icon :icon="['far','map']" class="icon icon-large" />
+          <i class="fa-regular fa-map icon icon-large"></i>
           <span>Mis viajes</span>
         </router-link>
       </li>
       <li class="nav-item">
         <router-link to="/micuenta" class="nav-link" :class="{ active: isActive('/micuenta') }">
-          <font-awesome-icon :icon="['far','circle-user']" class="icon icon-large" />
+          <i class="fa-regular fa-circle-user icon icon-large"></i>
           <span>Mi cuenta</span>
         </router-link>
       </li>
