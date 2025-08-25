@@ -1,8 +1,11 @@
-
 import { createApp } from 'vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+
+// Solid
+import { fas } from '@fortawesome/free-solid-svg-icons'
+//Regular
+import { far } from '@fortawesome/free-regular-svg-icons'
 
 import App from './App.vue'
 import router from './router'
@@ -12,8 +15,6 @@ import store from './store'
 import { vuetify, AlertPlugin } from './plugins'
 
 const app = createApp(App)
-library.add(faCircleCheck)
-app.component('FontAwesomeIcon', FontAwesomeIcon)
 
 app.use(vuetify)
 app.use(AlertPlugin)
