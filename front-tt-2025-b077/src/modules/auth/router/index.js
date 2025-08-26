@@ -4,6 +4,7 @@ import ForgotPasswordView from "../views/forgot-password.vue";
 import RecoverPasswordView from "../views/recover-password.vue";
 import HomeView from "../views/home.vue";
 import Preferences from "../views/preferences.vue";
+import UserProfile from "../views/userprofile.vue"
 
 export default [
     {
@@ -50,6 +51,15 @@ export default [
             rule: 'public',
         },
         component: Preferences,
+    },
+    {
+        path: '/micuenta',
+        name: 'myacount',
+        meta: {
+            title: 'Micuenta',
+            rule: 'public',
+        },
+        component: UserProfile,
     },
     {
         path: '/inicio',
