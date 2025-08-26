@@ -5,6 +5,7 @@ import RecoverPasswordView from "../views/recover-password.vue";
 import HomeView from "../views/home.vue";
 import Preferences from "../views/preferences.vue";
 import UserProfile from "../views/userprofile.vue"
+import ChangePassword from "../views/changepassword.vue";
 
 export default [
     {
@@ -69,5 +70,14 @@ export default [
             rule: 'public',
         },
         component: HomeView,
+    },
+    {
+        path: '/cambiarcontrasena',
+        name: 'changepassword',
+        meta: {
+            title: 'Cambia tu contraseña',
+            rule: 'public',
+        },
+        component: ChangePassword,
     },
 ]

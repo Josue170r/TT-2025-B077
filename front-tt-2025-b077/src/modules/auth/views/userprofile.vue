@@ -110,9 +110,9 @@
                     <div class="more-actions-content">
                       <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
                         <router-link 
-                          :to="{ path: '/change-password' }" 
+                          :to="{ path: '/cambiarcontrasena' }" 
                           class="btn btn-outline-primary-custom"
-                          @click.native="handleRouterLinkClick('/change-password', $event)"
+                          @click.native="handleRouterLinkClick('/cambiarcontrasena', $event)"
                         >
                           <i class="fas fa-key me-2"></i>Cambiar contraseña
                         </router-link>
