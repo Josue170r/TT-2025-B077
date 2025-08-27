@@ -6,6 +6,7 @@ import HomeView from "../views/home.vue";
 import Preferences from "../views/preferences.vue";
 import UserProfile from "../views/userprofile.vue"
 import ChangePassword from "../views/changepassword.vue";
+import Deleteaccount from "../views/deleteaccount.vue";
 
 export default [
     {
@@ -79,5 +80,14 @@ export default [
             rule: 'public',
         },
         component: ChangePassword,
+    },
+    {
+        path: '/borrarcuenta',
+        name: 'deleteaccount',
+        meta: {
+            title: 'Borrar cuenta😭',
+            rule: 'public',
+        },
+        component: Deleteaccount,
     },
 ]
