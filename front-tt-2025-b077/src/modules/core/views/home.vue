@@ -117,7 +117,7 @@ export default {
   components: { BottomNavbar, hamburgermenu, topnavbar, Inputexplore },
   data() {
     return {
-      googleApiKey: 'AIzaSyCH83WGOG-kQ9eySRXzMvhjR1fI-GpDSWM',
+      googleApiKey: '',
       places: [],
       loading: true,
       error: null,
@@ -603,7 +603,6 @@ export default {
   color: #333;
   line-height: 1.2;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -614,7 +613,6 @@ export default {
   margin-bottom: 0.75rem;
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

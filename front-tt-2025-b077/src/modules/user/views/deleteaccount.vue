@@ -124,7 +124,7 @@ export default {
     document.body.classList.add('fade-out');
         setTimeout(() => {
             if (this.$router) {
-            this.$router.push('../micuenta'); // Siempre regresa a ../micuenta
+            this.$router.push({ name: 'myaccount' });
             }
         }, 300);
     }
