@@ -3,6 +3,7 @@ package com.tt._2025.b077.huellaspormexico.controllers;
 import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.CategoryPlacesCatalog;
 import com.tt._2025.b077.huellaspormexico.modules.catalogs.repositories.CategoryPlacesRepository;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
+import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceImage;
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -61,6 +63,18 @@ public class MapController {
         return ResponseEntity.ok(placeDtos);
     }
 
+    @GetMapping("/search")
+    @ResponseBody
+    public ResponseEntity<List<PlaceDto>> searchPlaces(@RequestParam("query") String query) {
+        List<Place> places = placeRepository.findByNameOrPlaceId(query.trim());
+
+        List<PlaceDto> placeDtos = places.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(placeDtos);
+    }
+
     private List<Place> findPlacesByCategory(Long categoryId) {
         return placeRepository.findByCategoryId(categoryId);
     }
@@ -78,6 +92,7 @@ public class MapController {
                 .googleMapsUrl(place.getGoogleMapsUrl())
                 .formattedPhoneNumber(place.getFormattedPhoneNumber())
                 .placeTypes(place.getPlaceTypes())
+                .images(place.getImages())
                 .build();
     }
 
@@ -95,5 +110,6 @@ public class MapController {
         private String googleMapsUrl;
         private String formattedPhoneNumber;
         private List<String> placeTypes;
+        private List<PlaceImage> images;
     }
 }
