@@ -3,6 +3,7 @@ package com.tt._2025.b077.huellaspormexico.modules.places.services.impl;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearByPreferencesRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
+import com.tt._2025.b077.huellaspormexico.modules.places.exceptions.PlaceNotFoundException;
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRepository;
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceApiService;
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceService;
@@ -14,9 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,24 +36,30 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public Place getPlaceDetails(String placeId) {
-        return placeRepository.findByPlaceId(placeId)
-                .orElseGet(() -> {
-                    Place fetchedPlace = placeApiService.fetchPlaceDetails(placeId);
-                    return placeRepository.save(fetchedPlace);
-                });
+        Optional<Place> existingOpt = placeRepository.findByPlaceId(placeId);
+
+        try {
+            Place newPlace = placeApiService.fetchPlaceDetails(placeId);
+            existingOpt.ifPresent(existing -> newPlace.setId(existing.getId()));
+            return placeRepository.save(newPlace);
+        } catch (Exception ex) {
+            return existingOpt.orElseThrow(() ->
+                    new PlaceNotFoundException("No se pudo obtener el lugar"));
+        }
     }
 
     @Override
     public List<Long> getNearBySearchPlaces(NearBySearchRequest request) {
-        List<String> googlePlaceIds = placeApiService.fetchNearBySearchPlaces(request);
-        return getOrCreatePlacesIds(googlePlaceIds);
+        return getLongs(request);
     }
 
     @Override
     public List<Long> getNearByPreferences(String username, NearByPreferencesRequest request) {
         User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
         List<String> placeTypes = user.getPlaceTypesFromPreferences();
+
         NearBySearchRequest dto = NearBySearchRequest.builder()
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
@@ -63,8 +68,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .types(placeTypes)
                 .build();
 
-        List<String> googlePlaceIds = placeApiService.fetchNearBySearchPlaces(dto);
-        return getOrCreatePlacesIds(googlePlaceIds);
+        return getLongs(dto);
     }
 
     @Override
@@ -72,22 +76,29 @@ public class PlaceServiceImpl implements PlaceService {
         return placeRepository.findByIdIn(ids, pageable);
     }
 
-    private List<Long> getOrCreatePlacesIds(List<String> googlePlaceIds) {
-        List<Place> existingPlaces = placeRepository.findAllByPlaceIdIn(googlePlaceIds);
+    private List<Long> getLongs(NearBySearchRequest dto) {
+        List<Place> places = placeApiService.fetchNearBySearchPlaces(dto);
 
-        Map<String, Place> byPlaceId = existingPlaces.stream()
+        List<String> incomingPlaceIds = places.stream()
+                .map(Place::getPlaceId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Map<String, Place> existingByPlaceId = placeRepository.findAllByPlaceIdIn(incomingPlaceIds)
+                .stream()
                 .collect(Collectors.toMap(Place::getPlaceId, p -> p));
 
-        List<Long> result = new ArrayList<>(googlePlaceIds.size());
-
-        for (String placeId : googlePlaceIds) {
-            Place place = byPlaceId.get(placeId);
-            if (place == null) {
-                place = placeRepository.save(placeApiService.fetchPlaceDetails(placeId));
-                byPlaceId.put(placeId, place);
+        List<Long> resultIds = new ArrayList<>(places.size());
+        for (Place place : places) {
+            Place existing = existingByPlaceId.get(place.getPlaceId());
+            if (existing != null) {
+                resultIds.add(existing.getId());
+            } else {
+                Place saved = placeRepository.save(place);
+                existingByPlaceId.put(saved.getPlaceId(), saved);
+                resultIds.add(saved.getId());
             }
-            result.add(place.getId());
         }
-        return result;
+        return resultIds;
     }
 }

@@ -8,6 +8,7 @@ import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceImage;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceReview;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceTypes;
+import com.tt._2025.b077.huellaspormexico.modules.places.enums.FetchMode;
 import com.tt._2025.b077.huellaspormexico.modules.places.exceptions.PlaceNotFoundException;
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceTypesRepository;
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceApiService;
@@ -25,6 +26,7 @@ import java.util.*;
 @Slf4j
 @Service
 public class PlaceApiServiceImpl implements PlaceApiService {
+
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -50,22 +52,31 @@ public class PlaceApiServiceImpl implements PlaceApiService {
 
     @Override
     public Place fetchPlaceDetails(String placeId) {
-        Place place = fetchFromGoogle(placeId);
+        Place place = fetchFromGoogle(placeId, FetchMode.FULL);
         enrichWithTripAdvisor(place);
         return place;
     }
 
     @Override
-    public List<String> fetchNearBySearchPlaces(NearBySearchRequest request) {
-        return fetchNearBySearchPlacesGoogle(request);
+    public List<Place> fetchNearBySearchPlaces(NearBySearchRequest request) {
+        List<String> placeIds = fetchNearBySearchPlacesGoogle(request);
+        List<Place> places = new ArrayList<>();
+        for (String placeId : placeIds) {
+            try {
+                places.add(fetchFromGoogle(placeId, FetchMode.LIGHT));
+            } catch (Exception ex) {
+                log.warn("No se pudo traer el lugar {}: {}", placeId, ex.getMessage());
+            }
+        }
+        return places;
     }
 
-    private Place fetchFromGoogle(String placeId) {
+    private Place fetchFromGoogle(String placeId, FetchMode mode) {
         try {
             String url = UriComponentsBuilder
                     .fromUriString(googleBaseUrl + "/details/json")
                     .queryParam("place_id", placeId)
-                    .queryParam("fields", "name,rating,formatted_address,geometry,url,website,formatted_phone_number,types,editorial_summary,opening_hours,reviews,photos")
+                    .queryParam("fields", mode.getFields())
                     .queryParam("key", googleApiKey)
                     .queryParam("language", "es")
                     .toUriString();
@@ -84,8 +95,10 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                 mapGoogleTypesToPlaceTypes(result.get("types"), place);
             }
 
-            if (result.has("reviews")) {
-                mapJsonToReviews(result.get("reviews"), "Google").forEach(place::addReview);
+            if (mode == FetchMode.FULL) {
+                if (result.has("reviews")) {
+                    mapJsonToReviews(result.get("reviews"), "Google").forEach(place::addReview);
+                }
             }
 
             if (result.has("photos")) {

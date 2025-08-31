@@ -12,6 +12,7 @@ import java.util.Optional;
 
 public interface PlaceRepository extends JpaRepository<Place, Long> {
     Optional<Place> findByPlaceId(String placeId);
+    Optional<Place> findByName(String name);
     Page<Place> findByIdIn(List<Long> ids, Pageable pageable);
     List<Place> findAllByPlaceIdIn(List<String> placeIds);
     List<Place> findAllByIsActiveTrue();
@@ -25,4 +26,8 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
             "  WHERE c.id = :categoryId AND c.isActive = true" +
             ")")
     List<Place> findByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT p FROM Place p WHERE p.isActive = true AND " +
+            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR p.placeId = :query)")
+    List<Place> findByNameOrPlaceId(@Param("query") String query);
 }
