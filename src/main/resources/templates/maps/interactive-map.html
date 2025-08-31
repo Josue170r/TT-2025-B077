@@ -28,9 +28,11 @@
         .search-header h5 i { margin-right: 10px; color: #abcd9e; }
         .search-container { padding: 20px; }
         .search-input-group { position: relative; margin-bottom: 15px; }
-        .search-input { width: 100%; padding: 12px 16px 12px 45px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background: #f8f9fa; }
+        .search-input { width: 100%; padding: 12px 45px 12px 45px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background: #f8f9fa; }
         .search-input:focus { outline: none; border-color: #abcd9e; background: white; box-shadow: 0 0 0 3px rgba(171, 205, 158, 0.1); }
         .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #6c757d; font-size: 16px; }
+        .search-clear { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #6c757d; font-size: 14px; cursor: pointer; display: none; transition: color 0.2s; }
+        .search-clear:hover { color: #1b515e; }
         .search-results { max-height: 300px; overflow-y: auto; border-top: 1px solid #e9ecef; margin-top: 15px; padding-top: 15px; }
         .search-result-item { padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 8px; border: 1px solid #f1f3f5; }
         .search-result-item:hover { background: rgba(171, 205, 158, 0.1); border-color: #abcd9e; }
@@ -101,6 +103,8 @@
         .info-links a:hover { text-decoration: underline; }
         .info-types { display: flex; flex-wrap: wrap; gap: 4px; }
         .info-type-tag { background: #abcd9e; color: #1b515e; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 500; }
+        .gm-style .gm-style-iw-chr { height: 10px !important; padding: 0 !important; width: 40px !important; }
+        .gm-style .gm-style-iw-c { padding-top: 6px !important; padding-bottom: 6px !important; }
         @media (max-width: 768px) {
             .sidebar { position: fixed; top: auto; bottom: 0; right: 0; left: 0; width: 100%; max-height: 70vh; border-radius: 16px 16px 0 0; }
             .search-sidebar { position: fixed; top: 80px; left: 10px; right: 10px; width: auto; max-height: 50vh; }
@@ -112,7 +116,6 @@
         }
         .filter-group::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 10px; background: linear-gradient(to top, rgba(248, 249, 250, 0.8), transparent); pointer-events: none; opacity: 0; transition: opacity 0.3s; }
         .filter-grid:not(:hover)::after { opacity: 1; }
-        .gm-style .gm-style-iw-chr { padding: 0 !important; }
     </style>
 </head>
 <body>
@@ -135,6 +138,7 @@
             <div class="search-input-group">
                 <i class="fas fa-search search-icon"></i>
                 <input id="searchInput" class="search-input" type="text" placeholder="Buscar por nombre o placeId">
+                <i class="fas fa-times search-clear" id="searchClear"></i>
             </div>
             <div id="searchResults" class="search-results" style="display:none;"></div>
         </div>
@@ -241,7 +245,6 @@
         const rating = place.rating ? place.rating.toFixed(1) : 'Sin rating';
         const stars = place.rating ? '★'.repeat(Math.floor(place.rating)) + '☆'.repeat(5 - Math.floor(place.rating)) : '☆☆☆☆☆';
 
-        // Obtener la primera imagen igual que en displayPlacesList
         const firstImage = place.images && place.images.length > 0 ? place.images[0].photoUrl : null;
 
         return `
@@ -360,15 +363,31 @@
         });
 
         const searchInput = document.getElementById('searchInput');
+        const searchClear = document.getElementById('searchClear');
         let searchTimeout;
+
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const query = this.value.trim();
+
+            if (query.length > 0) {
+                searchClear.style.display = 'block';
+            } else {
+                searchClear.style.display = 'none';
+            }
+
             if (query.length >= 2) {
                 searchTimeout = setTimeout(() => { searchPlaces(query); }, 300);
             } else {
                 hideSearchResults();
             }
+        });
+
+        searchClear.addEventListener('click', function() {
+            searchInput.value = '';
+            searchClear.style.display = 'none';
+            hideSearchResults();
+            searchInput.focus();
         });
 
         document.addEventListener('click', function(e) {
@@ -383,7 +402,6 @@
         searchResults.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm" role="status"></div></div>';
         searchResults.style.display = 'block';
 
-        // Un solo endpoint para ambos tipos de búsqueda
         fetch(`/map/search?query=${encodeURIComponent(query)}`)
             .then(response => {
                 if (!response.ok) {
