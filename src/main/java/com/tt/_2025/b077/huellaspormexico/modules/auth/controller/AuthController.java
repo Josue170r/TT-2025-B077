@@ -71,5 +71,4 @@ public class AuthController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Contraseña modificada correctamente"));
     }
-
 }
