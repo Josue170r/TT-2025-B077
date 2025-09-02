@@ -3,24 +3,19 @@
     class="w-100 vh-100 position-relative bg-white overflow-hidden"
     :class="{ 'fade-out': fading }"
   >
-    <!-- Fondo -->
     <img 
       :src="windowWidth >= 992 ? '/portada2.jpg' : '/portada.jpg'" 
       alt="Portada" 
       class="portada-background"
     />
 
-    <!-- Overlay oscuro -->
     <div class="overlay"></div>
 
-    <!-- Contenido centrado -->
     <div class="content-container text-center text-white">
         
-      <!-- Slogan -->
       <h2 class="mb-3 fw-light animate-fade-up">
         Bienvenido a
       </h2>
-      <!-- Logo -->
       <div class="logo-box mb-3 animate-fade-down">
         <img 
           src="/logo-letras.png" 
@@ -30,12 +25,10 @@
         />
       </div>
 
-      <!-- Frase dinámica -->
       <p class="lead animate-fade-up delay-1">
         {{ fraseActual }}
       </p>
 
-      <!-- Indicador de scroll o decorativo -->
       <div class="scroll-indicator animate-fade-up delay-2">
         <i class="bi bi-chevron-down"></i>
       </div>
@@ -44,6 +37,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'Portada',
   data() {
@@ -58,13 +53,19 @@ export default {
       fraseActual: ''
     };
   },
+  computed: {
+    ...mapGetters('auth', { isLogged: 'isLogged' }),
+  },
   mounted() {
     this.fraseActual = this.frases[Math.floor(Math.random() * this.frases.length)];
-
     setTimeout(() => {
       this.fading = true;
       setTimeout(() => {
-        this.$router.push({ name: 'authLogin' });
+        if (this.isLogged) {
+          this.$router.push({ name: 'home' });
+        } else {
+          this.$router.push({ name: 'authLogin' });
+        }
       }, 600);
     }, 2500);
 

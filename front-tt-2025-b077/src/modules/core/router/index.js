@@ -1,4 +1,3 @@
-
 import HomeView from "../views/home.vue";
 
 export default [{
@@ -6,7 +5,7 @@ export default [{
         name: 'home',
         meta: {
             title: 'Inicio',
-            rule: 'public',
+            rule: 'auth',
         },
         component: HomeView,
     },

@@ -1,6 +1,7 @@
 import Preferences from "../views/preferences.vue";
 import UserProfile from "../views/userprofile.vue";
 import Deleteaccount from "../views/deleteaccount.vue";
+import ChangePassword from "../views/changepassword.vue";
 
 export default [
     {
@@ -8,7 +9,7 @@ export default [
         name: 'preferences',
         meta: {
             title: 'Preferencias',
-            rule: 'public',
+            rule: 'auth',
         },
         component: Preferences,
     },
@@ -16,8 +17,8 @@ export default [
         path: '/user/my-profile',
         name: 'myaccount',
         meta: {
-            title: 'Micuenta',
-            rule: 'public',
+            title: 'Mi cuenta',
+            rule: 'auth',
         },
         component: UserProfile,
     },
@@ -26,9 +27,18 @@ export default [
         path: '/user/delete-account',
         name: 'deleteaccount',
         meta: {
-            title: 'Borrar cuenta😭',
-            rule: 'public',
+            title: 'Borrar cuenta',
+            rule: 'auth',
         },
         component: Deleteaccount,
+    },
+    {
+        path: '/user/change-password',
+        name: 'changepassword',
+        meta: {
+            title: 'Cambia tu contraseña',
+            rule: 'auth',
+        },
+        component: ChangePassword,
     },
 ]

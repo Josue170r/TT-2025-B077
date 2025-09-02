@@ -2,7 +2,6 @@ import LoginView from "../views/login.vue";
 import RegistrationView from "../views/registration.vue";
 import ForgotPasswordView from "../views/forgot-password.vue";
 import RecoverPasswordView from "../views/recover-password.vue";
-import ChangePassword from "../views/changepassword.vue";
 
 export default [
     {
@@ -40,14 +39,5 @@ export default [
             rule: 'public',
         },
         component: RecoverPasswordView,
-    },
-    {
-        path: '/cambiarcontrasena',
-        name: 'changepassword',
-        meta: {
-            title: 'Cambia tu contraseña',
-            rule: 'public',
-        },
-        component: ChangePassword,
     },
 ]

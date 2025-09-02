@@ -231,7 +231,7 @@ public class AuthServiceImpl implements AuthService {
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
             userRepository.save(user);
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Revise sus credenciales");
+            throw new WrongPasswordException("Revise sus credenciales");
         }
     }
 }

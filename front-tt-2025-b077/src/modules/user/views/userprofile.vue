@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Header fijo -->
     <div class="fixed-header">
       <div class="header-content">
         <hamburgermenu @navigate="handleNavigation" />
@@ -11,28 +10,58 @@
       </div>
     </div>
 
-    <!-- Contenido principal con padding-top para compensar el header fijo -->
     <div class="main-content">
       <div class="container">
         <div class="card shadow-sm p-4">
           <div class="row">
-            <!-- Columna de información del usuario -->
-            <div class="col-12 col-md-4 col-lg-3 mb-0 mb-md-0">
+            <div class="col-12 col-md-4 col-lg-3 mb-3 mb-md-0">
               <div class="user-info-section">
                 <div class="user-profile-container">
-                  <img
-                    v-if="user.userProfile.picture"
-                    :src="user.userProfile.picture"
-                    alt="Foto de perfil"
-                    class="profile-pic rounded-circle border"
-                  />
-                  <div v-else class="profile-placeholder rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="fas fa-user profile-icon text-white"></i>
+                  <v-avatar size="180" class="rounded-circle border overflow-hidden">
+                    <v-img
+                      :src="
+                        user?.userProfile?.picture && user.userProfile.picture !== '#'
+                          ? user.userProfile.picture
+                          : undefined
+                      "
+                      cover
+                    >
+                      <template #placeholder>
+                        <div
+                          class="d-flex align-center justify-center w-100 h-100"
+                          style="background: #1b515e"
+                        >
+                          <v-icon icon="mdi-account" size="96" color="white" />
+                        </div>
+                      </template>
+                      <template #error>
+                        <div
+                          class="d-flex align-center justify-center w-100 h-100"
+                          style="background: #1b515e"
+                        >
+                          <v-icon icon="mdi-account" size="96" color="white" />
+                        </div>
+                      </template>
+                    </v-img>
+                  </v-avatar>
+
+                  <div class="mt-3">
+                    <button class="btn btn-outline-primary-custom" @click="triggerFileDialog">
+                      <i class="fas fa-image me-2"></i>Cambiar foto
+                    </button>
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept="image/*"
+                      class="d-none"
+                      @change="onFileSelected"
+                    />
                   </div>
-                  
-                  <!-- Nombre y usuario -->
+
                   <div class="user-details">
-                    <h4 class="text-primary fw-bold d-flex align-items-center justify-content-center justify-content-md-start">
+                    <h4
+                      class="text-primary fw-bold d-flex align-items-center justify-content-center justify-content-md-start"
+                    >
                       {{ user.fullName }}
                       <i v-if="user.verified" class="fas fa-check-circle ms-2 text-success"></i>
                     </h4>
@@ -43,11 +72,9 @@
                 </div>
               </div>
             </div>
-            
-            <!-- Columna de campos editables -->
+
             <div class="col-12 col-md-8 col-lg-9">
               <div class="form-content">
-                <!-- Datos editables -->
                 <div v-for="(value, key) in editableFields" :key="key" class="mb-3">
                   <label class="form-label fw-bold text-custom">
                     <i :class="icons[key]" class="me-2 icon-custom"></i>{{ labels[key] }}
@@ -70,7 +97,6 @@
                   </div>
                 </div>
 
-                <!-- Campo de correo (no editable) -->
                 <div class="mb-0">
                   <label class="form-label fw-bold text-custom">
                     <i class="fas fa-envelope me-2 icon-custom"></i>Correo Electrónico
@@ -89,50 +115,47 @@
                   </div>
                 </div>
 
-                <!-- Botones -->
                 <div class="mt-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button ref="moreActionsButton" class="btn btn-more-actions" @click="toggleMoreActions" type="button">
-                        <i class="fas fa-ellipsis-h me-2"></i>Más acciones
-                        <i :class="showMoreActions ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ms-2"></i>
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button
+                      ref="moreActionsButton"
+                      class="btn btn-more-actions"
+                      @click="toggleMoreActions"
+                      type="button"
+                    >
+                      <i class="fas fa-ellipsis-h me-2"></i>Más acciones
+                      <i
+                        :class="showMoreActions ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"
+                        class="ms-2"
+                      ></i>
                     </button>
-                    
-                    <button class="btn btn-modify" :disabled="!isModified" @click="modifyData">
-                        <i class="fas fa-save me-2"></i>Modificar
+
+                    <button class="btn btn-modify" :disabled="!isModified" @click="updateUserData">
+                      <i class="fas fa-save me-2"></i>Modificar
                     </button>
-                    </div>
-                  <!-- Botones secundarios colapsables -->
-                  <div 
+                  </div>
+                  <div
                     ref="moreActionsPanel"
                     class="more-actions-panel"
-                    :class="{ 'show': showMoreActions }"
+                    :class="{ show: showMoreActions }"
                   >
                     <div class="more-actions-content">
                       <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-                        <router-link 
-                          :to="{ path: '/cambiarcontrasena' }" 
+                        <router-link
+                          :to="{ name: 'changepassword' }"
                           class="btn btn-outline-primary-custom"
-                          @click.native="handleRouterLinkClick('/cambiarcontrasena', $event)"
                         >
                           <i class="fas fa-key me-2"></i>
-                            Cambiar contraseña
+                          Cambiar contraseña
                         </router-link>
-                        
-                        <router-link 
-                          to="/borrarcuenta" 
-                          class="btn-link-custom"
-                        >
+
+                        <router-link :to="{ name: 'deleteaccount' }" class="btn-link-custom">
                           <i class="fas fa-trash-alt me-2"></i>
                           Eliminar cuenta
                         </router-link>
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <!-- Mensajes -->
-                <div v-if="warningMessage" class="alert mt-3" :class="messageType">
-                    <i :class="messageIcon" class="me-2"></i>{{ warningMessage }}
                 </div>
               </div>
             </div>
@@ -141,10 +164,8 @@
       </div>
     </div>
 
-    <!-- Bottom Navbar -->
     <BottomNavbar @navigate="handleNavigation" />
-    
-    <!-- Modal de confirmación para cambios no guardados -->
+
     <ConfirmModal
       :show="showConfirmModal"
       @confirm="confirmNavigation"
@@ -155,36 +176,27 @@
 </template>
 
 <script>
-import BottomNavbar from "@/components/bottomnavbar.vue";
-import hamburgermenu from "@/components/hamburgermenu.vue";
-import ConfirmModal from "@/components/confirmmodal.vue";
+import { mapState, mapActions, mapMutations } from 'vuex'
+import BottomNavbar from '@/components/bottomnavbar.vue'
+import hamburgermenu from '@/components/hamburgermenu.vue'
+import ConfirmModal from '@/components/confirmmodal.vue'
+import { getErrorDetails } from '@/utils/utils'
 
 export default {
-  components: { 
-    BottomNavbar, 
+  components: {
+    BottomNavbar,
     hamburgermenu,
-    ConfirmModal 
+    ConfirmModal,
   },
   data() {
     return {
-        messageType: '',
-        messageIcon: '',
-      user: {
-        email: "mruriel982@gmail.com",
-        username: "Merle85",
-        name: "Jessika",
-        lastName: "Collins",
-        secondLastName: null,
-        phoneNumber: null,
-        userProfile: { id: 10, picture: null },
-        fullName: "Jessika Collins",
-        verified: true,
-      },
+      messageType: '',
+      messageIcon: '',
       editableFields: {
-        name: "Jessika",
-        lastName: "Collins",
-        secondLastName: "",
-        phoneNumber: "",
+        name: '',
+        lastName: '',
+        secondLastName: '',
+        phoneNumber: '',
       },
       originalFields: {},
       editing: {
@@ -193,237 +205,240 @@ export default {
         secondLastName: false,
         phoneNumber: false,
       },
-      warningMessage: "",
+      warningMessage: '',
       showConfirmModal: false,
       showMoreActions: false,
       pendingNavigation: null,
       icons: {
-        name: "fas fa-user",
-        lastName: "fas fa-id-card",
-        secondLastName: "fas fa-id-card-alt",
-        phoneNumber: "fas fa-phone",
+        name: 'fas fa-user',
+        lastName: 'fas fa-id-card',
+        secondLastName: 'fas fa-id-card-alt',
+        phoneNumber: 'fas fa-phone',
       },
       labels: {
-        name: "Nombre",
-        lastName: "Apellido Paterno",
-        secondLastName: "Apellido Materno",
-        phoneNumber: "Teléfono",
+        name: 'Nombre',
+        lastName: 'Apellido Paterno',
+        secondLastName: 'Apellido Materno',
+        phoneNumber: 'Teléfono',
       },
-    };
+    }
   },
   computed: {
+    ...mapState('auth', ['user']),
     isModified() {
-      return JSON.stringify(this.editableFields) !== JSON.stringify(this.originalFields);
+      return JSON.stringify(this.editableFields) !== JSON.stringify(this.originalFields)
     },
   },
   methods: {
-    toggleEdit(key) {
-      this.editing[key] = !this.editing[key];
+    ...mapActions('user', {
+      updateUser: 'updateUser',
+      uploadUserPicture: 'uploadUserPicture',
+    }),
+    ...mapActions('auth', {
+      getProfile: 'getProfile',
+    }),
+    ...mapMutations('auth', { setUser: 'setUser' }),
+
+    initializeEditableFields() {
+      this.editableFields = {
+        name: this.user.name || '',
+        lastName: this.user.lastName || '',
+        secondLastName: this.user.secondLastName || '',
+        phoneNumber: this.user.phoneNumber || '',
+      }
+      this.originalFields = { ...this.editableFields }
     },
-    
-    // Toggle panel de más acciones con scroll automático
+
+    toggleEdit(key) {
+      this.editing[key] = !this.editing[key]
+    },
     toggleMoreActions() {
-      this.showMoreActions = !this.showMoreActions;
-      
-      // Si se está expandiendo el panel, hacer scroll después de la animación
+      this.showMoreActions = !this.showMoreActions
       if (this.showMoreActions) {
         this.$nextTick(() => {
-          // Esperar a que termine la animación CSS (300ms) + un pequeño buffer
           setTimeout(() => {
-            this.scrollToShowPanel();
-          }, 350);
-        });
+            this.scrollToShowPanel()
+          }, 350)
+        })
       }
     },
-    
-    // Método para hacer scroll y mostrar el panel expandido
+
     scrollToShowPanel() {
       if (this.$refs.moreActionsPanel) {
-        const panel = this.$refs.moreActionsPanel;
-        const button = this.$refs.moreActionsButton;
-        
-        // Obtener la posición del panel expandido
-        const panelRect = panel.getBoundingClientRect();
-        const buttonRect = button.getBoundingClientRect();
-        
-        // Calcular el offset considerando el navbar fijo inferior (aproximadamente 80px)
-        const navbarHeight = 80;
-        const headerHeight = 80;
-        const buffer = 20; // Espacio adicional para mejor visibilidad
-        
-        // Verificar si el panel está visible completamente en el viewport
-        const viewportHeight = window.innerHeight;
-        const panelBottom = panelRect.bottom;
-        
-        // Si el panel se sale del viewport (considerando el navbar inferior)
-        if (panelBottom > (viewportHeight - navbarHeight)) {
-          // Calcular la posición de scroll necesaria
-          const scrollTarget = window.scrollY + (panelBottom - viewportHeight) + navbarHeight + buffer;
-          window.scrollTo({
-            top: scrollTarget,
-            behavior: 'smooth'
-          });
+        const panel = this.$refs.moreActionsPanel
+        const panelRect = panel.getBoundingClientRect()
+        const navbarHeight = 80
+        const buffer = 20
+        const viewportHeight = window.innerHeight
+        const panelBottom = panelRect.bottom
+        if (panelBottom > viewportHeight - navbarHeight) {
+          const scrollTarget =
+            window.scrollY + (panelBottom - viewportHeight) + navbarHeight + buffer
+          window.scrollTo({ top: scrollTarget, behavior: 'smooth' })
         }
       }
     },
-    
+
     handleInputClick(key) {
       if (!this.editing[key]) {
-        this.editing[key] = true;
+        this.editing[key] = true
         this.$nextTick(() => {
-          const inputs = document.querySelectorAll(`input[data-field="${key}"]`);
+          const inputs = document.querySelectorAll(`input[data-field="${key}"]`)
           if (inputs.length > 0) {
-            const input = inputs[0];
-            input.focus();
-            input.select();
+            const input = inputs[0]
+            input.focus()
+            input.select()
           }
-        });
+        })
       }
     },
     handleInputFocus(key) {
       if (!this.editing[key]) {
-        this.editing[key] = true;
+        this.editing[key] = true
       }
     },
     handleInputBlur(key) {
       setTimeout(() => {
-        this.editing[key] = false;
-      }, 100);
+        this.editing[key] = false
+      }, 100)
     },
-    modifyData() {
-        this.showWarning("Los datos se guardaron correctamente", 'success');
-        this.originalFields = { ...this.editableFields };
-        Object.keys(this.editing).forEach(key => {
-            this.editing[key] = false;
+
+    getModifiedFields() {
+      const modifiedFields = {}
+      Object.keys(this.editableFields).forEach((key) => {
+        if (this.editableFields[key] !== this.originalFields[key]) {
+          modifiedFields[key] = this.editableFields[key]
+        }
+      })
+      return modifiedFields
+    },
+
+    triggerFileDialog() {
+      this.$refs.fileInput.click()
+    },
+
+    onFileSelected(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      this.localPreview = URL.createObjectURL(file);
+      this.uploadingImage = true;
+
+      this.uploadUserPicture(file)
+        .then((response) => {
+          this.$alert.success(response.message);
+          this.getProfile()
+            .then((response) => {
+              this.setUser(response.data)
+            })
+        })
+        .catch((error) => {
+          this.localPreview = null;
+          this.$alert.error(getErrorDetails(error));
+        })
+        .finally(() => {
+          this.uploadingImage = false;
+          if (this.$refs.fileInput) this.$refs.fileInput.value = '';
         });
     },
-    showWarning(message, type = 'success') {
-    this.warningMessage = message;
-    
-    if (type === 'success') {
-        this.messageType = 'alert-success';
-        this.messageIcon = 'fas fa-check-circle';
-    } else if (type === 'error') {
-        this.messageType = 'alert-danger';
-        this.messageIcon = 'fas fa-times-circle';
-    }
-    
-    setTimeout(() => {
-        this.warningMessage = "";
-        this.messageType = '';
-        this.messageIcon = '';
-    }, 3000);
-    },
-    // Manejar clicks en router-links
-    handleRouterLinkClick(destination, event) {
-      // Si hay cambios sin guardar, prevenir la navegación del router-link
-      if (this.isModified) {
-        event.preventDefault();
-        this.pendingNavigation = destination;
-        this.showConfirmModal = true;
-        return false;
+
+    updateUserData() {
+      const modifiedFields = this.getModifiedFields()
+      if (Object.keys(modifiedFields).length === 0) {
+        return
       }
-      // Si no hay cambios, permitir navegación normal del router-link
-      return true;
+      this.updateUser(modifiedFields)
+        .then((response) => {
+          this.setUser(response.data)
+          this.$alert.success(response.message)
+          this.originalFields = { ...this.editableFields }
+          Object.keys(this.editing).forEach((key) => (this.editing[key] = false))
+        })
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
     },
-    
-    // Método principal para manejar navegación desde cualquier componente
+
     handleNavigation(destination, event = null) {
-      console.log('Intentando navegar a:', destination);
-      
-      // Si hay cambios sin guardar, prevenir navegación y mostrar modal
       if (this.isModified) {
-        // Prevenir navegación por defecto si viene de un evento
         if (event) {
-          event.preventDefault();
+          event.preventDefault()
         }
-        
-        this.pendingNavigation = destination;
-        this.showConfirmModal = true;
-        return false; // Detener la navegación
-      } 
-      
-      // Si no hay cambios, permitir navegación normal
-      return true;
+        this.pendingNavigation = destination
+        this.showConfirmModal = true
+        return false
+      }
+      return true
     },
-    
-    // Confirmar navegación perdiendo cambios
+
     confirmNavigation() {
-      this.showConfirmModal = false;
+      this.showConfirmModal = false
       if (this.pendingNavigation) {
-        this.executeNavigation(this.pendingNavigation);
-        this.pendingNavigation = null;
+        this.executeNavigation(this.pendingNavigation)
+        this.pendingNavigation = null
       }
     },
-    
-    // Cancelar navegación y mantener cambios
+
     cancelNavigation() {
-      this.showConfirmModal = false;
-      this.pendingNavigation = null;
+      this.showConfirmModal = false
+      this.pendingNavigation = null
     },
-    
-    // Cerrar modal haciendo click fuera
+
     closeModal() {
-      this.cancelNavigation();
+      this.cancelNavigation()
     },
-    
-    // Ejecutar la navegación real
+
     executeNavigation(destination) {
-    // Resetear campos modificados al navegar
-    this.resetFormState();
-    
-    // Navegar usando Vue Router
-    this.$router.push(destination);
+      this.resetFormState()
+      this.$router.push(destination)
     },
-    
-    // Resetear estado del formulario
+
     resetFormState() {
-      // Restaurar campos originales
-      this.editableFields = { ...this.originalFields };
-      
-      // Cerrar todos los campos de edición
-      Object.keys(this.editing).forEach(key => {
-        this.editing[key] = false;
-      });
-      
-      // Limpiar mensajes
-      this.warningMessage = "";
+      this.editableFields = { ...this.originalFields }
+      Object.keys(this.editing).forEach((key) => {
+        this.editing[key] = false
+      })
+      this.warningMessage = ''
     },
-    
-    // Manejar evento beforeunload del navegador
+
     handleBeforeUnload(e) {
       if (this.isModified) {
-        e.preventDefault();
-        e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?';
-        return e.returnValue;
+        e.preventDefault()
+        e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?'
+        return e.returnValue
       }
     },
   },
   mounted() {
-    this.originalFields = { ...this.editableFields };
+    this.initializeEditableFields()
   },
-  // Guard de navegación para Vue Router
+  watch: {
+    user: {
+      handler() {
+        this.initializeEditableFields()
+      },
+      deep: true,
+    },
+  },
   beforeRouteLeave(to, from, next) {
-    // Si hay cambios sin guardar, interceptar la navegación
     if (this.isModified) {
-      this.pendingNavigation = to.path || to;
-      this.showConfirmModal = true;
-      next(false); // Bloquear la navegación
+      this.pendingNavigation = to.path || to
+      this.showConfirmModal = true
+      next(false)
     } else {
-      next(); // Permitir la navegación
+      next()
     }
   },
   beforeUnmount() {
-    window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    window.removeEventListener('beforeunload', this.handleBeforeUnload)
   },
   created() {
-    window.addEventListener('beforeunload', this.handleBeforeUnload);
+    window.addEventListener('beforeunload', this.handleBeforeUnload)
   },
-};
+}
 </script>
 
 <style scoped>
-/* Header fijo */
 .fixed-header {
   position: fixed;
   top: 0;
@@ -450,35 +465,22 @@ export default {
 .header-title p {
   font-weight: bold;
   font-size: 1.2rem;
-  color: #1B515E;
+  color: #1b515e;
 }
 
 .header-spacer {
   width: 0px;
 }
 
-/* Contenido principal con espacio para header fijo */
 .main-content {
   margin-top: 70px;
-  padding:  0.5rem 0;
+  padding: 0.5rem 0;
   margin-bottom: 70px;
 }
 
-/* Sección de información del usuario - Responsiva */
+/* Panel izquierdo: centrado en móvil, columna con divisor en md+ */
 .user-info-section {
   text-align: center;
-  text-align: center;
-}
-
-@media (min-width: 768px) {
-  .user-info-section {
-    text-align: left;
-    padding-right: 2rem;
-    border-right: 1px solid #e9ecef;
-    position: sticky;
-    top: 100px;
-    min-height: 500px;
-  }
 }
 
 .user-profile-container {
@@ -487,83 +489,35 @@ export default {
   align-items: center;
 }
 
-@media (max-width: 767px) {
-  .user-profile-container {
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 1rem;
-  }
-}
-
-/* Foto de perfil responsiva */
-.profile-pic {
-  width: 150px;
-  height: 150px;
-  object-fit: cover;
-}
-
-.profile-placeholder {
-  width: 150px;
-  height: 150px;
-  background-color: #1B515E;
-}
-
-.profile-icon {
-  font-size: 4rem;
-}
-
-@media (max-width: 767px) {
-  .profile-pic,
-  .profile-placeholder {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .profile-icon {
-    font-size: 2rem;
-  }
-}
-
-/* Detalles del usuario */
 .user-details {
   margin-top: 1rem;
-  flex: 1;
+  text-align: center;
 }
 
-@media (max-width: 767px) {
+/* Divisor y alineaciones solo en pantallas md+ */
+@media (min-width: 768px) {
+  .user-info-section {
+    text-align: left;
+    padding-right: 2rem;
+    border-right: 1px solid #e9ecef;
+  }
+  .user-profile-container {
+    align-items: flex-start;
+  }
   .user-details {
-    margin-top: 0;
     text-align: left;
   }
-  
-  .user-details h4 {
-    justify-content: flex-start !important;
-  }
-  
-  .user-details p {
-    text-align: left !important;
-  }
-}
-
-/* Contenido del formulario */
-.form-content {
-  padding-left: 0;
-}
-
-@media (min-width: 768px) {
   .form-content {
     padding-left: 2rem;
   }
 }
 
-/* Estilos base */
 .text-custom {
-  color: #1B515E;
+  color: #1b515e;
 }
 
 .border-custom {
-  border: 2px solid #1B515E;
+  border: 2px solid #1b515e;
 }
 
 .input-readonly {
@@ -572,10 +526,9 @@ export default {
 }
 
 .icon-custom {
-  color: #ABCD9E !important;
+  color: #abcd9e !important;
 }
 
-/* Botones de edición sin bordes */
 .btn-icon-custom {
   border: none !important;
   background: transparent !important;
@@ -599,7 +552,6 @@ export default {
   padding: 0.5rem;
 }
 
-/* Botón "Más acciones" */
 .btn-more-actions {
   background-color: transparent;
   color: #6c757d;
@@ -624,7 +576,6 @@ export default {
   outline: none;
 }
 
-/* Panel colapsable de más acciones */
 .more-actions-panel {
   max-height: 0;
   overflow: hidden;
@@ -643,13 +594,12 @@ export default {
   border-top: 1px solid #e9ecef;
 }
 
-/* Animación suave para los chevrons */
 .btn-more-actions i:last-child {
   transition: transform 0.3s ease;
 }
 
 .btn-modify {
-  background-color: #1B515E;
+  background-color: #1b515e;
   color: white;
   border: none;
   padding: 0.5rem 1.25rem;
@@ -669,11 +619,10 @@ export default {
   cursor: not-allowed;
 }
 
-/* Botón de cambiar contraseña */
 .btn-outline-primary-custom {
   background-color: transparent;
-  color: #1B515E;
-  border: 2px solid #1B515E;
+  color: #1b515e;
+  border: 2px solid #1b515e;
   padding: 0.5rem 1.25rem;
   border-radius: 4px;
   font-weight: 500;
@@ -685,7 +634,7 @@ export default {
 }
 
 .btn-outline-primary-custom:hover {
-  background-color: #1B515E;
+  background-color: #1b515e;
   color: white;
   text-decoration: none;
 }
@@ -695,10 +644,9 @@ export default {
   text-decoration: none;
 }
 
-/* Botón de eliminar cuenta*/
 .btn-link-custom {
   background-color: transparent;
-  color: #ABCD9E;
+  color: #abcd9e;
   border: none;
   padding: 0.5rem 1.25rem;
   border-radius: 4px;
@@ -722,7 +670,6 @@ export default {
   outline: none;
 }
 
-/* Estilos para inputs editables */
 .input-no-border {
   border: none !important;
   border-bottom: 1px solid #e9ecef !important;
@@ -742,15 +689,14 @@ export default {
 
 .input-no-border:focus {
   border: none !important;
-  border-bottom: 2px solid #1B515E !important;
+  border-bottom: 2px solid #1b515e !important;
   box-shadow: none !important;
   outline: none;
 }
 
 .input-no-border.border-custom {
   border: none !important;
-  border-bottom: 2px solid #1B515E !important;
+  border-bottom: 2px solid #1b515e !important;
   box-shadow: none !important;
 }
-
 </style>
