@@ -114,16 +114,17 @@
                           class="btn btn-outline-primary-custom"
                           @click.native="handleRouterLinkClick('/cambiarcontrasena', $event)"
                         >
-                          <i class="fas fa-key me-2"></i>Cambiar contraseña
+                          <i class="fas fa-key me-2"></i>
+                            Cambiar contraseña
                         </router-link>
                         
-                        <a 
-                          href="#" 
+                        <router-link 
+                          to="/borrarcuenta" 
                           class="btn-link-custom"
-                          @click.prevent="handleNavigation('/delete-account')"
                         >
-                          <i class="fas fa-trash-alt me-2"></i>Eliminar cuenta
-                        </a>
+                          <i class="fas fa-trash-alt me-2"></i>
+                          Eliminar cuenta
+                        </router-link>
                       </div>
                     </div>
                   </div>

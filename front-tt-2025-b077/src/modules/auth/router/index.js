@@ -2,9 +2,6 @@ import LoginView from "../views/login.vue";
 import RegistrationView from "../views/registration.vue";
 import ForgotPasswordView from "../views/forgot-password.vue";
 import RecoverPasswordView from "../views/recover-password.vue";
-import HomeView from "../views/home.vue";
-import Preferences from "../views/preferences.vue";
-import UserProfile from "../views/userprofile.vue"
 import ChangePassword from "../views/changepassword.vue";
 
 export default [
@@ -43,33 +40,6 @@ export default [
             rule: 'public',
         },
         component: RecoverPasswordView,
-    },
-    {
-        path: '/preferencias',
-        name: 'preferences',
-        meta: {
-            title: 'Preferencias',
-            rule: 'public',
-        },
-        component: Preferences,
-    },
-    {
-        path: '/micuenta',
-        name: 'myacount',
-        meta: {
-            title: 'Micuenta',
-            rule: 'public',
-        },
-        component: UserProfile,
-    },
-    {
-        path: '/inicio',
-        name: 'home',
-        meta: {
-            title: 'Inicio',
-            rule: 'public',
-        },
-        component: HomeView,
     },
     {
         path: '/cambiarcontrasena',
