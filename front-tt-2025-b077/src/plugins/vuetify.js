@@ -3,8 +3,8 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
 import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css'
 
-import { fa } from 'vuetify/iconsets/fa'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
 const vuetify = createVuetify({
@@ -14,10 +14,9 @@ const vuetify = createVuetify({
     defaultTheme: 'light',
   },
   icons: {
-    defaultSet: 'fa',
+    defaultSet: 'mdi', // Cambiar a mdi
     aliases,
     sets: {
-      fa,
       mdi,
     },
   },

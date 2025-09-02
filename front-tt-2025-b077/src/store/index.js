@@ -1,5 +1,8 @@
 import { createStore } from 'vuex'
 import auth from '@/modules/auth/store'
+import places from '@/modules/core/store'
+import trips from '@/modules/trips/store'
+import user from '@/modules/user/store'
 
 import VuexPersistence from 'vuex-persist'
 
@@ -12,6 +15,8 @@ const vuexLocal = new VuexPersistence({
     }
     return {
       auth: state.auth,
+      places: state.places,
+      trips: state.trips,
     }
   },
 })
@@ -28,6 +33,9 @@ export default createStore({
   },
   modules: {
     auth,
+    places,
+    trips,
+    user,
   },
   plugins: [vuexLocal.plugin],
 })

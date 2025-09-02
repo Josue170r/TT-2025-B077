@@ -163,6 +163,7 @@ export default {
           this.getProfile()
             .then((response) => {
               this.setUser(response.data)
+              this.$router.push({ name: 'home' })
             })
         })
         .catch((error) => {

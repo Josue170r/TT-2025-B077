@@ -2,32 +2,52 @@
   <nav class="bottom-navbar navbar fixed-bottom bg-white border-top shadow-sm">
     <ul class="nav w-100 justify-content-around">
       <li class="nav-item">
-        <router-link to="/inicio" class="nav-link" :class="{ active: isActive('/inicio') }">
-          <font-awesome-icon icon="search" class="icon icon-large" />
+        <router-link 
+          :to="{ name: 'home' }" 
+          class="nav-link" 
+          :class="{ active: isActive('home') }"
+        >
+          <i class="fa-solid fa-magnifying-glass icon icon-large"></i>
           <span>Buscar</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link to="/favoritos" class="nav-link" :class="{ active: isActive('/favoritos') }">
-          <font-awesome-icon :icon="['far','heart']" class="icon icon-large" />
+        <router-link 
+          :to="{ name: 'favorites' }" 
+          class="nav-link" 
+          :class="{ active: isActive('favorites') }"
+        >
+          <i class="fa-regular fa-heart icon icon-large"></i>
           <span>Favoritos</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link to="/generaritinerario" class="nav-link" :class="{ active: isActive('/generaritinerario') }">
-            <img src="/iconogenerar.ico" alt="Itinerario" class="icon-img icon-large" />
-            <span>Generar</span>
+        <router-link 
+          :to="{ name: 'itinerary' }" 
+          class="nav-link" 
+          :class="{ active: isActive('itinerary') }"
+        >
+          <img src="/iconogenerar.ico" alt="Itinerario" class="icon-img icon-large" />
+          <span>Itinerarios</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link to="/misviajes" class="nav-link" :class="{ active: isActive('/misviajes') }">
-          <font-awesome-icon :icon="['far','map']" class="icon icon-large" />
+        <router-link 
+          :to="{ name: 'my-trips' }" 
+          class="nav-link" 
+          :class="{ active: isActive('my-trips') }"
+        >
+          <i class="fa-regular fa-map icon icon-large"></i>
           <span>Mis viajes</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link to="/micuenta" class="nav-link" :class="{ active: isActive('/micuenta') }">
-          <font-awesome-icon :icon="['far','circle-user']" class="icon icon-large" />
+        <router-link 
+          :to="{ name: 'myaccount' }" 
+          class="nav-link" 
+          :class="{ active: isActive('myaccount') }"
+        >
+          <i class="fa-regular fa-circle-user icon icon-large"></i>
           <span>Mi cuenta</span>
         </router-link>
       </li>
@@ -42,7 +62,7 @@ export default {
   name: "BottomNavbar",
   setup() {
     const route = useRoute();
-    const isActive = (path) => route.path === path;
+    const isActive = (path) => route.name === path;
     return { isActive };
   },
 };

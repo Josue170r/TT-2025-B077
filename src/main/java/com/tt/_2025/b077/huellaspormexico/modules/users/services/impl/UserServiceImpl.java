@@ -2,9 +2,12 @@ package com.tt._2025.b077.huellaspormexico.modules.users.services.impl;
 
 import com.tt._2025.b077.huellaspormexico.modules.users.dto.UpdateUserRequest;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
+import com.tt._2025.b077.huellaspormexico.modules.users.enums.UserRole;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
 import com.tt._2025.b077.huellaspormexico.modules.users.services.FileStorageService;
 import com.tt._2025.b077.huellaspormexico.modules.users.services.UserService;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,14 +38,23 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
+        UserRole role = (user.getUserProfile() != null && user.getUserProfile().getRole() != null)
+                ? user.getUserProfile().getRole()
+                : UserRole.USER;
+
+        List<GrantedAuthority> authorities =
+                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+
+        boolean enabled = Boolean.TRUE.equals(user.getIsActive());
+
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getUsername())
                 .password(user.getPassword())
-                .authorities(new ArrayList<>())
+                .authorities(authorities)
                 .accountExpired(false)
                 .accountLocked(false)
                 .credentialsExpired(false)
-                .disabled(false)
+                .disabled(!enabled)
                 .build();
     }
 

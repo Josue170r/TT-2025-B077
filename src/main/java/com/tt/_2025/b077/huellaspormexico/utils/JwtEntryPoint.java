@@ -31,11 +31,11 @@ public class JwtEntryPoint implements AuthenticationEntryPoint {
     ) throws IOException {
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setCharacterEncoding("UTF-8");
 
         ApiResponse<Void> apiResponse = ApiResponse.of(
-                HttpStatus.FORBIDDEN,
+                HttpStatus.UNAUTHORIZED,
                 "Acceso denegado"
         );
 

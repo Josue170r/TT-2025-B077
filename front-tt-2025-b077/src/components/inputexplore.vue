@@ -1,9 +1,6 @@
 <template>
   <div class="search-container">
-    <div class="search-wrapper" :class="{ 'focused': isFocused, 'has-value': query }">
-      <div class="search-icon-wrapper">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </div>
+    <div class="search-wrapper" :class="{ 'focused': isFocused, 'has-value': query, 'loading': isLoading }">
       <input
         type="text"
         class="search-input"
@@ -12,9 +9,33 @@
         @focus="handleFocus"
         @blur="handleBlur"
         @input="handleInput"
+        @keydown.enter="performSearch"
+        @keydown="handleKeyNavigation"
+        ref="searchInput"
       />
+      <div class="search-icon-wrapper" @click="performSearch">
+        <i v-if="!isLoading" class="fa-solid fa-magnifying-glass search-icon"></i>
+        <div v-else class="loading-spinner"></div>
+      </div>
       <div class="search-effects">
         <div class="search-glow"></div>
+      </div>
+    </div>
+    
+    <!-- Dropdown de sugerencias -->
+    <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown">
+      <div 
+        v-for="(suggestion, index) in suggestions" 
+        :key="suggestion.place_id"
+        class="suggestion-item"
+        @click="selectSuggestion(suggestion)"
+        :class="{ 'highlighted': index === selectedIndex }"
+      >
+        <i class="fa-solid fa-location-dot suggestion-icon"></i>
+        <div class="suggestion-content">
+          <div class="suggestion-main">{{ suggestion.description }}</div>
+          <div class="suggestion-secondary">{{ suggestion.structured_formatting?.secondary_text }}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -23,22 +44,244 @@
 <script>
 export default {
   name: "SearchInput",
+  props: {
+    apiKey: {
+      type: String,
+      required: true
+    },
+    placeholder: {
+      type: String,
+      default: "Explora un lugar"
+    }
+  },
   data() {
     return {
       query: "",
-      isFocused: false
+      isFocused: false,
+      isLoading: false,
+      suggestions: [],
+      showSuggestions: false,
+      selectedIndex: -1,
+      debounceTimer: null,
+      autocompleteService: null,
+      placesService: null,
+      googleMapsLoaded: false
     };
   },
+  async mounted() {
+    await this.loadGoogleMaps();
+  },
+  beforeUnmount() {
+    clearTimeout(this.debounceTimer);
+  },
   methods: {
+    async loadGoogleMaps() {
+      try {
+        // Verificar si ya está cargado
+        if (window.google && window.google.maps) {
+          this.initializeServices();
+          return;
+        }
+
+        // Cargar la API de Google Maps
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&libraries=places&language=es&region=MX`;
+        script.async = true;
+        script.defer = true;
+        
+        script.onload = () => {
+          this.initializeServices();
+        };
+        
+        script.onerror = () => {
+          console.error('Error al cargar Google Maps API');
+          this.$emit('search-error', new Error('Error al cargar Google Maps API'));
+        };
+        
+        document.head.appendChild(script);
+      } catch (error) {
+        console.error('Error al inicializar Google Maps:', error);
+        this.$emit('search-error', error);
+      }
+    },
+    
+    initializeServices() {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        this.autocompleteService = new window.google.maps.places.AutocompleteService();
+        
+        // Crear un div temporal para el PlacesService
+        const tempDiv = document.createElement('div');
+        this.placesService = new window.google.maps.places.PlacesService(tempDiv);
+        
+        this.googleMapsLoaded = true;
+        console.log('Google Maps API cargada correctamente');
+      }
+    },
+    
     handleFocus() {
       this.isFocused = true;
+      if (this.suggestions.length > 0) {
+        this.showSuggestions = true;
+      }
     },
+    
     handleBlur() {
-      this.isFocused = false;
+      // Delay para permitir clicks en sugerencias
+      setTimeout(() => {
+        this.isFocused = false;
+        this.showSuggestions = false;
+        this.selectedIndex = -1;
+      }, 200);
     },
+    
     handleInput() {
       // Emite el valor para que el componente padre pueda usarlo
       this.$emit('search-input', this.query);
+      
+      // Debounce para no hacer demasiadas llamadas a la API
+      clearTimeout(this.debounceTimer);
+      
+      if (this.query.trim().length < 2) {
+        this.suggestions = [];
+        this.showSuggestions = false;
+        return;
+      }
+      
+      this.debounceTimer = setTimeout(() => {
+        this.fetchSuggestions();
+      }, 300);
+    },
+    
+    fetchSuggestions() {
+      if (!this.query.trim() || !this.googleMapsLoaded || !this.autocompleteService) {
+        return;
+      }
+      
+      this.isLoading = true;
+      
+      const request = {
+        input: this.query,
+        componentRestrictions: { country: 'mx' },
+        language: 'es'
+      };
+      
+      this.autocompleteService.getPlacePredictions(request, (predictions, status) => {
+        this.isLoading = false;
+        
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+          this.suggestions = predictions;
+          this.showSuggestions = true;
+        } else {
+          this.suggestions = [];
+          this.showSuggestions = false;
+          
+          if (status !== window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+            console.error('Error en AutocompleteService:', status);
+          }
+        }
+      });
+    },
+    
+    async performSearch() {
+      if (!this.query.trim()) return;
+      
+      this.isLoading = true;
+      this.showSuggestions = false;
+      
+      try {
+        // Si hay una sugerencia seleccionada, usar esa
+        if (this.selectedIndex >= 0 && this.suggestions[this.selectedIndex]) {
+          const selectedPlace = this.suggestions[this.selectedIndex];
+          await this.getPlaceDetails(selectedPlace.place_id);
+        } else if (this.suggestions.length > 0) {
+          // Si no hay selección pero hay sugerencias, tomar la primera
+          await this.getPlaceDetails(this.suggestions[0].place_id);
+        } else {
+          // Buscar usando el texto directamente
+          await this.searchByText();
+        }
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    
+    async getPlaceDetails(placeId) {
+      if (!this.placesService || !this.googleMapsLoaded) {
+        this.$emit('search-error', new Error('Google Maps no está disponible'));
+        return;
+      }
+      
+      const request = {
+        placeId: placeId,
+        fields: ['name', 'geometry', 'formatted_address', 'photos', 'rating', 'user_ratings_total', 'types']
+      };
+      
+      this.placesService.getDetails(request, (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+          this.$emit('place-selected', {
+            place: place,
+            query: this.query
+          });
+        } else {
+          console.error('Error al obtener detalles del lugar:', status);
+          this.$emit('search-error', new Error('No se pudo obtener información del lugar'));
+        }
+      });
+    },
+    
+    async searchByText() {
+      if (!this.placesService || !this.googleMapsLoaded) {
+        this.$emit('search-error', new Error('Google Maps no está disponible'));
+        return;
+      }
+      
+      const request = {
+        query: this.query,
+        language: 'es'
+      };
+      
+      this.placesService.textSearch(request, (results, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+          this.$emit('place-selected', {
+            place: results[0],
+            query: this.query
+          });
+        } else {
+          console.error('Error en la búsqueda de texto:', status);
+          this.$emit('search-error', new Error('No se encontraron resultados'));
+        }
+      });
+    },
+    
+    selectSuggestion(suggestion) {
+      this.query = suggestion.description;
+      this.showSuggestions = false;
+      this.selectedIndex = -1;
+      this.getPlaceDetails(suggestion.place_id);
+    },
+    
+    handleKeyNavigation(event) {
+      if (!this.showSuggestions || this.suggestions.length === 0) return;
+      
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          this.selectedIndex = Math.min(this.selectedIndex + 1, this.suggestions.length - 1);
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
+          break;
+        case 'Enter':
+          event.preventDefault();
+          this.performSearch();
+          break;
+        case 'Escape':
+          this.showSuggestions = false;
+          this.selectedIndex = -1;
+          this.$refs.searchInput.blur();
+          break;
+      }
     }
   }
 };
@@ -50,6 +293,7 @@ export default {
   max-width: 100%;
   margin: 0;
   padding: 0;
+  position: relative;
 }
 
 .search-wrapper {
@@ -81,13 +325,22 @@ export default {
   background: rgba(255, 255, 255, 0.95);
 }
 
+.search-wrapper.loading {
+  border-color: rgba(171, 205, 158, 0.6);
+}
+
 .search-icon-wrapper {
   position: absolute;
-  left: 15px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
+  cursor: pointer;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.search-icon-wrapper:hover {
+  transform: translateY(-50%) scale(1.1);
 }
 
 .search-icon {
@@ -98,7 +351,7 @@ export default {
 }
 
 .search-wrapper.focused .search-icon {
-  color: #ABCD9E;
+  color: #1B515E;
   opacity: 1;
   transform: scale(1.1);
 }
@@ -109,7 +362,7 @@ export default {
   border: none;
   outline: none;
   background: transparent;
-  padding: 0 50px 0 45px;
+  padding: 0 50px 0 20px;
   font-size: 14px;
   font-weight: 500;
   color: #1B515E;
@@ -170,6 +423,95 @@ export default {
   }
 }
 
+/* Spinner de carga */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(27, 81, 94, 0.3);
+  border-top: 2px solid #1B515E;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dropdown de sugerencias */
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(27, 81, 94, 0.15);
+  border: 1px solid rgba(171, 205, 158, 0.2);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 5px;
+  backdrop-filter: blur(10px);
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(171, 205, 158, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.suggestion-item:hover,
+.suggestion-item.highlighted {
+  background: rgba(171, 205, 158, 0.1);
+  transform: translateX(4px);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 15px 15px;
+}
+
+.suggestion-item:first-child {
+  border-radius: 15px 15px 0 0;
+}
+
+.suggestion-icon {
+  color: #1B515E;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.suggestion-content {
+  flex: 1;
+}
+
+.suggestion-main {
+  font-weight: 500;
+  color: #1B515E;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.suggestion-secondary {
+  font-size: 12px;
+  color: rgba(27, 81, 94, 0.6);
+}
+
+/* Ocultar scrollbar completamente */
+.suggestions-dropdown {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge */
+}
+
+.suggestions-dropdown::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 /* Responsive */
 @media (max-width: 576px) {
   .search-wrapper {
@@ -179,11 +521,11 @@ export default {
   
   .search-input {
     font-size: 13px;
-    padding: 0 40px 0 40px;
+    padding: 0 40px 0 15px;
   }
   
   .search-icon-wrapper {
-    left: 12px;
+    right: 12px;
   }
   
   .search-icon {
@@ -199,11 +541,11 @@ export default {
   
   .search-input {
     font-size: 16px;
-    padding: 0 60px 0 55px;
+    padding: 0 60px 0 25px;
   }
   
   .search-icon-wrapper {
-    left: 20px;
+    right: 20px;
   }
   
   .search-icon {
@@ -219,12 +561,12 @@ export default {
   
   .search-input {
     font-size: 18px;
-    padding: 0 65px 0 60px;
+    padding: 0 65px 0 30px;
     letter-spacing: 0.4px;
   }
   
   .search-icon-wrapper {
-    left: 22px;
+    right: 22px;
   }
   
   .search-icon {
@@ -245,12 +587,12 @@ export default {
   
   .search-input {
     font-size: 20px;
-    padding: 0 70px 0 65px;
+    padding: 0 70px 0 35px;
     letter-spacing: 0.5px;
   }
   
   .search-icon-wrapper {
-    left: 25px;
+    right: 25px;
   }
   
   .search-icon {

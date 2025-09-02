@@ -27,7 +27,7 @@
       <v-btn
         variant="text"
         @click="close"
-        icon="fas fa-times"
+        icon="mdi-close"
         size="small"
         color="white"
       />
@@ -53,7 +53,7 @@ export default {
       return this.customTitle || (this.type === 'success' ? 'Éxito' : 'Error')
     },
     icon() {
-      return this.type === 'success' ? 'fas fa-check-circle' : 'fas fa-times-circle'
+      return this.type === 'success' ? 'mdi-check-circle' : 'mdi-close-circle'
     },
     alertColor() {
       return this.type === 'success' ? '#388e3c' : '#d32f2f'
