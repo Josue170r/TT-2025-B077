@@ -101,33 +101,28 @@ public class AuthServiceImpl implements AuthService {
     public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        try {
-            if (!jwtUtil.isTokenValid(refreshToken)) {
-                throw new InvalidToken("Refresh token inválido o expirado");
-            }
-
-            String username = jwtUtil.extractUsername(refreshToken);
-            String tokenType = jwtUtil.extractTokenType(refreshToken);
-
-            if (!"refresh".equals(tokenType)) {
-                throw new InvalidToken("Token no es de tipo refresh");
-            }
-
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-
-            if (!jwtUtil.validateRefreshToken(refreshToken, user.getUsername())) {
-                throw new InvalidToken("Refresh token inválido");
-            }
-
-            String newAccessToken = jwtUtil.generateAccessToken(user.getUsername());
-            RefreshTokenResponse response = new RefreshTokenResponse();
-            response.setAccessToken(newAccessToken);
-            return response;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error al renovar token: " + e.getMessage());
+        if (!jwtUtil.isTokenValid(refreshToken)) {
+            throw new InvalidToken("Refresh token inválido o expirado");
         }
+
+        String username = jwtUtil.extractUsername(refreshToken);
+        String tokenType = jwtUtil.extractTokenType(refreshToken);
+
+        if (!"refresh".equals(tokenType)) {
+            throw new InvalidToken("Token no es de tipo refresh");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        if (!jwtUtil.validateRefreshToken(refreshToken, user.getUsername())) {
+            throw new InvalidToken("Refresh token inválido");
+        }
+
+        String newAccessToken = jwtUtil.generateAccessToken(user.getUsername());
+        RefreshTokenResponse response = new RefreshTokenResponse();
+        response.setAccessToken(newAccessToken);
+        return response;
     }
 
     /**
