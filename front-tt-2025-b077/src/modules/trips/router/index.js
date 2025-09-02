@@ -9,7 +9,7 @@ export default [
         name: 'favorites',
         meta: {
             title: 'Favoritos',
-            rule: 'public',
+            rule: 'auth',
         },
         component: Favorites,
     },
@@ -18,7 +18,7 @@ export default [
         name: 'itinerary',
         meta: {
             title: 'Mis itinerarios',
-            rule: 'public',
+            rule: 'auth',
         },
         component: Itinerary,
     },
@@ -28,7 +28,7 @@ export default [
         name: 'my-trips',
         meta: {
             title: 'Mis viajes',
-            rule: 'public',
+            rule: 'auth',
         },
         component: Mytrips,
     },
