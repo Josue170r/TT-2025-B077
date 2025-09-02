@@ -30,6 +30,7 @@ axios.interceptors.request.use(
       case '/auth/verify-account':
       case '/auth/refresh':
       case '/auth/recover-password':
+      case '/auth/change-password':
         return config
     }
     if (tokenAccess) {
