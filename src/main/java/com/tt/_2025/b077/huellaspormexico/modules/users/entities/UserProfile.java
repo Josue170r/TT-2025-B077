@@ -1,6 +1,7 @@
 package com.tt._2025.b077.huellaspormexico.modules.users.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tt._2025.b077.huellaspormexico.modules.users.enums.UserRole;
 import com.tt._2025.b077.huellaspormexico.utils.BaseModel;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,9 +28,20 @@ public class UserProfile extends BaseModel {
     @Column(length = 500)
     private String picture;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    @JsonIgnore
+    @Builder.Default
+    private UserRole role = UserRole.USER;
+
     @Override
     @JsonIgnore
     public Boolean getIsActive() {
         return super.getIsActive();
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (role == null) role = UserRole.USER;
     }
 }

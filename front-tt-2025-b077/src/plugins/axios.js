@@ -53,8 +53,8 @@ axios.interceptors.response.use(
 
     if (
       response &&
-      response.status === 403 &&
-      originalRequest.url === `/auth/refresh/`
+      response.status === 401 &&
+      originalRequest.url === `/auth/refresh`
     ) {
       store.commit('auth/clearTokens')
       isAlreadyFetchingAccessToken = false
@@ -66,8 +66,8 @@ axios.interceptors.response.use(
       return Promise.reject(error)
     } else if (
       response &&
-      response.status === 403 &&
-      config.url !== '/auth/token/'
+      response.status === 401 &&
+      config.url !== '/auth/login'
     ) {
       if (!isAlreadyFetchingAccessToken) {
         isAlreadyFetchingAccessToken = true
