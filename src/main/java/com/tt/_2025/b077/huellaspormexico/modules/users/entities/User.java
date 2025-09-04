@@ -43,16 +43,20 @@ public class User extends BaseModel {
     private String username;
 
     @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 50)
+    @Size(max = 50, message = "El nombre no puede tener más de 50 caracteres")
+    @Pattern(regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$", message = "El nombre solo puede contener letras")
     @Column(nullable = false, length = 50)
     private String name;
 
     @NotBlank(message = "El primer apellido es obligatorio")
-    @Size(max = 50)
+    @Size(max = 50, message = "El primer apellido no puede tener más de 50 caracteres")
+    @Pattern(regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$", message = "Solo puede contener letras")
     @Column(nullable = false, length = 50)
     private String lastName;
 
-    @Size(max = 50)
+    @Size(max = 50, message = "El segundo apellido no puede tener más de 50 caracteres")
+    @Pattern(regexp = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]*$", message = "Solo puede contener letras")
+    @Column(length = 50)
     private String secondLastName;
 
     @Pattern(regexp = "^\\d{10}$", message = "El número de teléfono debe tener 10 dígitos")
