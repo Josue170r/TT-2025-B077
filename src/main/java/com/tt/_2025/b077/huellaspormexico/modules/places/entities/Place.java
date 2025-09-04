@@ -2,10 +2,7 @@ package com.tt._2025.b077.huellaspormexico.modules.places.entities;
 
 import com.tt._2025.b077.huellaspormexico.utils.BaseModel;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -34,8 +31,8 @@ public class Place extends BaseModel {
     @Column(name = "name", nullable = false, length = 500)
     private String name;
 
-    @Column(name = "rating", precision = 3, scale = 2)
-    private BigDecimal rating;
+    @Column(name = "rating", precision = 3, scale = 2, nullable = false)
+    private BigDecimal rating = BigDecimal.ZERO;
 
     @Column(name = "place_id", unique = true, length = 200)
     private String placeId;
@@ -78,6 +75,12 @@ public class Place extends BaseModel {
             inverseJoinColumns = @JoinColumn(name = "place_type_id")
     )
     private List<PlaceTypes> placeTypes;
+
+    @PrePersist
+    @PreUpdate
+    private void ensureRating() {
+        if (rating == null) rating = BigDecimal.ZERO;
+    }
 
     public void setReviews(List<PlaceReview> reviews) {
         this.reviews = new ArrayList<>();
