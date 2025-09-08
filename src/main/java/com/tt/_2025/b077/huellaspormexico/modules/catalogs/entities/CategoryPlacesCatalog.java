@@ -31,6 +31,9 @@ public class CategoryPlacesCatalog extends BaseModel {
     @Column(name = "category", unique = true, nullable = false, length = 150)
     private String category;
 
+    @Column(length = 1000)
+    private String picture;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "category_place_types",
