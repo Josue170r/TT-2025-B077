@@ -53,24 +53,15 @@ public class PlaceApiServiceImpl implements PlaceApiService {
     }
 
     @Override
-    public Place fetchPlaceDetails(String placeId) {
-        Place place = fetchFromGoogle(placeId, FetchMode.FULL);
+    public Place fetchPlaceDetails(String placeId, FetchMode mode) {
+        Place place = fetchFromGoogle(placeId, mode);
         enrichWithTripAdvisor(place);
         return place;
     }
 
     @Override
-    public List<Place> fetchNearBySearchPlaces(NearBySearchRequest request) {
-        List<String> placeIds = fetchNearBySearchPlacesGoogle(request);
-        List<Place> places = new ArrayList<>();
-        for (String placeId : placeIds) {
-            try {
-                places.add(fetchFromGoogle(placeId, FetchMode.LIGHT));
-            } catch (Exception ex) {
-                log.warn("No se pudo traer el lugar {}: {}", placeId, ex.getMessage());
-            }
-        }
-        return places;
+    public List<String> fetchNearBySearchPlaces(NearBySearchRequest request) {
+        return fetchNearBySearchPlacesGoogle(request);
     }
 
     @Override
