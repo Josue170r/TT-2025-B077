@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameRequest;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameResponse;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceImage;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceReview;
@@ -69,6 +71,50 @@ public class PlaceApiServiceImpl implements PlaceApiService {
             }
         }
         return places;
+    }
+
+    @Override
+    public List<SearchByNameResponse> searchPlacesByName(SearchByNameRequest request) {
+        List<SearchByNameResponse> suggestions = new ArrayList<>();
+
+        try {
+            String url = UriComponentsBuilder
+                    .fromUriString(googleBaseUrl + "/autocomplete/json")
+                    .queryParam("input", request.getInput())
+                    .queryParam("language", request.getLanguage())
+                    .queryParam("components", "country:" + request.getCountry())
+                    .queryParam("key", googleApiKey)
+                    .toUriString();
+
+            log.debug("Calling Google Autocomplete API for place search: {}", url);
+
+            String response = restTemplate.getForObject(url, String.class);
+            JsonNode rootNode = objectMapper.readTree(response);
+
+            String status = rootNode.get("status").asText();
+
+            if (!"OK".equals(status)) {
+                if ("ZERO_RESULTS".equals(status)) {
+                    return suggestions;
+                }
+                throw new RuntimeException("Error en Google Places API: " + status);
+            }
+
+            JsonNode predictions = rootNode.get("predictions");
+            if (predictions != null && predictions.isArray()) {
+                for (JsonNode prediction : predictions) {
+                    SearchByNameResponse suggestion = mapJsonToSearchByNameResponse(prediction);
+                    if (suggestion != null) {
+                        suggestions.add(suggestion);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error buscando lugares por nombre: {}", e.getMessage(), e);
+            throw new PlaceNotFoundException("Error al buscar lugares por nombre");
+        }
+
+        return suggestions;
     }
 
     private Place fetchFromGoogle(String placeId, FetchMode mode) {
@@ -159,24 +205,6 @@ public class PlaceApiServiceImpl implements PlaceApiService {
             }
         }
         return placeIds;
-    }
-
-    private void mapGoogleTypesToPlaceTypes(JsonNode typesNode, Place place) {
-        if (typesNode == null || !typesNode.isArray()) return;
-
-        List<PlaceTypes> placeTypes = new ArrayList<>();
-
-        for (JsonNode typeNode : typesNode) {
-            String googleType = typeNode.asText();
-
-            Optional<PlaceTypes> placeTypeOpt = placeTypesRepository.findByType(googleType);
-
-            if (placeTypeOpt.isPresent()) {
-                placeTypes.add(placeTypeOpt.get());
-                log.debug("Found PlaceType in DB: {}", googleType);
-            }
-        }
-        place.setPlaceTypes(placeTypes);
     }
 
     private void enrichWithTripAdvisor(Place place) {
@@ -380,6 +408,60 @@ public class PlaceApiServiceImpl implements PlaceApiService {
             }
         }
         return images;
+    }
+
+    private void mapGoogleTypesToPlaceTypes(JsonNode typesNode, Place place) {
+        if (typesNode == null || !typesNode.isArray()) return;
+
+        List<PlaceTypes> placeTypes = new ArrayList<>();
+
+        for (JsonNode typeNode : typesNode) {
+            String googleType = typeNode.asText();
+
+            Optional<PlaceTypes> placeTypeOpt = placeTypesRepository.findByType(googleType);
+
+            if (placeTypeOpt.isPresent()) {
+                placeTypes.add(placeTypeOpt.get());
+                log.debug("Found PlaceType in DB: {}", googleType);
+            }
+        }
+        place.setPlaceTypes(placeTypes);
+    }
+
+    private SearchByNameResponse mapJsonToSearchByNameResponse(JsonNode prediction) {
+        try {
+            String placeId = getTextValue(prediction, "place_id");
+            String description = getTextValue(prediction, "description");
+
+            if (placeId == null || description == null) {
+                return null;
+            }
+
+            SearchByNameResponse suggestion = SearchByNameResponse.builder()
+                    .placeId(placeId)
+                    .description(description)
+                    .build();
+
+            JsonNode structuredFormatting = prediction.get("structured_formatting");
+            if (structuredFormatting != null) {
+                suggestion.setMainText(getTextValue(structuredFormatting, "main_text"));
+                suggestion.setSecondaryText(getTextValue(structuredFormatting, "secondary_text"));
+            }
+
+            JsonNode types = prediction.get("types");
+            if (types != null && types.isArray()) {
+                List<String> typesList = new ArrayList<>();
+                for (JsonNode type : types) {
+                    typesList.add(type.asText());
+                }
+                suggestion.setTypes(typesList);
+            }
+
+            return suggestion;
+
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private double calculateSimilarity(String s1, String s2) {
