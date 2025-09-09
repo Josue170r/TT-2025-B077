@@ -1,64 +1,44 @@
 <template>
   <div class="hamburger-container">
-    <v-overlay 
-      v-model="isOpen" 
-      class="custom-blur-overlay"
-      contained
-      persistent
-      @click="closeMenu"
-    ></v-overlay>
+    <transition name="blur-fade">
+      <div v-if="isOpen" class="blur-overlay" @click="closeMenu"></div>
+    </transition>
 
-    <v-menu v-model="isOpen" offset-y location="bottom start" :close-on-content-click="false" nudge-bottom="8" nudge-right="0">
-      <template v-slot:activator="{}">
-        <button class="hamburger" :class="{ 'active': isOpen }" @click="toggleMenu">
-          <span class="line"></span>
-          <span class="line"></span>
-          <span class="line"></span>
-        </button>
-      </template>
+    <button class="hamburger" @click="toggleMenu" :class="{ 'active': isOpen }">
+      <span class="line"></span>
+      <span class="line"></span>
+      <span class="line"></span>
+    </button>
 
-      <v-card class="menu-card" elevation="8" rounded="lg">
-        <v-list nav>
-          <v-list-item @click="goTo('preferences')" class="menu-item">
-            <template v-slot:prepend>
-              <v-icon class="menu-icon">mdi-autorenew</v-icon>
-            </template>
-            <v-list-item-title class="menu-text">Modificar mis preferencias</v-list-item-title>
-          </v-list-item>
-
-          <v-divider class="menu-divider"></v-divider>
-
-          <v-list-item @click="goTo('footprint')" class="menu-item">
-            <template v-slot:prepend>
-              <img src="/huella.png" alt="icono huella" class="menu-image" width="20" height="20" />
-            </template>
-            <v-list-item-title class="menu-text">Huella de carbono por uso de la app</v-list-item-title>
-          </v-list-item>
-
-          <v-divider class="menu-divider"></v-divider>
-
-          <v-list-item @click="goTo('help')" class="menu-item">
-            <template v-slot:prepend>
-              <v-icon class="menu-icon">mdi-headset</v-icon>
-            </template>
-            <v-list-item-title class="menu-text">Centro de ayuda</v-list-item-title>
-          </v-list-item>
-
-          <v-divider class="menu-divider"></v-divider>
-
-          <v-list-item @click="handleLogout" class="menu-item last-item">
-            <template v-slot:prepend>
-              <v-icon class="menu-icon">mdi-logout</v-icon>
-            </template>
-            <v-list-item-title class="menu-text">Cerrar sesión</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-menu>
+    <transition name="fade">
+      <div v-if="isOpen" class="menu">
+        <ul>
+          <li @click="goTo('preferencias')">
+            <span class="menu-text"><i class="fa-solid fa-arrows-rotate me-3"></i>Modificar mis preferencias</span>
+            <div class="separator"></div>
+          </li>
+          <li @click="goTo('huella')">
+            <span class="menu-text d-flex align-items-center">
+                <img src="/huella.png" alt="icono huella" class="me-2" width="23" height="23" />
+                Huella de carbono por uso de la app
+            </span>
+            <div class="separator"></div>
+          </li>
+          <li @click="goTo('ayuda')">
+            <span class="menu-text"><i class="fa-solid fa-headset me-3"></i>Centro de ayuda</span>
+            <div class="separator"></div>
+          </li>
+          <li @click="handleLogout" class="last-item">
+            <span class="menu-text"><i class="fa-solid fa-right-from-bracket me-3"></i>Cerrar sesión</span>
+          </li>
+        </ul>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
+
 import { mapActions } from 'vuex'
 
 export default {
@@ -70,41 +50,45 @@ export default {
     };
   },
   mounted() {
+    // Agregar listener para clicks fuera del menú
     document.addEventListener('click', this.handleClickOutside);
   },
   beforeUnmount() {
+    // Limpiar listener al destruir el componente
     document.removeEventListener('click', this.handleClickOutside);
+    // Asegurar que se remueva el blur al destruir el componente
     this.removeBlurFromSiblings();
   },
   watch: {
     isOpen(newVal) {
+      // Aplicar o remover blur cuando cambie el estado del menú
       if (newVal) {
         this.applyBlurToSiblings();
+        // Emitir evento cuando se abre el menú
         this.$emit('menu-opened');
       } else {
         this.removeBlurFromSiblings();
+        // Emitir evento cuando se cierra el menú
         this.$emit('menu-closed');
       }
     }
   },
   methods: {
     ...mapActions('auth', ['logout']),
-    
     toggleMenu() {
       this.isOpen = !this.isOpen;
     },
+    
     goTo(option) {
       console.log("Go to:", option);
-      this.isOpen = false;
     },
-    handleLogout() {
-      this.logout();
-      this.isOpen = false;
-    },
+
     closeMenu() {
       this.isOpen = false;
     },
+
     handleClickOutside(event) {
+      // Verificar si el click fue fuera del contenedor del menú
       const menuContainer = this.$el;
       const blurOverlay = document.querySelector('.blur-overlay');
       
@@ -113,74 +97,69 @@ export default {
       }
     },
     applyBlurToSiblings() {
-      return;
+      // Encontrar el contenedor padre del menú hamburguesa
+      const parent = this.$el.parentElement;
+      if (!parent) return;
+
+      // Aplicar blur a todos los elementos hermanos del contenedor
+      Array.from(parent.children).forEach(child => {
+        if (child !== this.$el && !child.classList.contains('blur-overlay')) {
+          child.classList.add('blur-siblings');
+        }
+      });
+
+      // También aplicar a elementos específicos si están en el body
+      const commonSelectors = [
+        'main', 'section', 'article', 'aside', 'nav:not(.hamburger-container *)',
+        '.content', '.main-content', '.page-content', '.container:not(.hamburger-container *)',
+        'header:not(.hamburger-container *)', 'footer'
+      ];
+
+      commonSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+          if (!this.$el.contains(el) && !el.contains(this.$el)) {
+            el.classList.add('blur-siblings');
+          }
+        });
+      });
     },
     removeBlurFromSiblings() {
-      const appElement = document.querySelector('#app');
-      if (appElement) {
-        appElement.classList.remove('blur-siblings');
-      }
-      
       const blurredElements = document.querySelectorAll('.blur-siblings');
       blurredElements.forEach(el => {
         el.classList.remove('blur-siblings');
       });
+    },
+    async handleLogout() {
+      try {
+        await this.logout();
+        this.isOpen = false;
+        this.$router.push('/auth/login'); // Redirigir a la página de login
+      } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+      }
     },
   },
 };
 </script>
 
 <style scoped>
-.custom-blur-overlay {
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  z-index: 3100 !important;
-}
-
-.hamburger-container {
-  position: relative;
-  z-index: 3200;
-}
-
-.hamburger {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 30px;
-  height: 22px;
-  background: none;
-  border: none;
+.blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px); /* Safari */
+  z-index: 150; 
   cursor: pointer;
-  padding: 0;
-  transition: transform 0.3s ease;
+}
+
+.hamburger-container .hamburger {
   position: relative;
-  z-index: 3200;
-}
-
-.hamburger:hover {
-  transform: scale(1.1);
-}
-
-.hamburger.active .line:nth-child(1) {
-  transform: rotate(45deg) translate(6px, 6px);
-}
-
-.hamburger.active .line:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger.active .line:nth-child(3) {
-  transform: rotate(-45deg) translate(6px, -6px);
-}
-
-.line {
-  width: 100%;
-  height: 4px;
-  background: #1B515E;
-  border-radius: 5px;
-  transition: all 0.3s ease;
-  transform-origin: center;
+  z-index: 200;
 }
 
 .blur-siblings {
@@ -209,59 +188,113 @@ export default {
   -webkit-backdrop-filter: blur(0px);
 }
 
-.menu-card {
-  min-width: 280px;
-  margin-top: 8px;
-  z-index: 3300 !important;
-  box-shadow: 0px 8px 25px rgba(27, 81, 94, 0.15) !important;
+.hamburger-container {
   position: relative;
+  z-index: 300;
 }
 
-.menu-item {
-  padding: 14px 20px !important;
-  transition: all 0.2s ease;
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 22px;
+  background: none;
+  border: none;
   cursor: pointer;
+  padding: 0;
+  transition: transform 0.3s ease;
 }
 
-.menu-item:hover {
-  background: linear-gradient(135deg, #f0f8fa 0%, #e6f4f7 100%) !important;
-  transform: translateX(2px);
-}
-
-.menu-text {
-  color: #1B515E !important;
-  font-weight: 500 !important;
-  font-size: 15px !important;
-  line-height: 1.4 !important;
-  transition: all 0.2s ease !important;
-}
-
-.menu-item:hover .menu-text {
-  color: #0f3a44 !important;
-  font-weight: 600 !important;
-}
-
-.menu-icon {
-  color: #1B515E !important;
-  margin-right: 12px !important;
-  transition: color 0.2s ease !important;
-}
-
-.menu-item:hover .menu-icon {
-  color: #0f3a44 !important;
-}
-
-.menu-image {
-  margin-right: 12px;
-  transition: transform 0.2s ease;
-}
-
-.menu-item:hover .menu-image {
+.hamburger:hover {
   transform: scale(1.1);
 }
 
-.menu-divider {
-  margin: 8px 16px !important;
+.hamburger.active .line:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger.active .line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active .line:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+.line {
+  width: 100%;
+  height: 4px;
+  background: #1B515E;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+/* Menú desplegable */
+.menu {
+  position: absolute;
+  top: 45px;
+  left: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0px 8px 25px rgba(27, 81, 94, 0.15);
+  width: 280px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  z-index: 400;
+}
+
+.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.menu li {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menu-text {
+  display: block;
+  padding: 14px 20px;
+  color: #1B515E;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+}
+
+/* Estilos para los íconos */
+.menu-text i,
+.menu-text .fa-solid {
+  width: 18px;
+  color: #1B515E;
+  transition: color 0.2s ease;
+}
+
+.menu-text img {
+  transition: transform 0.2s ease;
+}
+
+.menu li:hover .menu-text i,
+.menu li:hover .menu-text .fa-solid {
+  color: #0f3a44;
+}
+
+.menu li:hover .menu-text img {
+  transform: scale(1.1);
+}
+
+.separator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 1px;
   background: linear-gradient(
     to right,
     transparent 0%,
@@ -269,44 +302,84 @@ export default {
     rgba(27, 81, 94, 0.3) 50%,
     rgba(27, 81, 94, 0.1) 80%,
     transparent 100%
-  ) !important;
-  height: 1px !important;
+  );
 }
 
-.menu-item:active {
+.menu li:hover {
+  background: linear-gradient(135deg, #f0f8fa 0%, #e6f4f7 100%);
+  transform: translateX(2px);
+}
+
+.menu li:hover .menu-text {
+  color: #0f3a44;
+  font-weight: 600;
+}
+
+.menu li:active {
   transform: scale(0.98);
 }
 
+/* Animación del menú */
+.fade-enter-active {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fade-leave-active {
+  transition: all 0.2s ease-out;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px) scale(0.98);
+}
+
+/* Tablets (768px - 1024px) */
 @media (max-width: 1024px) and (min-width: 768px) {
   .hamburger {
     width: 32px;
     height: 24px;
   }
   
-  .menu-card {
-    min-width: 300px;
+  .menu {
+    width: 300px;
+    top: 50px;
   }
   
   .menu-text {
-    font-size: 16px !important;
+    font-size: 16px;
+    padding: 16px 24px;
   }
 }
 
+/* Móviles grandes (481px - 767px) */
 @media (max-width: 767px) and (min-width: 481px) {
   .hamburger {
     width: 28px;
     height: 21px;
   }
   
-  .menu-card {
-    min-width: 260px;
+  .menu {
+    width: 260px;
+    top: 45px;
+    border-radius: 10px;
   }
   
   .menu-text {
-    font-size: 14px !important;
+    font-size: 14px;
+    padding: 13px 18px;
+  }
+  
+  .separator {
+    width: 65%;
   }
 }
 
+/* Móviles pequeños (320px - 480px) */
 @media (max-width: 480px) {
   .hamburger {
     width: 24px;
@@ -317,42 +390,62 @@ export default {
     height: 3px;
   }
   
-  .menu-card {
-    min-width: 240px;
+  .menu {
+    width: 240px;
     max-width: calc(100vw - 40px);
+    top: 42px;
+    border-radius: 8px;
+    box-shadow: 0px 6px 20px rgba(27, 81, 94, 0.2);
   }
   
   .menu-text {
-    font-size: 13px !important;
+    font-size: 13px;
+    padding: 12px 16px;
+    line-height: 1.3;
+  }
+  
+  .separator {
+    width: 60%;
   }
 }
 
+/* Pantallas grandes (más de 1024px) */
 @media (min-width: 1025px) {
   .hamburger:hover {
     transform: scale(1.15);
   }
   
-  .menu-card {
-    min-width: 320px;
+  .menu {
+    width: 320px;
+    box-shadow: 0px 10px 30px rgba(27, 81, 94, 0.12);
   }
   
   .menu-text {
-    font-size: 16px !important;
+    font-size: 16px;
+    padding: 16px 24px;
   }
   
-  .menu-item:hover {
+  .menu li:hover {
     transform: translateX(4px);
+  }
+  
+  .separator {
+    width: 75%;
   }
 }
 
+/* Orientación landscape en móviles */
 @media (max-height: 500px) and (orientation: landscape) {
-  .menu-card {
+  .menu {
+    top: 35px;
     max-height: calc(100vh - 50px);
     overflow-y: auto;
   }
   
   .menu-text {
-    font-size: 13px !important;
+    padding: 10px 18px;
+    font-size: 13px;
   }
 }
+
 </style>

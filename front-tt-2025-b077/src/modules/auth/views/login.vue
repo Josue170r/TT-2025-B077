@@ -49,10 +49,10 @@
                     <div class="mb-4 position-relative has-icon">
                       <i class="fas fa-lock position-absolute icon-input"></i>
                       <input
-                        type="password"
+                        :type="showPassword ? 'text' : 'password'"
                         id="password"
                         v-model="password"
-                        class="form-control floating-input ps-5"
+                        class="form-control floating-input ps-5 pe-5"
                         :class="{ 'has-content': password }"
                         @focus="setFocus('password', true)"
                         @blur="setFocus('password', false)"
@@ -65,6 +65,14 @@
                       >
                         Contraseña
                       </label>
+                      <button
+                        type="button"
+                        class="btn-toggle-password position-absolute"
+                        @click="togglePassword"
+                        tabindex="-1"
+                      >
+                        <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                      </button>
                     </div>
                     <!-- Olvidé contraseña -->
                     <div class="mt-0 mb-5 d-flex justify-content-end align-items-center">
@@ -116,7 +124,8 @@ export default {
       password: '',
       usernameFocused: false,
       passwordFocused: false,
-      isNavigating: false
+      isNavigating: false,
+      showPassword: false
     };
   },
   created() {
@@ -200,7 +209,10 @@ export default {
       setTimeout(() => {
         this.$router.push({ name: 'authForgotPassword' }).catch(() => {});
       }, 600);
-    }
+    },
+    togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
   }
 };
 </script>
@@ -320,6 +332,14 @@ hr{
   padding-left: 2.2rem !important;
 }
 
+.has-icon .floating-input.has-content {
+  padding-left: 2.8rem !important;
+}
+
+.has-icon .floating-input:focus.has-content {
+  padding-left: 2.8rem !important; 
+}
+
 .has-icon .floating-label {
   left: 40px !important;
   z-index: 2 !important;
@@ -332,4 +352,41 @@ hr{
 .green-link:hover {
   color: #2e9005 !important;
 }
+
+.card.shadow-lg {
+  box-shadow: 
+    0 1rem 3rem rgba(190, 212, 89, 0.2),
+    0 0.5rem 2rem rgba(51, 204, 64, 0.15) !important;
+  }
+
+  .card {
+  border: 0.5px solid #ABCD9E;
+}
+
+.btn-toggle-password {
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #1B515E;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-toggle-password:hover {
+  color: #ABCD9E;
+}
+
+.btn-toggle-password:focus {
+  outline: none;
+  color: #1B515E;
+}
+
 </style>
