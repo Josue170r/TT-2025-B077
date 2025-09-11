@@ -1,39 +1,29 @@
 <template>
   <div class="pb-16">
-    <v-app-bar flat height="72" class="appbar">
-      <v-container class="px-0" style="max-width:1100px; min-width:420px;">
-        <div class="d-flex align-items-center justify-content-between w-100">
-
-          <v-app-bar-nav-icon class="menu-wrapper">
-            <hamburgermenu />
-          </v-app-bar-nav-icon>
-
-          <v-sheet
-            class="search-pill d-flex align-center w-100 mx-3 px-4 py-2"
-            rounded="pill"
-            elevation="0"
-          >
-            <div class="input-container flex-grow-1">
-              <Inputexplore
-                :api-key="googleApiKey"
-                @place-selected="handlePlaceSelected"
-              />
-            </div>
-
-            <div class="d-flex flex-column align-items-center map-section ms-3">
-              <i class="mdi mdi-map-marker map-icon"></i>
-              <span class="map-text">Mapa</span>
-            </div>
-          </v-sheet>
-
+    <!-- Primera fila: hamburger menu + input + mapa distribuidos -->
+    <nav id="mainNav" 
+     class="d-flex flex-column align-items-center mt-0 position-fixed w-100 bg-white shadow-sm top-0 start-0">
+      <div
+        class="search-container d-flex align-items-center justify-content-between bg-white rounded-pill px-4 py-2 w-75 w-md-50 w-lg-60 mt-2"
+      >
+        <hamburgermenu />
+        <div class="input-container flex-grow-1 mx-3">
+          <Inputexplore
+            :api-key="googleApiKey"
+            @place-selected="handlePlaceSelected"
+            @search-error="handleSearchError"
+          />
         </div>
-      </v-container>
-    </v-app-bar>
+        <div class="d-flex flex-column align-items-center map-section">
+          <i class="fa-solid fa-location-dot map-icon"></i>
+          <span class="map-text">Mapa</span>
+        </div>
+      </div>
 
-    <topnavbar @filter-change="handleFilterChange" />
-    <hr />
+      <topnavbar @filter-change="handleFilterChange" />
+    </nav>
 
-    <div class="px-4 pb-4 content-section">
+    <div class="p-4 content-section">
       <div class="d-flex align-items-center justify-content-between mb-4">
         <h5 class="mb-0 text-dark">Lugares Recomendados</h5>
         <v-btn
@@ -176,6 +166,13 @@ export default {
     ]),
   },
   async mounted() {
+    const nav = document.getElementById("mainNav");
+    if (nav) {
+      document.documentElement.style.setProperty(
+        "--nav-height",
+        nav.offsetHeight + "px"
+      );
+    }
     await this.getUserLocation()
     await this.loadFavorites()
     await this.loadRecommendedPlaces()
@@ -655,4 +652,8 @@ hr {
     gap: 1.5rem;
   }
 }
+.content-section {
+  margin-top: var(--nav-height);
+}
+
 </style>

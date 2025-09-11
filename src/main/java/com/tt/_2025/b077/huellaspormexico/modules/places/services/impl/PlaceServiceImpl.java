@@ -2,7 +2,10 @@ package com.tt._2025.b077.huellaspormexico.modules.places.services.impl;
 
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearByPreferencesRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameRequest;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameResponse;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
+import com.tt._2025.b077.huellaspormexico.modules.places.enums.FetchMode;
 import com.tt._2025.b077.huellaspormexico.modules.places.exceptions.PlaceNotFoundException;
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRepository;
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceApiService;
@@ -39,7 +42,7 @@ public class PlaceServiceImpl implements PlaceService {
         Optional<Place> existingOpt = placeRepository.findByPlaceId(placeId);
 
         try {
-            Place newPlace = placeApiService.fetchPlaceDetails(placeId);
+            Place newPlace = placeApiService.fetchPlaceDetails(placeId, FetchMode.FULL);
             existingOpt.ifPresent(existing -> newPlace.setId(existing.getId()));
             return placeRepository.save(newPlace);
         } catch (Exception ex) {
@@ -76,25 +79,25 @@ public class PlaceServiceImpl implements PlaceService {
         return placeRepository.findByIdIn(ids, pageable);
     }
 
+    @Override
+    public List<SearchByNameResponse> searchPlacesByName(SearchByNameRequest request) {
+        return placeApiService.searchPlacesByName(request);
+    }
+
     private List<Long> getLongs(NearBySearchRequest dto) {
-        List<Place> places = placeApiService.fetchNearBySearchPlaces(dto);
+        List<String> placeIds = placeApiService.fetchNearBySearchPlaces(dto);
 
-        List<String> incomingPlaceIds = places.stream()
-                .map(Place::getPlaceId)
-                .filter(Objects::nonNull)
-                .toList();
-
-        Map<String, Place> existingByPlaceId = placeRepository.findAllByPlaceIdIn(incomingPlaceIds)
+        Map<String, Place> existingByPlaceId = placeRepository.findAllByPlaceIdIn(placeIds)
                 .stream()
                 .collect(Collectors.toMap(Place::getPlaceId, p -> p));
 
-        List<Long> resultIds = new ArrayList<>(places.size());
-        for (Place place : places) {
-            Place existing = existingByPlaceId.get(place.getPlaceId());
+        List<Long> resultIds = new ArrayList<>(placeIds.size());
+        for (String placeId : placeIds) {
+            Place existing = existingByPlaceId.get(placeId);
             if (existing != null) {
                 resultIds.add(existing.getId());
             } else {
-                Place saved = placeRepository.save(place);
+                Place saved = placeRepository.save(placeApiService.fetchPlaceDetails(placeId, FetchMode.LIGHT));
                 existingByPlaceId.put(saved.getPlaceId(), saved);
                 resultIds.add(saved.getId());
             }

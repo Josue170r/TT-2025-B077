@@ -364,6 +364,14 @@ export default {
   z-index: 2 !important;
 }
 
+.has-icon .floating-input.has-content {
+  padding-left: 2.8rem !important; /* Más espacio cuando hay contenido */
+}
+
+.has-icon .floating-input:focus.has-content {
+  padding-left: 2.8rem !important; /* Mantiene espacio cuando está enfocado Y tiene contenido */
+}
+
 hr{
   height: 4px;
   background-color: #35aa06;
@@ -408,4 +416,15 @@ hr{
 .green-link:hover {
   color: #2e9005 !important;
 }
+
+.card.shadow-lg {
+  box-shadow: 
+    0 1rem 3rem rgba(190, 212, 89, 0.2),
+    0 0.5rem 2rem rgba(51, 204, 64, 0.15) !important;
+  }
+
+  .card {
+  border: 0.5px solid #ABCD9E;
+}
+
 </style>
