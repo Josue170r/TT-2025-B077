@@ -8,6 +8,9 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
+
 @Configuration
 @PropertySource("classpath:config.properties")
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
@@ -16,6 +19,13 @@ public class AppConfig {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public HttpClient httpClient() {
+        return HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(30))
+                .build();
     }
 
     @Bean
