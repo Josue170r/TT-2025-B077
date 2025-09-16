@@ -102,8 +102,6 @@ export default {
       forgotPassword: 'forgotPassword'
     }),
     recuperarPassword() {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
       if (!this.correoRecuperacion) {
         this.mensajeRecuperacion = "Por favor, ingresa tu correo electrónico.";
         return;
