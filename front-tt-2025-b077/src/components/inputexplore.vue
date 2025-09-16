@@ -22,19 +22,18 @@
       </div>
     </div>
     
-    <!-- Dropdown de sugerencias -->
     <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown">
       <div 
         v-for="(suggestion, index) in suggestions" 
-        :key="suggestion.place_id"
+        :key="suggestion.placeId"
         class="suggestion-item"
         @click="selectSuggestion(suggestion)"
         :class="{ 'highlighted': index === selectedIndex }"
       >
         <i class="fa-solid fa-location-dot suggestion-icon"></i>
         <div class="suggestion-content">
-          <div class="suggestion-main">{{ suggestion.description }}</div>
-          <div class="suggestion-secondary">{{ suggestion.structured_formatting?.secondary_text }}</div>
+          <div class="suggestion-main">{{ suggestion.mainText }}</div>
+          <div class="suggestion-secondary">{{ suggestion.secondaryText }}</div>
         </div>
       </div>
     </div>
@@ -42,13 +41,11 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: "SearchInput",
   props: {
-    apiKey: {
-      type: String,
-      required: true
-    },
     placeholder: {
       type: String,
       default: "Explora un lugar"
@@ -62,62 +59,17 @@ export default {
       suggestions: [],
       showSuggestions: false,
       selectedIndex: -1,
-      debounceTimer: null,
-      autocompleteService: null,
-      placesService: null,
-      googleMapsLoaded: false
+      debounceTimer: null
     };
-  },
-  async mounted() {
-    await this.loadGoogleMaps();
   },
   beforeUnmount() {
     clearTimeout(this.debounceTimer);
   },
   methods: {
-    async loadGoogleMaps() {
-      try {
-        // Verificar si ya está cargado
-        if (window.google && window.google.maps) {
-          this.initializeServices();
-          return;
-        }
+    ...mapActions('places', {
+      searchPlacesByName: 'searchPlacesByName'
+    }),
 
-        // Cargar la API de Google Maps
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&libraries=places&language=es&region=MX`;
-        script.async = true;
-        script.defer = true;
-        
-        script.onload = () => {
-          this.initializeServices();
-        };
-        
-        script.onerror = () => {
-          console.error('Error al cargar Google Maps API');
-          this.$emit('search-error', new Error('Error al cargar Google Maps API'));
-        };
-        
-        document.head.appendChild(script);
-      } catch (error) {
-        console.error('Error al inicializar Google Maps:', error);
-        this.$emit('search-error', error);
-      }
-    },
-    
-    initializeServices() {
-      if (window.google && window.google.maps && window.google.maps.places) {
-        this.autocompleteService = new window.google.maps.places.AutocompleteService();
-        
-        // Crear un div temporal para el PlacesService
-        const tempDiv = document.createElement('div');
-        this.placesService = new window.google.maps.places.PlacesService(tempDiv);
-        
-        this.googleMapsLoaded = true;
-        console.log('Google Maps API cargada correctamente');
-      }
-    },
-    
     handleFocus() {
       this.isFocused = true;
       if (this.suggestions.length > 0) {
@@ -126,7 +78,6 @@ export default {
     },
     
     handleBlur() {
-      // Delay para permitir clicks en sugerencias
       setTimeout(() => {
         this.isFocused = false;
         this.showSuggestions = false;
@@ -135,10 +86,8 @@ export default {
     },
     
     handleInput() {
-      // Emite el valor para que el componente padre pueda usarlo
       this.$emit('search-input', this.query);
       
-      // Debounce para no hacer demasiadas llamadas a la API
       clearTimeout(this.debounceTimer);
       
       if (this.query.trim().length < 2) {
@@ -152,34 +101,31 @@ export default {
       }, 300);
     },
     
-    fetchSuggestions() {
-      if (!this.query.trim() || !this.googleMapsLoaded || !this.autocompleteService) {
+    async fetchSuggestions() {
+      if (!this.query.trim()) {
         return;
       }
       
       this.isLoading = true;
       
-      const request = {
-        input: this.query,
-        componentRestrictions: { country: 'mx' },
-        language: 'es'
-      };
-      
-      this.autocompleteService.getPlacePredictions(request, (predictions, status) => {
-        this.isLoading = false;
+      try {
+        const response = await this.searchPlacesByName(this.query.trim());
         
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-          this.suggestions = predictions;
-          this.showSuggestions = true;
+        if (response.data && response.data.data) {
+          this.suggestions = response.data.data;
+          this.showSuggestions = this.suggestions.length > 0;
         } else {
           this.suggestions = [];
           this.showSuggestions = false;
-          
-          if (status !== window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-            console.error('Error en AutocompleteService:', status);
-          }
         }
-      });
+      } catch (error) {
+        console.error('Error al buscar lugares:', error);
+        this.suggestions = [];
+        this.showSuggestions = false;
+        this.$emit('search-error', error);
+      } finally {
+        this.isLoading = false;
+      }
     },
     
     async performSearch() {
@@ -189,75 +135,45 @@ export default {
       this.showSuggestions = false;
       
       try {
-        // Si hay una sugerencia seleccionada, usar esa
         if (this.selectedIndex >= 0 && this.suggestions[this.selectedIndex]) {
           const selectedPlace = this.suggestions[this.selectedIndex];
-          await this.getPlaceDetails(selectedPlace.place_id);
+          this.$emit('place-selected', {
+            place: selectedPlace,
+            query: this.query
+          });
         } else if (this.suggestions.length > 0) {
-          // Si no hay selección pero hay sugerencias, tomar la primera
-          await this.getPlaceDetails(this.suggestions[0].place_id);
+          this.$emit('place-selected', {
+            place: this.suggestions[0],
+            query: this.query
+          });
         } else {
-          // Buscar usando el texto directamente
-          await this.searchByText();
+          const response = await this.searchPlacesByName(this.query.trim());
+          
+          if (response.data && response.data.data && response.data.data.length > 0) {
+            this.$emit('place-selected', {
+              place: response.data.data[0],
+              query: this.query
+            });
+          } else {
+            this.$emit('search-error', new Error('No se encontraron resultados'));
+          }
         }
+      } catch (error) {
+        console.error('Error en la búsqueda:', error);
+        this.$emit('search-error', error);
       } finally {
         this.isLoading = false;
       }
-    },
-    
-    async getPlaceDetails(placeId) {
-      if (!this.placesService || !this.googleMapsLoaded) {
-        this.$emit('search-error', new Error('Google Maps no está disponible'));
-        return;
-      }
-      
-      const request = {
-        placeId: placeId,
-        fields: ['name', 'geometry', 'formatted_address', 'photos', 'rating', 'user_ratings_total', 'types']
-      };
-      
-      this.placesService.getDetails(request, (place, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
-          this.$emit('place-selected', {
-            place: place,
-            query: this.query
-          });
-        } else {
-          console.error('Error al obtener detalles del lugar:', status);
-          this.$emit('search-error', new Error('No se pudo obtener información del lugar'));
-        }
-      });
-    },
-    
-    async searchByText() {
-      if (!this.placesService || !this.googleMapsLoaded) {
-        this.$emit('search-error', new Error('Google Maps no está disponible'));
-        return;
-      }
-      
-      const request = {
-        query: this.query,
-        language: 'es'
-      };
-      
-      this.placesService.textSearch(request, (results, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
-          this.$emit('place-selected', {
-            place: results[0],
-            query: this.query
-          });
-        } else {
-          console.error('Error en la búsqueda de texto:', status);
-          this.$emit('search-error', new Error('No se encontraron resultados'));
-        }
-      });
     },
     
     selectSuggestion(suggestion) {
       this.query = suggestion.description;
       this.showSuggestions = false;
       this.selectedIndex = -1;
-      this.getPlaceDetails(suggestion.place_id);
+      this.$emit('place-selected', {
+        place: suggestion,
+        query: this.query
+      });
     },
     
     handleKeyNavigation(event) {

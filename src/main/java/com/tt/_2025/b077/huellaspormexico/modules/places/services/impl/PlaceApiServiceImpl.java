@@ -16,11 +16,19 @@ import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceType
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,6 +40,7 @@ public class PlaceApiServiceImpl implements PlaceApiService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final HttpClient httpClient;
     private final PlaceTypesRepository placeTypesRepository;
 
     @Value("${google.api.key}")
@@ -46,16 +55,23 @@ public class PlaceApiServiceImpl implements PlaceApiService {
     @Value("${tripadvisor.base.url}")
     private String tripAdvisorBaseUrl;
 
-    public PlaceApiServiceImpl(RestTemplate restTemplate, ObjectMapper objectMapper, PlaceTypesRepository placeTypesRepository) {
+    public PlaceApiServiceImpl(
+            RestTemplate restTemplate,
+            ObjectMapper objectMapper,
+            HttpClient httpClient,
+            PlaceTypesRepository placeTypesRepository) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.httpClient = httpClient;
         this.placeTypesRepository = placeTypesRepository;
     }
 
     @Override
     public Place fetchPlaceDetails(String placeId, FetchMode mode) {
         Place place = fetchFromGoogle(placeId, mode);
-        enrichWithTripAdvisor(place);
+        if (mode == FetchMode.FULL) {
+            enrichWithTripAdvisor(place);
+        }
         return place;
     }
 
@@ -69,7 +85,7 @@ public class PlaceApiServiceImpl implements PlaceApiService {
         List<SearchByNameResponse> suggestions = new ArrayList<>();
 
         try {
-            String url = UriComponentsBuilder
+            String urlString = UriComponentsBuilder
                     .fromUriString(googleBaseUrl + "/autocomplete/json")
                     .queryParam("input", request.getInput())
                     .queryParam("language", request.getLanguage())
@@ -77,15 +93,20 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                     .queryParam("key", googleApiKey)
                     .toUriString();
 
-            log.debug("Calling Google Autocomplete API for place search: {}", url);
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(urlString))
+                    .GET()
+                    .build();
 
-            String response = restTemplate.getForObject(url, String.class);
-            JsonNode rootNode = objectMapper.readTree(response);
+            HttpResponse<String> httpResponse = httpClient.send(httpRequest,
+                    HttpResponse.BodyHandlers.ofString());
 
+            JsonNode rootNode = objectMapper.readTree(httpResponse.body());
             String status = rootNode.get("status").asText();
 
             if (!"OK".equals(status)) {
                 if ("ZERO_RESULTS".equals(status)) {
+                    log.info("No results found for input");
                     return suggestions;
                 }
                 throw new RuntimeException("Error en Google Places API: " + status);
@@ -100,11 +121,14 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                     }
                 }
             }
+
+        } catch (java.io.IOException | InterruptedException e) {
+            log.error("Error de conexión: {}", e.getMessage(), e);
+            throw new PlaceNotFoundException("Error de conexión al buscar lugares por nombre");
         } catch (Exception e) {
-            log.error("Error buscando lugares por nombre: {}", e.getMessage(), e);
+            log.error("Error general buscando lugares por nombre: {}", e.getMessage(), e);
             throw new PlaceNotFoundException("Error al buscar lugares por nombre");
         }
-
         return suggestions;
     }
 

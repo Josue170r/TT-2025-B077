@@ -87,3 +87,16 @@ export async function fetchPlacesByIds({ commit }, { place_ids, page = 0, size =
       })
   })
 }
+
+export async function searchPlacesByName(input) {
+  return new Promise((resolve, reject) => {
+    axios
+      .post('/place/search-by-name', { input })
+      .then((response) => {
+        resolve(response)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+  })
+}
