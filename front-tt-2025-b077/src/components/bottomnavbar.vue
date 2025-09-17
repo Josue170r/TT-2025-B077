@@ -23,9 +23,9 @@
       </li>
       <li class="nav-item">
         <router-link 
-          :to="{ name: 'itinerary' }" 
+          :to="{ name: 'new-trips' }" 
           class="nav-link" 
-          :class="{ active: isActive('itinerary') }"
+          :class="{ active: isActive('new-trips') }"
         >
           <img src="/iconogenerar.ico" alt="Itinerario" class="icon-img icon-large" />
           <span>Itinerarios</span>
