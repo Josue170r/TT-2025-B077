@@ -4,6 +4,7 @@ import authRoutes from '@/modules/auth/router/index'
 import coreRoutes from '@/modules/core/router/index'
 import tripsRoutes from '@/modules/trips/router/index'
 import userRoutes from '@/modules/user/router/index'
+import Places from '@/modules/places/router/index'
 import store from '@/store'
 
 
@@ -16,7 +17,7 @@ let baseRoutes = [
 ]
 
 const routes = baseRoutes.concat(
-  authRoutes, coreRoutes, tripsRoutes, userRoutes
+  authRoutes, coreRoutes, tripsRoutes, userRoutes, Places
 )
 
 const router = createRouter({

@@ -1,6 +1,7 @@
 import Favorites from "../views/favorites.vue";
 import Itinerary from "../views/itinerary.vue";
 import Mytrips from "../views/mytrips.vue";
+import Newtrip from "../views/newtrip.vue";
 
 
 export default [
@@ -31,5 +32,14 @@ export default [
             rule: 'auth',
         },
         component: Mytrips,
+    },
+    {
+        path: '/trips/newtrip',
+        name: 'new-trips',
+        meta: {
+            title: 'Nuevo viaje',
+            rule: 'auth',
+        },
+        component: Newtrip,
     },
 ]
