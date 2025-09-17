@@ -1,9 +1,7 @@
 package com.tt._2025.b077.huellaspormexico.modules.places.controllers;
 
 import com.tt._2025.b077.huellaspormexico.models.ApiResponse;
-import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearByPreferencesRequest;
-import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
-import com.tt._2025.b077.huellaspormexico.modules.places.dto.PlaceIdsRequest;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceService;
 import jakarta.validation.Valid;
@@ -52,6 +50,14 @@ public class PlacesController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, null, response));
+    }
+
+    @RequestMapping(path = "/search-by-name", method = RequestMethod.POST)
+    public ResponseEntity<ApiResponse<?>> getSearchByName(@Valid @RequestBody SearchByNameRequest request) {
+        List<SearchByNameResponse> suggestions = placeService.searchPlacesByName(request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, suggestions));
     }
 
     @RequestMapping(path = "/allById", method = RequestMethod.POST)

@@ -30,7 +30,7 @@ export async function toggleFavoritePlace({ commit }, placeId) {
   return new Promise((resolve, reject) => {
     axios
       .post(`/favorites?place_id=${placeId}`)
-      .then((response) => {
+      .then(() => {
           commit('toggleFavorite', placeId)
           resolve()
       })

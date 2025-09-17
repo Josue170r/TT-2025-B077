@@ -23,7 +23,7 @@
       <topnavbar @filter-change="handleFilterChange" />
     </nav>
 
-    <div class="px-4 pb-4 content-section">
+    <div class="p-4 content-section">
       <div class="d-flex align-items-center justify-content-between mb-4">
         <h5 class="mb-0 text-dark">Lugares Recomendados</h5>
         <v-btn
@@ -166,6 +166,13 @@ export default {
     ]),
   },
   async mounted() {
+    const nav = document.getElementById("mainNav");
+    if (nav) {
+      document.documentElement.style.setProperty(
+        "--nav-height",
+        nav.offsetHeight + "px"
+      );
+    }
     await this.getUserLocation()
     await this.loadFavorites()
     await this.loadRecommendedPlaces()
@@ -356,15 +363,6 @@ export default {
       return this.favoriteIds.includes(placeId)
     },
   },
-  mounted() {
-    const nav = document.getElementById("mainNav");
-    if (nav) {
-      document.documentElement.style.setProperty(
-        "--nav-height",
-        nav.offsetHeight + "px"
-      );
-    }
-  }
 }
 </script>
 

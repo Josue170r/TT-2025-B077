@@ -2,6 +2,8 @@ package com.tt._2025.b077.huellaspormexico.modules.places.services;
 
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearByPreferencesRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameRequest;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameResponse;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,4 +15,5 @@ public interface PlaceService {
     List<Long> getNearBySearchPlaces (NearBySearchRequest request);
     List<Long> getNearByPreferences(String username, NearByPreferencesRequest request);
     Page<Place> getAllByIdList(List<Long> ids, Pageable pageable);
+    List<SearchByNameResponse> searchPlacesByName(SearchByNameRequest request);
 }
