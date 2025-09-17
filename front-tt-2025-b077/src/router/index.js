@@ -16,7 +16,7 @@ let baseRoutes = [
 ]
 
 const routes = baseRoutes.concat(
-  authRoutes, coreRoutes, tripsRoutes, userRoutes
+  authRoutes, coreRoutes, tripsRoutes, userRoutes,
 )
 
 const router = createRouter({
