@@ -40,7 +40,7 @@
 import { mapGetters } from 'vuex';
 
 export default {
-  name: 'Portada',
+  name: 'FrontPage',
   data() {
     return {
       fading: false,
