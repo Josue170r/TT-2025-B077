@@ -5,6 +5,7 @@ import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameResponse;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
+import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceReview;
 import com.tt._2025.b077.huellaspormexico.modules.places.enums.FetchMode;
 import com.tt._2025.b077.huellaspormexico.modules.places.exceptions.PlaceNotFoundException;
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRepository;
@@ -12,6 +13,7 @@ import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceApiServic
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceService;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class PlaceServiceImpl implements PlaceService {
 
@@ -40,10 +43,19 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public Place getPlaceDetails(String placeId) {
         Optional<Place> existingOpt = placeRepository.findByPlaceId(placeId);
-
         try {
             Place newPlace = placeApiService.fetchPlaceDetails(placeId, FetchMode.FULL);
-            existingOpt.ifPresent(existing -> newPlace.setId(existing.getId()));
+
+            if (existingOpt.isPresent()) {
+                Place existing = existingOpt.get();
+                newPlace.setId(existing.getId());
+
+                List<PlaceReview> systemReviews = existing.getReviews().stream()
+                        .filter(review -> "Huellas por México".equals(review.getOrigin()))
+                        .toList();
+
+                systemReviews.forEach(newPlace::addReview);
+            }
             return placeRepository.save(newPlace);
         } catch (Exception ex) {
             return existingOpt.orElseThrow(() ->
