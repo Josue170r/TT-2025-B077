@@ -26,8 +26,6 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'Huellas por México'
-
   const isLogged = store.getters['auth/isLogged']
   const isPublic = to.matched.some(r => r.meta?.rule === 'public')
 
