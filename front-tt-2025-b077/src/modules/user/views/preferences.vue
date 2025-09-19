@@ -1,14 +1,12 @@
 <template>
   <transition name="fade">
     <div v-if="show" class="container my-5">
-      <!-- Header fijo -->
       <div class="header">
         <h2 class="title text-center fw-bold">Escoge tus preferencias de viaje</h2>
         <h6 class="sub-text text-center mb-4">Se recomendarán lugares de acuerdo a tus preferencias</h6>
         <hr>
       </div>
 
-      <!-- Contenedor scrollable de categorías -->
       <div class="categorias-wrapper">
         <div class="row g-3">
           <div 
@@ -40,7 +38,6 @@
         </div>
       </div>
 
-      <!-- Botón confirmar -->
       <div class="text-center mt-4">
         <hr class="mt-0">
         <button class="btn-confirmar" @click="confirmarSeleccion">Confirmar</button>
@@ -53,10 +50,10 @@
 // import axios from "axios";
 
 export default {
-  name: "Preferencias",
+  name: "UserPreferences",
   data() {
     return {
-      show: false, // controla el fade
+      show: false,
       categorias: [
         { name: "Museos", img: "/public/museos.webp" },
         { name: "Parques", img: "/images/parques.webp" },
@@ -95,7 +92,7 @@ export default {
       setTimeout(() => {
         console.log("IDs seleccionadas:", this.selectedCategorias);
 
-        axios.post("/api/categorias/seleccionadas", {
+        axiospost("/api/categorias/seleccionadas", {
           categorias: this.selectedCategorias
         })
         .then(res => {

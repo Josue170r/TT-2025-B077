@@ -62,6 +62,7 @@
               :height="180"
               :show-arrows="hasMultipleImages(place)"
               :hide-delimiters="true"
+              cycle
               class="place-carousel"
             >
               <v-carousel-item
@@ -205,7 +206,7 @@ export default {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         }
-      } catch (_) {
+      } catch {
         this.userLocation = { lat: 19.4326, lng: -99.1332 }
       }
     },
@@ -222,7 +223,7 @@ export default {
       await this.fetchPreferencePlaces({
         latitude: this.userLocation.lat,
         longitude: this.userLocation.lng,
-      }).then((_) => {
+      }).then(() => {
         this.fetchPlacesByIds({
           place_ids: this.placesIds,
         })
@@ -234,7 +235,7 @@ export default {
         latitude: this.userLocation.lat,
         longitude: this.userLocation.lng,
         types: types,
-      }).then((_) => {
+      }).then(() => {
         this.fetchPlacesByIds({
           place_ids: this.placesIds,
         })

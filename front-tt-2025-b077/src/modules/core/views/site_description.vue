@@ -18,12 +18,10 @@
                 </button>
               </div>
 
-              <!-- Imagen por defecto cuando no hay imágenes -->
               <div v-if="imageItems.length === 0" class="default-image-container">
                 <img :src="logoUrl" alt="Imagen por defecto" class="default-image" />
               </div>
 
-              <!-- Carousel de imágenes cuando sí hay -->
               <v-carousel
                 v-else
                 v-model="currentImageIndex"
@@ -115,7 +113,7 @@
                 >
                   <div class="weather-info">
                     <div class="d-flex align-items-center">
-                      <i class="fa-solid fa-temperature-half me-3"></i>
+                      <i :class="weather.iconClass + ' me-3'"></i>
                       <div class="weather-details">
                         <span class="weather-status">{{ weather.status }}</span>
                         <span class="temperature ms-2">{{ weather.temperature }}°C</span>
@@ -152,7 +150,6 @@
           </button>
         </div>
 
-        <!-- Estado vacío cuando no hay reseñas -->
         <div v-if="reviews.length === 0" class="no-reviews-state text-center py-5">
           <i class="fa-regular fa-comment-dots no-reviews-icon mb-3"></i>
           <h6 class="no-reviews-title mb-2">Sin reseñas aún</h6>
@@ -165,13 +162,12 @@
           </button>
         </div>
 
-        <!-- Carousel de reseñas cuando sí hay -->
         <v-carousel
           v-else
           height="250"
           show-arrows="hover"
           cycle
-          hide-delimiter-background
+          :hide-delimiters="true"
           progress="#1B515E"
           class="reviews-carousel rounded-3"
         >
@@ -184,20 +180,18 @@
               <div class="d-flex fill-height justify-center align-center p-4">
                 <div class="review-content text-center">
                   <div class="d-flex align-items-center justify-content-center mb-3">
-                    <v-avatar size="50" class="me-3 border border-2" style="border-color: #1b515e">
-                      <v-img
-                        v-if="review.profilePhotoUrl"
-                        :src="review.profilePhotoUrl"
-                        @error="handleImageError"
-                      >
-                        <template v-slot:placeholder>
-                          <v-icon icon="mdi-account" size="30"></v-icon>
-                        </template>
-                      </v-img>
-                      <v-icon v-else icon="mdi-account" size="30"></v-icon>
-                    </v-avatar>
+                    <ResilientAvatar
+                      :src="review.profilePhotoUrl"
+                      :size="50"
+                      avatar-class="me-3 border border-2"
+                      avatar-style="border-color: #1b515e"
+                      :alt="review.authorName + ' avatar'"
+                    />
                     <div class="text-start">
                       <h6 class="review-author mb-1 fw-semibold">{{ review.authorName }}</h6>
+                      <small class="review-date text-muted">{{
+                        formatReviewDate(review.reviewDateTime)
+                      }}</small>
                     </div>
                   </div>
 
@@ -257,25 +251,22 @@
       </div>
     </div>
 
-    <!-- Modal para reseña completa -->
     <v-dialog v-model="reviewModalOpen" max-width="600px">
       <v-card v-if="selectedReview">
         <v-card-title class="d-flex align-items-center pa-4">
-          <v-avatar size="60" class="me-3 border border-2" style="border-color: #1b515e">
-            <v-img
-              v-if="selectedReview.profilePhotoUrl"
-              :src="selectedReview.profilePhotoUrl"
-              @error="handleImageError"
-            >
-              <template v-slot:placeholder>
-                <v-icon icon="mdi-account" size="35"></v-icon>
-              </template>
-            </v-img>
-            <v-icon v-else icon="mdi-account" size="35"></v-icon>
-          </v-avatar>
+          <ResilientAvatar
+            :src="selectedReview.profilePhotoUrl"
+            :size="60"
+            avatar-class="me-3 border border-2"
+            avatar-style="border-color: #1b515e"
+            :alt="selectedReview.authorName + ' avatar'"
+          />
           <div>
             <h6 class="mb-1 fw-semibold">{{ selectedReview.authorName }}</h6>
-            <div class="d-flex align-items-center">
+            <small class="review-date text-muted">{{
+              formatReviewDate(selectedReview.reviewDateTime)
+            }}</small>
+            <div class="d-flex align-items-center mt-2">
               <div class="stars me-2">
                 <i
                   v-for="n in 5"
@@ -298,7 +289,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Modal para agregar reseña -->
     <v-dialog v-model="addReviewModalOpen" max-width="500px">
       <v-card>
         <v-card-title class="pa-4">
@@ -349,15 +339,22 @@
 
 <script>
 import { getErrorDetails } from '@/utils/utils'
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapState, mapGetters } from 'vuex'
+import ResilientAvatar from '@/components/resilient-avatar.vue'
 
 export default {
   name: 'PlaceDetail',
+  components: {
+    ResilientAvatar,
+  },
   data() {
     return {
       currentImageIndex: 0,
-      isFavorite: false,
-      weather: { status: 'Despejado', temperature: 21 },
+      weather: {
+        status: 'Cargando...',
+        temperature: '--',
+        iconClass: 'fa-solid fa-sun',
+      },
       distance: 36.25,
       logoUrl: '/logo-letras.png',
       reviewModalOpen: false,
@@ -393,6 +390,7 @@ export default {
     ...mapState('places', {
       selectedPlaceDetails: 'selectedPlaceDetails',
     }),
+    ...mapGetters('trips', ['favoriteIds']),
     placeName() {
       return this.selectedPlaceDetails?.name || 'Cargando...'
     },
@@ -417,10 +415,14 @@ export default {
     canSubmitReview() {
       return this.newReview.text.trim().length > 0 && this.newReview.rating > 0
     },
+    isFavorite() {
+      return this.selectedPlaceDetails?.id && this.favoriteIds.includes(this.selectedPlaceDetails.id)
+    },
   },
   async mounted() {
     try {
       await this.fetchPlaceDetails()
+      await this.loadWeatherData()
     } catch (error) {
       console.error('Error cargando detalles del lugar:', error)
     }
@@ -429,9 +431,19 @@ export default {
     ...mapActions('places', {
       fetchPlaceDetails: 'fetchPlaceDetails',
       submitPlaceReview: 'submitPlaceReview',
+      getPlaceWeather: 'getPlaceWeather',
     }),
-    toggleFavorite() {
-      this.isFavorite = !this.isFavorite
+    ...mapActions('trips', {
+      toggleFavoritePlace: 'toggleFavoritePlace',
+    }),
+    async toggleFavorite() {
+      if (!this.selectedPlaceDetails?.id) return
+      
+      try {
+        await this.toggleFavoritePlace(this.selectedPlaceDetails.id)
+      } catch (error) {
+        this.$alert.error(getErrorDetails(error))
+      }
     },
     goBack() {
       this.$router.push({ name: 'home' })
@@ -448,8 +460,69 @@ export default {
     isReviewLong(review) {
       return review.text && review.shortText && review.text.length > review.shortText.length + 20
     },
-    handleImageError() {
-      console.log('Error cargando imagen de perfil')
+    handleImageError(event) {
+      event.target.style.display = 'none'
+    },
+    getProcessedImageUrl(url) {
+      if (!url) return null
+
+      if (url.includes('googleusercontent.com')) {
+        return url.replace(/=s\d+/, '=s64').replace(/=w\d+/, '=w64')
+      }
+
+      return url
+    },
+    async loadWeatherData() {
+      try {
+        const placeCoords = {
+          lat: this.selectedPlaceDetails?.lat,
+          lng: this.selectedPlaceDetails?.lng,
+        }
+        if (!placeCoords.lat || !placeCoords.lng) return
+
+        const response = await this.getPlaceWeather(placeCoords)
+
+        if (response && response.data) {
+          const weatherData = response.data
+          this.weather = {
+            status: weatherData.description,
+            temperature: Math.round(weatherData.temperature),
+            iconClass: this.getWeatherIcon(weatherData.temperature),
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando clima:', error)
+        this.weather = {
+          status: 'No disponible',
+          temperature: '--',
+          iconClass: 'fa-solid fa-question',
+        }
+      }
+    },
+    getWeatherIcon(temperature) {
+      if (temperature <= 0) return 'fa-solid fa-snowflake weather-icon-cold'
+      if (temperature <= 10) return 'fa-solid fa-icicles weather-icon-cold'
+      if (temperature <= 20) return 'fa-solid fa-cloud weather-icon-cool'
+      if (temperature <= 30) return 'fa-solid fa-cloud-sun weather-icon-warm'
+      return 'fa-solid fa-fire weather-icon-hot'
+    },
+    formatReviewDate(dateTime) {
+      if (!dateTime) return ''
+
+      const date = new Date(dateTime)
+      const now = new Date()
+      const diffTime = now - date
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 0) return 'Hoy'
+      if (diffDays === 1) return 'Ayer'
+      if (diffDays < 7) return `Hace ${diffDays} días`
+      if (diffDays < 30)
+        return `Hace ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''}`
+      if (diffDays < 365)
+        return `Hace ${Math.floor(diffDays / 30)} mes${Math.floor(diffDays / 30) > 1 ? 'es' : ''}`
+
+      return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
     },
     openAddReviewModal() {
       this.addReviewModalOpen = true
@@ -469,7 +542,7 @@ export default {
       try {
         const reviewData = {
           text: this.newReview.text.trim(),
-          reviewDate: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+          reviewDate: new Date().toISOString().split('T')[0],
           rating: this.newReview.rating,
         }
 
@@ -477,7 +550,6 @@ export default {
           placeId: this.selectedPlaceDetails.id,
           reviewData,
         })
-        console.log(response)
         this.$alert.success(response.message)
 
         await this.fetchPlaceDetails()
@@ -534,7 +606,6 @@ export default {
     rgba(0, 0, 0, 0.3) 50%,
     rgba(0, 0, 0, 0) 100%
   );
-  backdrop-filter: blur(2px);
 }
 
 .btn-icon-overlay {
@@ -617,8 +688,23 @@ export default {
 }
 
 .weather-icon {
-  color: #ffc107;
   font-size: 1.3rem;
+}
+
+.weather-icon-cold {
+  color: #1b515e;
+}
+
+.weather-icon-cool {
+  color: #1b515e;
+}
+
+.weather-icon-warm {
+  color: #1b515e;
+}
+
+.weather-icon-hot {
+  color: #1b515e;
 }
 
 .weather-status {
@@ -728,6 +814,10 @@ export default {
   font-size: 1rem;
 }
 
+.review-date {
+  font-size: 0.75rem;
+}
+
 .review-rating {
   color: #1b515e;
   font-size: 1.1rem;
@@ -741,21 +831,8 @@ export default {
   margin: 0 auto;
 }
 
-.btn-rating {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
-.rating-star {
-  color: #ffc107;
-  font-size: 1.5rem;
-  transition: all 0.2s ease;
-}
-
-.btn-rating:hover .rating-star {
-  transform: scale(1.1);
+.read-more-indicator {
+  cursor: pointer;
 }
 
 .nearby-place-card {
