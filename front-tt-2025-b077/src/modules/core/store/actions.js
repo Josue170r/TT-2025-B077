@@ -152,3 +152,24 @@ export async function submitPlaceReview({ commit }, { placeId, reviewData }) {
       })
   })
 }
+
+// eslint-disable-next-line no-unused-vars
+export async function getPlaceWeather({ commit }, { lat, lng }) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/weather/coordinates', {
+        params: {
+          lat,
+          lng
+        }
+      })
+      .then((response) => {
+        resolve(response.data)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+  })
+}
+
+

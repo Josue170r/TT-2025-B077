@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/weather")
@@ -24,10 +26,10 @@ public class WeatherController {
 
     @RequestMapping(path = "/coordinates", method = RequestMethod.GET)
     public ResponseEntity<ApiResponse<?>> getWeatherByCoordinates(
-            @RequestParam Double lat,
-            @RequestParam Double lon) {
+            @RequestParam BigDecimal lat,
+            @RequestParam BigDecimal lng) {
 
-        WeatherSummary weather = weatherService.getWeatherByCoordinates(lat, lon);
+        WeatherSummary weather = weatherService.getWeatherByCoordinates(lat, lng);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Clima obtenido correctamente", weather));
