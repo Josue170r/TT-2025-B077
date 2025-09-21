@@ -25,3 +25,7 @@ export function hasNextPage(state) {
 export function hasPreviousPage(state) {
   return !state.pagination.first
 }
+
+export function selectedPlaceName(state) {
+  return state.selectedPlaceName
+}

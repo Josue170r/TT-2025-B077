@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapMutations } from 'vuex'
 
 export default {
   name: "SearchInput",
@@ -69,7 +69,9 @@ export default {
     ...mapActions('places', {
       searchPlacesByName: 'searchPlacesByName'
     }),
-
+    ...mapMutations('places', {
+      setSelectedPlaceId: 'setSelectedPlaceId'
+    }),
     handleFocus() {
       this.isFocused = true;
       if (this.suggestions.length > 0) {
@@ -129,6 +131,7 @@ export default {
     },
     
     async performSearch() {
+      console.log(this.query)
       if (!this.query.trim()) return;
       
       this.isLoading = true;
@@ -170,10 +173,10 @@ export default {
       this.query = suggestion.description;
       this.showSuggestions = false;
       this.selectedIndex = -1;
-      this.$emit('place-selected', {
-        place: suggestion,
-        query: this.query
-      });
+      this.setSelectedPlaceId(suggestion.placeId)
+      this.$router.push({
+        name: 'description'
+      })
     },
     
     handleKeyNavigation(event) {
@@ -205,11 +208,8 @@ export default {
 
 <style scoped>
 .search-container {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
   position: relative;
+  z-index: 9999;
 }
 
 .search-wrapper {
@@ -354,10 +354,9 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-/* Dropdown de sugerencias */
 .suggestions-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 5px);
   left: 0;
   right: 0;
   background: white;
@@ -366,8 +365,8 @@ export default {
   border: 1px solid rgba(171, 205, 158, 0.2);
   max-height: 300px;
   overflow-y: auto;
-  z-index: 1000;
-  margin-top: 5px;
+  z-index: 999999999 !important;
+  margin-top: 0;
   backdrop-filter: blur(10px);
 }
 

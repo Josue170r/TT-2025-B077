@@ -88,7 +88,35 @@ export async function fetchPlacesByIds({ commit }, { place_ids, page = 0, size =
   })
 }
 
-export async function searchPlacesByName(input) {
+export async function fetchPlaceDetails({ commit, state }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Cargando detalles del lugar',
+    },
+    { root: true }
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/place/details?place_id=${state.selectedPlaceId}`)
+      .then((response) => {
+        const data = response.data
+        commit('setSelectedPlaceDetails', data.data)
+        commit('setSelectedPlaceName', data.data.name)
+        resolve()
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+// eslint-disable-next-line no-unused-vars
+export async function searchPlacesByName({ commit }, input) {
   return new Promise((resolve, reject) => {
     axios
       .post('/place/search-by-name', { input })
@@ -100,3 +128,48 @@ export async function searchPlacesByName(input) {
       })
   })
 }
+
+export async function submitPlaceReview({ commit }, { placeId, reviewData }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Enviando reseña',
+    },
+    { root: true }
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .post(`/reviews/${placeId}`, reviewData)
+      .then((response) => {
+        resolve(response.data)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+// eslint-disable-next-line no-unused-vars
+export async function getPlaceWeather({ commit }, { lat, lng }) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/weather/coordinates', {
+        params: {
+          lat,
+          lng
+        }
+      })
+      .then((response) => {
+        resolve(response.data)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+  })
+}
+
+
