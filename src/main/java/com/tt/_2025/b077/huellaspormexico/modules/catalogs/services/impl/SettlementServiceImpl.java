@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public class SettlementServiceImpl implements SettlementService {
 
-    private final SettlementRepository  settlementRepository;
+    private final SettlementRepository settlementRepository;
 
     public SettlementServiceImpl(SettlementRepository settlementRepository) {
         this.settlementRepository = settlementRepository;

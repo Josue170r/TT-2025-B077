@@ -1,14 +1,8 @@
 package com.tt._2025.b077.huellaspormexico.modules.catalogs.controller;
 
 import com.tt._2025.b077.huellaspormexico.models.ApiResponse;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.CategoryPlacesCatalog;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.PostalCodeCatalog;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.SettlementCatalog;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.StateCatalog;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.services.CategoryPlaceService;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.services.PostalCodeService;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.services.SettlementService;
-import com.tt._2025.b077.huellaspormexico.modules.catalogs.services.StateService;
+import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.*;
+import com.tt._2025.b077.huellaspormexico.modules.catalogs.services.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,16 +17,18 @@ public class CatalogController {
     private final StateService stateService;
     private final SettlementService settlementService;
     private final PostalCodeService postalCodeService;
+    private final CertificationService certificationService;
 
     public CatalogController(
             CategoryPlaceService categoryPlaceService,
             StateService stateService,
             SettlementService settlementService,
-            PostalCodeService postalCodeService) {
+            PostalCodeService postalCodeService, CertificationService certificationService) {
         this.categoryPlaceService = categoryPlaceService;
         this.stateService = stateService;
         this.settlementService = settlementService;
         this.postalCodeService = postalCodeService;
+        this.certificationService = certificationService;
     }
 
     @RequestMapping(path = "/category-places", method = RequestMethod.GET)
@@ -93,5 +89,30 @@ public class CatalogController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, null,postalCodes));
+    }
+
+    @RequestMapping(path = "/certifications", method = RequestMethod.GET)
+    public ResponseEntity<ApiResponse<?>> getCertifications() {
+        List<CertificationCatalog> certifications = certificationService.getCertifications();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, certifications));
+    }
+
+    @RequestMapping(path = "/certifications/{id}", method = RequestMethod.GET)
+    public ResponseEntity<ApiResponse<?>> getCertificationById(@PathVariable("id") Long id) {
+        CertificationCatalog certification = certificationService.getCertificationById(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, certification));
+    }
+
+    @RequestMapping(path = "/certifications/search", method = RequestMethod.GET)
+    public ResponseEntity<ApiResponse<?>> getCertificationByName(
+            @RequestParam(value = "name") String certificationName) {
+        CertificationCatalog certification = certificationService.getCertificationByName(certificationName);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, certification));
     }
 }
