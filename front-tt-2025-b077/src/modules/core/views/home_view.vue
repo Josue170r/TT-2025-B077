@@ -1,8 +1,9 @@
 <template>
   <div class="pb-16">
-    <!-- Primera fila: hamburger menu + input + mapa distribuidos -->
-    <nav id="mainNav" 
-     class="d-flex flex-column align-items-center mt-0 position-fixed w-100 bg-white shadow-sm top-0 start-0">
+    <nav
+      id="mainNav"
+      class="d-flex flex-column align-items-center mt-0 position-fixed w-100 bg-white shadow-sm top-0 start-0"
+    >
       <div
         class="search-container d-flex align-items-center justify-content-between bg-white rounded-pill px-4 py-2 w-75 w-md-50 w-lg-60 mt-2"
       >
@@ -61,6 +62,7 @@
               :height="180"
               :show-arrows="hasMultipleImages(place)"
               :hide-delimiters="true"
+              cycle
               class="place-carousel"
             >
               <v-carousel-item
@@ -139,7 +141,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
 import BottomNavbar from '@/components/bottomnavbar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
 import topnavbar from '@/components/topnavbar.vue'
@@ -158,20 +160,13 @@ export default {
     }
   },
   computed: {
-    ...mapGetters('places', [
-      'places', 'pagination', 'placesIds', 'currentPage'
-    ]),
-    ...mapGetters('trips', [
-      'favoriteIds'
-    ]),
+    ...mapGetters('places', ['places', 'pagination', 'placesIds', 'currentPage']),
+    ...mapGetters('trips', ['favoriteIds']),
   },
   async mounted() {
-    const nav = document.getElementById("mainNav");
+    const nav = document.getElementById('mainNav')
     if (nav) {
-      document.documentElement.style.setProperty(
-        "--nav-height",
-        nav.offsetHeight + "px"
-      );
+      document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px')
     }
     await this.getUserLocation()
     await this.loadFavorites()
@@ -187,8 +182,11 @@ export default {
       fetchFavorites: 'fetchFavorites',
       toggleFavoritePlace: 'toggleFavoritePlace',
     }),
+    ...mapMutations('places', {
+      setSelectedPlaceId: 'setSelectedPlaceId'
+    }),
     hasMultipleImages(place) {
-      return Array.isArray(place?.images) && place.images.length > 1;
+      return Array.isArray(place?.images) && place.images.length > 1
     },
     async getUserLocation() {
       try {
@@ -208,7 +206,7 @@ export default {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         }
-      } catch (error) {
+      } catch {
         this.userLocation = { lat: 19.4326, lng: -99.1332 }
       }
     },
@@ -225,8 +223,7 @@ export default {
       await this.fetchPreferencePlaces({
         latitude: this.userLocation.lat,
         longitude: this.userLocation.lng,
-      })
-      .then((_) => {
+      }).then(() => {
         this.fetchPlacesByIds({
           place_ids: this.placesIds,
         })
@@ -238,8 +235,7 @@ export default {
         latitude: this.userLocation.lat,
         longitude: this.userLocation.lng,
         types: types,
-      })
-      .then((_) => {
+      }).then(() => {
         this.fetchPlacesByIds({
           place_ids: this.placesIds,
         })
@@ -338,7 +334,10 @@ export default {
     },
 
     selectPlace(place) {
-      this.$emit('place-selected', place)
+      this.setSelectedPlaceId(place.placeId)
+      this.$router.push({
+        name: 'description'
+      })
     },
 
     async handleFilterChange(filter) {
@@ -348,6 +347,7 @@ export default {
 
     handlePlaceSelected(data) {
       if (data.place?.geometry?.location) {
+        console.log(data)
       }
     },
 
@@ -377,7 +377,7 @@ export default {
 
 .search-pill {
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .menu-wrapper :deep(svg),
@@ -386,9 +386,15 @@ export default {
   font-size: 28px;
 }
 
-.map-section { color: #1b515e; }
-.map-icon { font-size: 1.2rem; }
-.map-text { font-size: 14px; }
+.map-section {
+  color: #1b515e;
+}
+.map-icon {
+  font-size: 1.2rem;
+}
+.map-text {
+  font-size: 14px;
+}
 
 .menu-wrapper {
   width: 40px;
@@ -403,17 +409,16 @@ export default {
   border: 1px solid #1b515e !important;
   color: #1b515e !important;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
   font-weight: 600;
 }
 
 .btn-refresh:hover {
-  background: rgba(27,81,94,0.06) !important;
+  background: rgba(27, 81, 94, 0.06) !important;
 }
 .btn-refresh .v-icon {
   color: #1b515e !important;
 }
-
 
 .search-container {
   gap: 0;
@@ -570,6 +575,10 @@ hr {
   border-color: #b0d4a1;
 }
 
+#mainNav {
+  z-index: 1000;
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .places-grid {
@@ -655,5 +664,4 @@ hr {
 .content-section {
   margin-top: var(--nav-height);
 }
-
 </style>

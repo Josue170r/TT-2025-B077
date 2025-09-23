@@ -17,4 +17,13 @@ export default {
       empty: paginationData.empty
     }
   },
+  setSelectedPlaceId(state, placeId) {
+    state.selectedPlaceId = placeId
+  },
+  setSelectedPlaceDetails(state, data) {
+    state.selectedPlaceDetails = data
+  },
+  setSelectedPlaceName(state, data) {
+    state.selectedPlaceName = data
+  }
 }

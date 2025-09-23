@@ -38,6 +38,6 @@ public class PlaceReviewsController {
         PlaceReview review = reviewService.save(placeId, request, auth.getName());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, "Contraseña guardada correctamente", review));
+                .body(ApiResponse.of(HttpStatus.OK, "Reseña guardada correctamente", review));
     }
 }

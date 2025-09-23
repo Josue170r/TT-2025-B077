@@ -4,7 +4,7 @@
       <div v-if="isOpen" class="blur-overlay" @click="closeMenu"></div>
     </transition>
 
-    <button class="hamburger" @click="toggleMenu" :class="{ 'active': isOpen }">
+    <button class="hamburger" @click="toggleMenu" :class="{ active: isOpen }">
       <span class="line"></span>
       <span class="line"></span>
       <span class="line"></span>
@@ -13,14 +13,16 @@
     <transition name="fade">
       <div v-if="isOpen" class="menu">
         <ul>
-          <li @click="goTo('preferencias')">
-            <span class="menu-text"><i class="fa-solid fa-arrows-rotate me-3"></i>Modificar mis preferencias</span>
+          <li @click="goTo('preferences')">
+            <span class="menu-text"
+              ><i class="fa-solid fa-arrows-rotate me-3"></i>Modificar mis preferencias</span
+            >
             <div class="separator"></div>
           </li>
           <li @click="goTo('huella')">
             <span class="menu-text d-flex align-items-center">
-                <img src="/huella.png" alt="icono huella" class="me-2" width="23" height="23" />
-                Huella de carbono por uso de la app
+              <img src="/huella.png" alt="icono huella" class="me-2" width="23" height="23" />
+              Huella de carbono por uso de la app
             </span>
             <div class="separator"></div>
           </li>
@@ -29,7 +31,9 @@
             <div class="separator"></div>
           </li>
           <li @click="handleLogout" class="last-item">
-            <span class="menu-text"><i class="fa-solid fa-right-from-bracket me-3"></i>Cerrar sesión</span>
+            <span class="menu-text"
+              ><i class="fa-solid fa-right-from-bracket me-3"></i>Cerrar sesión</span
+            >
           </li>
         </ul>
       </div>
@@ -38,109 +42,111 @@
 </template>
 
 <script>
-
 import { mapActions } from 'vuex'
 
 export default {
-  name: "HamburgerMenu",
+  name: 'HamburgerMenu',
   emits: ['menu-opened', 'menu-closed'],
   data() {
     return {
       isOpen: false,
-    };
+    }
   },
   mounted() {
-    // Agregar listener para clicks fuera del menú
-    document.addEventListener('click', this.handleClickOutside);
+    document.addEventListener('click', this.handleClickOutside)
   },
   beforeUnmount() {
-    // Limpiar listener al destruir el componente
-    document.removeEventListener('click', this.handleClickOutside);
-    // Asegurar que se remueva el blur al destruir el componente
-    this.removeBlurFromSiblings();
+    document.removeEventListener('click', this.handleClickOutside)
+    this.removeBlurFromSiblings()
   },
   watch: {
     isOpen(newVal) {
-      // Aplicar o remover blur cuando cambie el estado del menú
       if (newVal) {
-        this.applyBlurToSiblings();
-        // Emitir evento cuando se abre el menú
-        this.$emit('menu-opened');
+        this.applyBlurToSiblings()
+        this.$emit('menu-opened')
       } else {
-        this.removeBlurFromSiblings();
-        // Emitir evento cuando se cierra el menú
-        this.$emit('menu-closed');
+        this.removeBlurFromSiblings()
+        this.$emit('menu-closed')
       }
-    }
+    },
   },
   methods: {
     ...mapActions('auth', ['logout']),
     toggleMenu() {
-      this.isOpen = !this.isOpen;
+      this.isOpen = !this.isOpen
     },
-    
+
     goTo(option) {
-      console.log("Go to:", option);
+      this.$router.push({ name: option })
     },
 
     closeMenu() {
-      this.isOpen = false;
+      this.isOpen = false
     },
 
     handleClickOutside(event) {
-      // Verificar si el click fue fuera del contenedor del menú
-      const menuContainer = this.$el;
-      const blurOverlay = document.querySelector('.blur-overlay');
-      
-      if (this.isOpen && menuContainer && !menuContainer.contains(event.target) && !blurOverlay?.contains(event.target)) {
-        this.isOpen = false;
+      const menuContainer = this.$el
+      const blurOverlay = document.querySelector('.blur-overlay')
+
+      if (
+        this.isOpen &&
+        menuContainer &&
+        !menuContainer.contains(event.target) &&
+        !blurOverlay?.contains(event.target)
+      ) {
+        this.isOpen = false
       }
     },
     applyBlurToSiblings() {
-      // Encontrar el contenedor padre del menú hamburguesa
-      const parent = this.$el.parentElement;
-      if (!parent) return;
+      const parent = this.$el.parentElement
+      if (!parent) return
 
-      // Aplicar blur a todos los elementos hermanos del contenedor
-      Array.from(parent.children).forEach(child => {
+      Array.from(parent.children).forEach((child) => {
         if (child !== this.$el && !child.classList.contains('blur-overlay')) {
-          child.classList.add('blur-siblings');
+          child.classList.add('blur-siblings')
         }
-      });
+      })
 
-      // También aplicar a elementos específicos si están en el body
       const commonSelectors = [
-        'main', 'section', 'article', 'aside', 'nav:not(.hamburger-container *)',
-        '.content', '.main-content', '.page-content', '.container:not(.hamburger-container *)',
-        'header:not(.hamburger-container *)', 'footer'
-      ];
+        'main',
+        'section',
+        'article',
+        'aside',
+        'nav:not(.hamburger-container *)',
+        '.content',
+        '.main-content',
+        '.page-content',
+        '.container:not(.hamburger-container *)',
+        'header:not(.hamburger-container *)',
+        'footer',
+      ]
 
-      commonSelectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
+      commonSelectors.forEach((selector) => {
+        const elements = document.querySelectorAll(selector)
+        elements.forEach((el) => {
           if (!this.$el.contains(el) && !el.contains(this.$el)) {
-            el.classList.add('blur-siblings');
+            el.classList.add('blur-siblings')
           }
-        });
-      });
+        })
+      })
     },
     removeBlurFromSiblings() {
-      const blurredElements = document.querySelectorAll('.blur-siblings');
-      blurredElements.forEach(el => {
-        el.classList.remove('blur-siblings');
-      });
+      const blurredElements = document.querySelectorAll('.blur-siblings')
+      blurredElements.forEach((el) => {
+        el.classList.remove('blur-siblings')
+      })
     },
     async handleLogout() {
       try {
-        await this.logout();
-        this.isOpen = false;
-        this.$router.push('/auth/login'); // Redirigir a la página de login
+        await this.logout()
+        this.isOpen = false
+        this.$router.push('/auth/login')
       } catch (error) {
-        console.error('Error al cerrar sesión:', error);
+        console.error('Error al cerrar sesión:', error)
       }
     },
   },
-};
+}
 </script>
 
 <style scoped>
@@ -153,7 +159,7 @@ export default {
   background: rgba(255, 255, 255, 0.09);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px); /* Safari */
-  z-index: 150; 
+  z-index: 150;
   cursor: pointer;
 }
 
@@ -225,7 +231,7 @@ export default {
 .line {
   width: 100%;
   height: 4px;
-  background: #1B515E;
+  background: #1b515e;
   border-radius: 5px;
   transition: all 0.3s ease;
   transform-origin: center;
@@ -260,7 +266,7 @@ export default {
 .menu-text {
   display: block;
   padding: 14px 20px;
-  color: #1B515E;
+  color: #1b515e;
   font-weight: 500;
   font-size: 15px;
   line-height: 1.4;
@@ -271,7 +277,7 @@ export default {
 .menu-text i,
 .menu-text .fa-solid {
   width: 18px;
-  color: #1B515E;
+  color: #1b515e;
   transition: color 0.2s ease;
 }
 
@@ -344,12 +350,12 @@ export default {
     width: 32px;
     height: 24px;
   }
-  
+
   .menu {
     width: 300px;
     top: 50px;
   }
-  
+
   .menu-text {
     font-size: 16px;
     padding: 16px 24px;
@@ -362,18 +368,18 @@ export default {
     width: 28px;
     height: 21px;
   }
-  
+
   .menu {
     width: 260px;
     top: 45px;
     border-radius: 10px;
   }
-  
+
   .menu-text {
     font-size: 14px;
     padding: 13px 18px;
   }
-  
+
   .separator {
     width: 65%;
   }
@@ -385,11 +391,11 @@ export default {
     width: 24px;
     height: 18px;
   }
-  
+
   .line {
     height: 3px;
   }
-  
+
   .menu {
     width: 240px;
     max-width: calc(100vw - 40px);
@@ -397,13 +403,13 @@ export default {
     border-radius: 8px;
     box-shadow: 0px 6px 20px rgba(27, 81, 94, 0.2);
   }
-  
+
   .menu-text {
     font-size: 13px;
     padding: 12px 16px;
     line-height: 1.3;
   }
-  
+
   .separator {
     width: 60%;
   }
@@ -414,21 +420,21 @@ export default {
   .hamburger:hover {
     transform: scale(1.15);
   }
-  
+
   .menu {
     width: 320px;
     box-shadow: 0px 10px 30px rgba(27, 81, 94, 0.12);
   }
-  
+
   .menu-text {
     font-size: 16px;
     padding: 16px 24px;
   }
-  
+
   .menu li:hover {
     transform: translateX(4px);
   }
-  
+
   .separator {
     width: 75%;
   }
@@ -441,11 +447,10 @@ export default {
     max-height: calc(100vh - 50px);
     overflow-y: auto;
   }
-  
+
   .menu-text {
     padding: 10px 18px;
     font-size: 13px;
   }
 }
-
 </style>

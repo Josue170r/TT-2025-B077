@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @Service
 public class WeatherServiceImpl implements WeatherService {
@@ -29,12 +31,12 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     @Override
-    public WeatherSummary getWeatherByCoordinates(Double latitude, Double longitude) {
+    public WeatherSummary getWeatherByCoordinates(BigDecimal lat, BigDecimal lng) {
 
         String url = UriComponentsBuilder
                 .fromUriString(baseUrl + "/weather")
-                .queryParam("lat", latitude)
-                .queryParam("lon", longitude)
+                .queryParam("lat", lat)
+                .queryParam("lon", lng)
                 .queryParam("appid", apiKey)
                 .queryParam("units", "metric")
                 .queryParam("lang", "es")
@@ -45,7 +47,7 @@ public class WeatherServiceImpl implements WeatherService {
             WeatherResponse response = restTemplate.getForObject(url, WeatherResponse.class);
             return mapToWeatherSummary(response);
         } catch (Exception e) {
-            log.error("Error fetching weather data for coordinates lat={}, lon={}: {}", latitude, longitude, e.getMessage());
+            log.error("Error fetching weather data for coordinates lat={}, lng={}: {}", lat, lng, e.getMessage());
             throw new RuntimeException("Error al obtener datos del clima: " + e.getMessage());
         }
     }

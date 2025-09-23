@@ -21,5 +21,5 @@ public class SearchByNameRequest {
     private String language = "es";
 
     @Builder.Default
-    private String country = "mx";
+    private String country = "MX";
 }

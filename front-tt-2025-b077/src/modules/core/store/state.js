@@ -10,5 +10,8 @@ export default {
     last: true,
     numberOfElements: 0,
     empty: true
-  }
+  },
+  selectedPlaceId: "",
+  selectedPlaceName: "",
+  selectedPlaceDetails: {}
 }
