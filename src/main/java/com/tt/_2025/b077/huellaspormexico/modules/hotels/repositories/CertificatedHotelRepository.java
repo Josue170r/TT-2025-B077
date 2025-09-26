@@ -2,9 +2,7 @@ package com.tt._2025.b077.huellaspormexico.modules.hotels.repositories;
 
 import com.tt._2025.b077.huellaspormexico.modules.hotels.entities.CertificatedHotel;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import java.util.List;
-
-public interface CertificatedHotelRepository extends JpaRepository<CertificatedHotel, Long> {
-    List<CertificatedHotel> findBySettlementId(Long settlementId);
+public interface CertificatedHotelRepository extends JpaRepository<CertificatedHotel, Long>, JpaSpecificationExecutor<CertificatedHotel> {
 }
