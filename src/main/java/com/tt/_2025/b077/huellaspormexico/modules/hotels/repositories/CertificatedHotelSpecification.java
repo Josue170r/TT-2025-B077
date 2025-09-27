@@ -3,6 +3,8 @@ package com.tt._2025.b077.huellaspormexico.modules.hotels.repositories;
 import com.tt._2025.b077.huellaspormexico.modules.hotels.entities.CertificatedHotel;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
+
 public class CertificatedHotelSpecification {
 
     public static Specification<CertificatedHotel> byHotelName(String hotelName) {
@@ -33,9 +35,20 @@ public class CertificatedHotelSpecification {
         };
     }
 
-    public static Specification<CertificatedHotel> buildSpecification(String hotelName, Long settlementId, Long stateId) {
+    public static Specification<CertificatedHotel> byCertifications(List<Long> certificationIds) {
+        return (root, query, criteriaBuilder) -> {
+            if (certificationIds == null || certificationIds.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return root.join("certifications").get("id").in(certificationIds);
+        };
+    }
+
+    public static Specification<CertificatedHotel> buildSpecification(
+            String hotelName, Long settlementId, Long stateId, List<Long> certificationIds) {
         return byHotelName(hotelName)
                 .and(bySettlement(settlementId))
-                .and(byState(stateId));
+                .and(byState(stateId))
+                .and(byCertifications(certificationIds));
     }
 }

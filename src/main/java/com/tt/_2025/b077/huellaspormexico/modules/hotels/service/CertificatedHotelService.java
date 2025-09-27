@@ -7,5 +7,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface CertificatedHotelService {
-    Page<CertificatedHotel> findHotelsBySearch(String hotelName, Long settlementId, Long stateId, Pageable pageable);
+    CertificatedHotel findById(Long id);
+    Page<CertificatedHotel> findHotelsBySearch(String hotelName, Long settlementId, Long stateId, List<Long> certificationIds, Pageable pageable);
 }
