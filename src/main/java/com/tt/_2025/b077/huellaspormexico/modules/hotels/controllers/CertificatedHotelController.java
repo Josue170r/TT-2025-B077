@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/certificated-hotels")
+@RequestMapping("/api/hotels")
 public class CertificatedHotelController {
 
     private final CertificatedHotelService certificatedHotelService;
@@ -25,14 +25,14 @@ public class CertificatedHotelController {
 
     @RequestMapping(path = "/{id}", method = RequestMethod.GET)
     public ResponseEntity<ApiResponse<?>> findById(@PathVariable Long id) {
-        CertificatedHotel certificatedHotel = certificatedHotelService.findById(id);
+        CertificatedHotel hotel = certificatedHotelService.findById(id);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, null, certificatedHotel));
+                .body(ApiResponse.of(HttpStatus.OK, null, hotel));
     }
 
     @RequestMapping(path = "/search", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<?>> getHotelsBySearch(
+    public Page<CertificatedHotel> getHotelsBySearch(
             @RequestParam(required = false, value = "hotel_name") String hotelName,
             @RequestParam(required = false, value = "settlement") Long settlementId,
             @RequestParam(required = false, value = "state") Long stateId,
@@ -41,10 +41,7 @@ public class CertificatedHotelController {
                     sort = {"place.rating"},
                     direction = Sort.Direction.DESC
             ) Pageable pageable) {
-        Page<CertificatedHotel> hotels = certificatedHotelService.findHotelsBySearch(
+        return certificatedHotelService.findHotelsBySearch(
                 hotelName, settlementId, stateId, certificationIds, pageable);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, null, hotels));
     }
 }
