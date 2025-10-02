@@ -5,5 +5,5 @@ import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.SettlementCa
 import java.util.List;
 
 public interface SettlementService {
-    List<SettlementCatalog> findAll();
+    List<SettlementCatalog> findAll(Long stateId);
 }
