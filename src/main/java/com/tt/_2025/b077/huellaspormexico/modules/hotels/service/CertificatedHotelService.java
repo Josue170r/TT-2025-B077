@@ -8,5 +8,12 @@ import java.util.List;
 
 public interface CertificatedHotelService {
     CertificatedHotel findById(Long id);
-    Page<CertificatedHotel> findHotelsBySearch(String hotelName, Long settlementId, Long stateId, List<Long> certificationIds, Pageable pageable);
+    Page<CertificatedHotel> findHotelsBySearch(
+            String hotelName,
+            Long settlementId,
+            Long stateId,
+            List<Long> certificationIds,
+            Double latitude,
+            Double longitude,
+            Pageable pageable);
 }

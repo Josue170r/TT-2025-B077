@@ -38,10 +38,16 @@ public class CertificatedHotelServiceImpl implements CertificatedHotelService {
     @Override
     @Transactional
     public Page<CertificatedHotel> findHotelsBySearch(
-            String hotelName, Long settlementId, Long stateId, List<Long> certificationIds, Pageable pageable) {
+            String hotelName,
+            Long settlementId,
+            Long stateId,
+            List<Long> certificationIds,
+            Double latitude,
+            Double longitude,
+            Pageable pageable) {
         Specification<CertificatedHotel> spec = CertificatedHotelSpecification.buildSpecification(
-                hotelName, settlementId, stateId, certificationIds);
-        Page<CertificatedHotel>  hotels = certificatedHotelRepository.findAll(spec, pageable);
+                hotelName, settlementId, stateId, certificationIds, latitude, longitude);
+        Page<CertificatedHotel> hotels = certificatedHotelRepository.findAll(spec, pageable);
 
         hotels.getContent().stream()
                 .map(CertificatedHotel::getPlace)

@@ -37,11 +37,13 @@ public class CertificatedHotelController {
             @RequestParam(required = false, value = "settlement") Long settlementId,
             @RequestParam(required = false, value = "state") Long stateId,
             @RequestParam(required = false, value = "certifications") List<Long> certificationIds,
+            @RequestParam(required = false, value = "latitude") Double latitude,
+            @RequestParam(required = false, value = "longitude") Double longitude,
             @PageableDefault(
                     sort = {"place.rating"},
                     direction = Sort.Direction.DESC
             ) Pageable pageable) {
         return certificatedHotelService.findHotelsBySearch(
-                hotelName, settlementId, stateId, certificationIds, pageable);
+                hotelName, settlementId, stateId, certificationIds, latitude, longitude, pageable);
     }
 }
