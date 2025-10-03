@@ -13,7 +13,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @SuperBuilder
 @Entity
-@Table(name = "places")
+@Table(name = "hotels")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,15 +26,15 @@ public class CertificatedHotel extends BaseModel {
     @Column(name = "hotel_name", nullable = false, length = 500)
     private String hotelName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "place_id")
     private Place place;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "settlement_id")
     private SettlementCatalog settlement;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "hotels_certifications",
             joinColumns = @JoinColumn(name = "hotel_id"),

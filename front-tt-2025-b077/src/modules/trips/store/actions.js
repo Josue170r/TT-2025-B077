@@ -42,3 +42,21 @@ export async function toggleFavoritePlace({ commit }, placeId) {
       })
   })
 }
+
+export async function fetchStates({ commit }) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/catalogs/states')
+      .then((response) => {
+        const data = response.data.data
+        commit('setStates', data)
+        resolve()
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}

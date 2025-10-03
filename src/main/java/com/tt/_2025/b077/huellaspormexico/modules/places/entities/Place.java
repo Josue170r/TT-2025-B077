@@ -34,7 +34,7 @@ public class Place extends BaseModel {
     @Column(name = "rating", precision = 3, scale = 2, nullable = false)
     private BigDecimal rating = BigDecimal.ZERO;
 
-    @Column(name = "place_id", unique = true, length = 200)
+    @Column(name = "place_id", unique = true, length = 200, nullable = false)
     private String placeId;
 
     @Column(name = "formatted_address", length = 1000)

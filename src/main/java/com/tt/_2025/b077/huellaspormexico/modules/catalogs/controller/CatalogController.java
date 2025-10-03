@@ -64,22 +64,15 @@ public class CatalogController {
     }
 
     @RequestMapping(path = "/settlements", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<?>> getSettlements() {
-        List<SettlementCatalog> settlements = settlementService.findAll();
+    public ResponseEntity<ApiResponse<?>> getSettlements(
+            @RequestParam(required = false, value = "state") Long stateId) {
+        List<SettlementCatalog> settlements = settlementService.findAll(stateId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, null,settlements));
+                .body(ApiResponse.of(HttpStatus.OK, null, settlements));
     }
 
     @RequestMapping(path = "/postal-codes", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<?>> getPostalCodes() {
-        List<PostalCodeCatalog> postalCodes = postalCodeService.findAll();
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, null,postalCodes));
-    }
-
-    @RequestMapping(path = "/postal-codes/search", method = RequestMethod.GET)
     public ResponseEntity<ApiResponse<?>> getPostalCodesBySearch(
             @RequestParam(required = false, value = "postal_code") String postalCode,
             @RequestParam(required = false, value = "settlement") Long settlementId,

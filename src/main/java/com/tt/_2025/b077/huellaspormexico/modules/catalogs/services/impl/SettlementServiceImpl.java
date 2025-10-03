@@ -17,7 +17,10 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
     @Override
-    public List<SettlementCatalog> findAll() {
+    public List<SettlementCatalog> findAll(Long stateId) {
+        if (stateId != null) {
+            return settlementRepository.findByStateId(stateId);
+        }
         return settlementRepository.findAll();
     }
 }
