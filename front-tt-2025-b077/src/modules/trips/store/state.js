@@ -1,3 +1,10 @@
 export default {
-    favoriteIds: []
+  favoriteIds: [],
+  states: [],
+  newItinerary: {
+    tripTitle: '',
+    selectedState: '',
+    startDate: '',
+    endDate: '',
+  },
 }
