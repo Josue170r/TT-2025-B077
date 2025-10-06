@@ -66,14 +66,14 @@
             <i class="fas fa-times me-1"></i>
             Limpiar
           </button>
-          <button 
+          <!-- <button 
             @click="applySelection" 
             class="btn btn-custom btn-sm"
             :disabled="!startDate || !endDate"
           >
             <i class="fas fa-check me-1"></i>
             Aplicar
-          </button>
+          </button> -->
         </div>
       </div>
     </div>
@@ -290,15 +290,15 @@ export default {
       this.$emit('update:modelValue', emptyRange);
       this.$emit('rangeCleared', emptyRange);
     },
-    applySelection() {
-      if (this.startDate && this.endDate) {
-        const range = {
-          start: this.startDate,
-          end: this.endDate
-        };
-        this.$emit('rangeApplied', range);
-      }
-    }
+    // applySelection() {
+    //   if (this.startDate && this.endDate) {
+    //     const range = {
+    //       start: this.startDate,
+    //       end: this.endDate
+    //     };
+    //     this.$emit('rangeApplied', range);
+    //   }
+    // }
   }
 }
 </script>
