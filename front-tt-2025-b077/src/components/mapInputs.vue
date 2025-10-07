@@ -34,11 +34,11 @@
     </div>
 
     <!-- Botón de búsqueda circular separado -->
-    <button 
-      class="btn search-btn-circular d-flex align-items-center justify-content-center" 
+    <button
+      class="btn search-btn-circular d-flex align-items-center justify-content-center"
       @click="$emit('search')"
       :disabled="disabled"
-      :class="{ 'disabled': disabled }"
+      :class="{ disabled: disabled }"
     >
       🔍
     </button>
@@ -47,43 +47,43 @@
 
 <script>
 export default {
-  name: "RouteInputs",
+  name: 'RouteInputs',
   props: {
     origin: {
       type: String,
-      default: ""
+      default: '',
     },
     destination: {
       type: String,
-      default: ""
-    }
+      default: '',
+    },
   },
   data() {
     return {
       localOrigin: this.origin,
-      localDestination: this.destination
-    };
+      localDestination: this.destination,
+    }
   },
   watch: {
     origin(newVal) {
-      this.localOrigin = newVal;
+      this.localOrigin = newVal
     },
     destination(newVal) {
-      this.localDestination = newVal;
-    }
+      this.localDestination = newVal
+    },
   },
   methods: {
     handleSwap() {
-      const temp = this.localOrigin;
-      this.localOrigin = this.localDestination;
-      this.localDestination = temp;
-      
-      this.$emit('update:origin', this.localOrigin);
-      this.$emit('update:destination', this.localDestination);
-      this.$emit('swap');
-    }
-  }
-};
+      const temp = this.localOrigin
+      this.localOrigin = this.localDestination
+      this.localDestination = temp
+
+      this.$emit('update:origin', this.localOrigin)
+      this.$emit('update:destination', this.localDestination)
+      this.$emit('swap')
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -117,7 +117,7 @@ export default {
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
   z-index: -1;
 }
 
@@ -229,7 +229,7 @@ export default {
     width: 95%;
     top: 15px;
   }
-  
+
   .search-btn-circular {
     width: 56px !important;
     height: 56px !important;
@@ -242,35 +242,35 @@ export default {
     width: 98%;
     top: 10px;
   }
-  
+
   .route-input {
     font-size: 0.85rem !important;
     padding: 0.25rem 0 !important;
   }
-  
+
   .route-input::placeholder {
     font-size: 0.85rem !important;
   }
-  
+
   .icon {
     width: 20px;
     height: 20px;
   }
-  
+
   .icon.origin {
     border-width: 2px;
   }
-  
+
   .icon.destination i {
     font-size: 16px;
   }
-  
+
   .swap-btn {
     width: 32px !important;
     height: 32px !important;
     font-size: 0.95rem !important;
   }
-  
+
   .search-btn-circular {
     width: 48px !important;
     height: 48px !important;
@@ -283,7 +283,7 @@ export default {
   .floating-controls {
     max-width: 600px;
   }
-  
+
   .search-btn-circular {
     width: 72px !important;
     height: 72px !important;

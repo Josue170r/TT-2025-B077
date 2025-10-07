@@ -245,11 +245,7 @@
         <h5 class="section-title mb-4">Horario</h5>
         <div class="schedule-container">
           <div v-if="weekdaySchedule && Object.keys(weekdaySchedule).length > 0" class="row g-3">
-            <div 
-              v-for="(hours, day) in weekdaySchedule" 
-              :key="day" 
-              class="col-6 col-md-4 col-lg-3"
-            >
+            <div v-for="(hours, day) in weekdaySchedule" :key="day" class="col-6 col-md-4 col-lg-3">
               <div class="schedule-item">
                 <div class="day-name">{{ day }}</div>
                 <div class="day-hours">{{ hours }}</div>
@@ -411,7 +407,9 @@ export default {
       return this.newReview.text.trim().length > 0 && this.newReview.rating > 0
     },
     isFavorite() {
-      return this.selectedPlaceDetails?.id && this.favoriteIds.includes(this.selectedPlaceDetails.id)
+      return (
+        this.selectedPlaceDetails?.id && this.favoriteIds.includes(this.selectedPlaceDetails.id)
+      )
     },
     placePhone() {
       return this.selectedPlaceDetails?.formattedPhoneNumber || null
@@ -445,7 +443,7 @@ export default {
     }),
     async toggleFavorite() {
       if (!this.selectedPlaceDetails?.id) return
-      
+
       try {
         await this.toggleFavoritePlace(this.selectedPlaceDetails.id)
       } catch (error) {

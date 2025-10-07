@@ -6,11 +6,15 @@
           <div class="col-12 col-lg-10">
             <div class="card shadow-lg overflow-hidden">
               <div class="row g-0 min-vh-400">
-                <div class="mb-0 col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white">
+                <div
+                  class="mb-0 col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white"
+                >
                   <img :src="logoUrl" alt="Logo" class="img-fluid logo-size" />
                 </div>
 
-                <div class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2">
+                <div
+                  class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2"
+                >
                   <h4 class="text-center mb-2 sub-text">
                     Completa los campos para crear tu cuenta.
                   </h4>
@@ -194,9 +198,7 @@
                       <button type="button" class="btn btn-outline-secondary" @click="goToLogin">
                         Cancelar
                       </button>
-                      <button type="submit" class="btn btn-success">
-                        Registrarse
-                      </button>
+                      <button type="submit" class="btn btn-success">Registrarse</button>
                     </div>
                   </form>
                   <div class="mt-4 mb-5 d-flex justify-content-end align-items-center">
@@ -229,7 +231,7 @@ export default {
         lastName: '',
         secondLastName: '',
         phoneNumber: '',
-        password: ''
+        password: '',
       },
       confirmPassword: '',
       usernameFocused: false,
@@ -240,7 +242,7 @@ export default {
       emailFocused: false,
       passwordFocused: false,
       confirmPasswordFocused: false,
-      isNavigating: false
+      isNavigating: false,
     }
   },
   mounted() {
@@ -250,7 +252,7 @@ export default {
   },
   methods: {
     ...mapActions('auth', {
-      singUp: 'singUp'
+      singUp: 'singUp',
     }),
     register() {
       if (this.user.password !== this.confirmPassword) {
@@ -262,7 +264,7 @@ export default {
           this.$alert.success({
             title: 'Usuario registrado',
             text: response.data.message,
-            nextRoute: 'authLogin'
+            nextRoute: 'authLogin',
           })
         })
         .catch((error) => {
@@ -278,7 +280,7 @@ export default {
         phoneNumber: 'phoneNumberFocused',
         email: 'emailFocused',
         password: 'passwordFocused',
-        confirmPassword: 'confirmPasswordFocused'
+        confirmPassword: 'confirmPasswordFocused',
       }
       const key = map[field]
       if (key) this[key] = focused
@@ -290,8 +292,8 @@ export default {
       setTimeout(() => {
         this.$router.push({ name: 'authLogin' }).catch(() => {})
       }, 600)
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -309,7 +311,7 @@ export default {
   }
 }
 .floating-input {
-  border: solid #1B515E !important;
+  border: solid #1b515e !important;
   border-radius: 10px !important;
   padding: 14px 10px 6px 10px !important;
   transition: all 0.3s ease;
@@ -323,7 +325,7 @@ export default {
 .floating-label {
   left: 12px;
   top: 11px;
-  color: #1B515E;
+  color: #1b515e;
   font-size: 12px;
   pointer-events: none;
   transition: all 0.3s ease;
@@ -336,12 +338,14 @@ export default {
 .floating-input.has-content + .floating-label,
 .floating-label.active {
   transform: translateY(-20px) scale(0.85);
-  color: #1B515E;
+  color: #1b515e;
 }
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.6s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -349,7 +353,7 @@ export default {
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #1B515E;
+  color: #1b515e;
   font-size: 14px;
   z-index: 1;
   pointer-events: none;
@@ -372,7 +376,7 @@ export default {
   padding-left: 2.8rem !important; /* Mantiene espacio cuando está enfocado Y tiene contenido */
 }
 
-hr{
+hr {
   height: 4px;
   background-color: #35aa06;
   border-color: #35aa06;
@@ -381,33 +385,33 @@ hr{
   font-family: 'Open Sans', sans-serif;
   font-weight: 500;
   font-size: 16px;
-  color: #1B515E;
+  color: #1b515e;
 }
 .title {
   font-family: 'Open Sans', sans-serif;
   font-weight: 400;
   font-size: 12px;
-  color: #1B515E;
+  color: #1b515e;
 }
 .btn-outline-secondary {
-  color: #1B515E !important;
-  background-color: #ABCD9E !important;
-  border-color: #ABCD9E !important;
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #abcd9e !important;
 }
 .btn-outline-secondary:focus {
   color: #fff !important;
-  background-color: #1B515E !important;
-  border-color: #1B515E !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
 }
 .btn-success {
-  color: #ABCD9E !important;
-  background-color: #1B515E !important;
-  border-color: #1B515E !important;
+  color: #abcd9e !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
 }
 .btn-success:focus {
-  color: #1B515E !important;
-  background-color: #ABCD9E !important;
-  border-color: #ABCD9E !important;
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #abcd9e !important;
 }
 .green-link {
   color: #35aa06 !important;
@@ -418,13 +422,12 @@ hr{
 }
 
 .card.shadow-lg {
-  box-shadow: 
+  box-shadow:
     0 1rem 3rem rgba(190, 212, 89, 0.2),
     0 0.5rem 2rem rgba(51, 204, 64, 0.15) !important;
-  }
-
-  .card {
-  border: 0.5px solid #ABCD9E;
 }
 
+.card {
+  border: 0.5px solid #abcd9e;
+}
 </style>

@@ -1,5 +1,6 @@
 <template>
-  <div class="pb-16"> <!-- este padding evita que el contenido quede oculto -->
+  <div class="pb-16">
+    <!-- este padding evita que el contenido quede oculto -->
     <h1 class="text-center text-2xl font-bold mt-4">Bienvenido</h1>
     <p class="p-4">Favoritos</p>
 
@@ -8,9 +9,9 @@
 </template>
 
 <script>
-import BottomNavbar from "@/components/bottomnavbar.vue";
+import BottomNavbar from '@/components/bottomnavbar.vue'
 
 export default {
-  components: { BottomNavbar }
-};
+  components: { BottomNavbar },
+}
 </script>

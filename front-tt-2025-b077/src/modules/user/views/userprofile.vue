@@ -318,28 +318,27 @@ export default {
     },
 
     onFileSelected(e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
+      const file = e.target.files && e.target.files[0]
+      if (!file) return
 
-      this.localPreview = URL.createObjectURL(file);
-      this.uploadingImage = true;
+      this.localPreview = URL.createObjectURL(file)
+      this.uploadingImage = true
 
       this.uploadUserPicture(file)
         .then((response) => {
-          this.$alert.success(response.message);
-          this.getProfile()
-            .then((response) => {
-              this.setUser(response.data)
-            })
+          this.$alert.success(response.message)
+          this.getProfile().then((response) => {
+            this.setUser(response.data)
+          })
         })
         .catch((error) => {
-          this.localPreview = null;
-          this.$alert.error(getErrorDetails(error));
+          this.localPreview = null
+          this.$alert.error(getErrorDetails(error))
         })
         .finally(() => {
-          this.uploadingImage = false;
-          if (this.$refs.fileInput) this.$refs.fileInput.value = '';
-        });
+          this.uploadingImage = false
+          if (this.$refs.fileInput) this.$refs.fileInput.value = ''
+        })
     },
 
     updateUserData() {

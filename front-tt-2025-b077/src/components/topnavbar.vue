@@ -2,40 +2,40 @@
   <nav class="navbar navbar-expand bg-light-blur">
     <div class="container-fluid justify-content-center">
       <div class="navbar-nav nav-pills-custom">
-        <button 
-          @click="setActiveFilter('preferencias')" 
+        <button
+          @click="setActiveFilter('preferencias')"
           class="btn nav-filter-btn"
-          :class="{ 'active': activeFilter === 'preferencias' }"
+          :class="{ active: activeFilter === 'preferencias' }"
           type="button"
         >
           <span class="nav-text">Preferencias</span>
           <div class="active-indicator"></div>
         </button>
-        
-        <button 
-          @click="setActiveFilter('mejores')" 
+
+        <button
+          @click="setActiveFilter('mejores')"
           class="btn nav-filter-btn"
-          :class="{ 'active': activeFilter === 'mejores' }"
+          :class="{ active: activeFilter === 'mejores' }"
           type="button"
         >
           <span class="nav-text">Mejores</span>
           <div class="active-indicator"></div>
         </button>
-        
-        <button 
-          @click="setActiveFilter('hoteles')" 
+
+        <button
+          @click="setActiveFilter('hoteles')"
           class="btn nav-filter-btn"
-          :class="{ 'active': activeFilter === 'hoteles' }"
+          :class="{ active: activeFilter === 'hoteles' }"
           type="button"
         >
           <span class="nav-text">Hoteles</span>
           <div class="active-indicator"></div>
         </button>
-        
-        <button 
-          @click="setActiveFilter('restaurantes')" 
+
+        <button
+          @click="setActiveFilter('restaurantes')"
           class="btn nav-filter-btn"
-          :class="{ 'active': activeFilter === 'restaurantes' }"
+          :class="{ active: activeFilter === 'restaurantes' }"
           type="button"
         >
           <span class="nav-text">Restaurantes</span>
@@ -47,29 +47,28 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref } from 'vue'
 
 export default {
-  name: "TopNavbar",
+  name: 'TopNavbar',
   emits: ['filter-change'],
   setup(props, { emit }) {
-    const activeFilter = ref('preferencias');
-    
+    const activeFilter = ref('preferencias')
+
     const setActiveFilter = (filter) => {
-      activeFilter.value = filter;
-      emit('filter-change', filter);
-    };
-    
-    return { 
+      activeFilter.value = filter
+      emit('filter-change', filter)
+    }
+
+    return {
       activeFilter,
-      setActiveFilter
-    };
+      setActiveFilter,
+    }
   },
-};
+}
 </script>
 
 <style scoped>
-
 .navbar-nav.nav-pills-custom {
   border-radius: 50px;
   padding: 8px 12px;
@@ -81,7 +80,7 @@ export default {
   border-radius: 25px !important;
   border: none !important;
   background: transparent !important;
-  color: #1B515E !important;
+  color: #1b515e !important;
   font-weight: 500;
   font-size: 14px;
   letter-spacing: 0.3px;
@@ -104,7 +103,7 @@ export default {
   left: 50%;
   width: 0;
   height: 3px;
-  background: linear-gradient(90deg, #ABCD9E, #8BB68A);
+  background: linear-gradient(90deg, #abcd9e, #8bb68a);
   border-radius: 2px;
   transform: translateX(-50%);
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -125,7 +124,7 @@ export default {
 }
 
 .nav-filter-btn:hover {
-  color: #ABCD9E !important;
+  color: #abcd9e !important;
   transform: translateY(-2px);
 }
 
@@ -144,7 +143,7 @@ export default {
 }
 
 .nav-filter-btn.active {
-  color: #ABCD9E !important;
+  color: #abcd9e !important;
   font-weight: 600;
 }
 
@@ -169,12 +168,12 @@ export default {
     padding: 6px 8px;
     gap: 2px;
   }
-  
+
   .nav-filter-btn {
     padding: 8px 12px !important;
     font-size: 12px;
   }
-  
+
   .active-indicator {
     height: 2px;
   }
@@ -184,12 +183,12 @@ export default {
   .container-fluid {
     padding: 0 10px;
   }
-  
+
   .navbar-nav.nav-pills-custom {
     padding: 2px 4px;
     gap: 1px;
   }
-  
+
   .nav-filter-btn {
     padding: 6px 10px !important;
     font-size: 11px;
@@ -209,12 +208,12 @@ export default {
     font-size: 16px;
     letter-spacing: 0.6px;
   }
-  
+
   .navbar-nav.nav-pills-custom {
     padding: 5px 10%;
     gap: 50px;
   }
-  
+
   .active-indicator {
     height: 3px;
   }

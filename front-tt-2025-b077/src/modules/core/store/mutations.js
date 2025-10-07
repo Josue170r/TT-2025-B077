@@ -14,7 +14,7 @@ export default {
       first: paginationData.first,
       last: paginationData.last,
       numberOfElements: paginationData.numberOfElements,
-      empty: paginationData.empty
+      empty: paginationData.empty,
     }
   },
   setSelectedPlaceId(state, placeId) {
@@ -25,5 +25,5 @@ export default {
   },
   setSelectedPlaceName(state, data) {
     state.selectedPlaceName = data
-  }
+  },
 }

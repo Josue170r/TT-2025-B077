@@ -6,21 +6,23 @@
           <div class="col-12 col-lg-10">
             <div class="card shadow-lg overflow-hidden">
               <div class="row g-0 min-vh-400">
-                
                 <!-- Logo -->
-                <div class="col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white">
+                <div
+                  class="col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white"
+                >
                   <img :src="logoUrl" alt="Logo letras" class="img-fluid logo-size" />
                 </div>
 
-                <div class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2">
-                  <h4 class="text-center mb-2 sub-text">
-                    Recuperar contraseña
-                  </h4>
+                <div
+                  class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2"
+                >
+                  <h4 class="text-center mb-2 sub-text">Recuperar contraseña</h4>
                   <h4 class="text-center mb-2 title mt-4">
-                    Introduce tu correo electrónico, te enviaremos un correo de validación para cambiar tu contraseña.
+                    Introduce tu correo electrónico, te enviaremos un correo de validación para
+                    cambiar tu contraseña.
                   </h4>
                   <hr />
-                  
+
                   <form @submit.prevent="recuperarPassword">
                     <div class="mb-6 position-relative has-icon">
                       <i class="fa-solid fa-envelope position-absolute icon-input"></i>
@@ -34,10 +36,10 @@
                         @blur="setFocus('correoRecuperacion', false)"
                         required
                       />
-                      <label 
-                        for="correoRecuperacion" 
+                      <label
+                        for="correoRecuperacion"
                         class="floating-label position-absolute fs-6"
-                        :class="{ 'active': correoRecuperacionFocused || correoRecuperacion }"
+                        :class="{ active: correoRecuperacionFocused || correoRecuperacion }"
                       >
                         Correo electrónico
                       </label>
@@ -47,25 +49,21 @@
                       <button type="button" class="btn btn-outline-secondary" @click="volverALogin">
                         Volver
                       </button>
-                      <button type="submit" class="btn btn-success">
-                        Recuperar mi contraseña
-                      </button>
+                      <button type="submit" class="btn btn-success">Recuperar mi contraseña</button>
                     </div>
 
-                    <div 
-                      v-if="mensajeRecuperacion" 
+                    <div
+                      v-if="mensajeRecuperacion"
                       class="alert-success-custom mt-4 d-flex align-items-start text-justify"
                     >
                       <i class="fa-regular fa-circle-check check-icon me-2"></i>
                       <span>{{ mensajeRecuperacion }}</span>
                     </div>
                   </form>
-                  
+
                   <div class="mt-5 mb-5 d-flex justify-content-end align-items-center">
                     <h6 class="title mb-0 me-1">No tengo una cuenta</h6>
-                    <a href="#" class="green-link" @click.prevent="irARegistro">
-                      Registrarse
-                    </a>
+                    <a href="#" class="green-link" @click.prevent="irARegistro"> Registrarse </a>
                   </div>
                 </div>
               </div>
@@ -78,7 +76,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions } from 'vuex'
 
 export default {
   name: 'ForgotPasswordComponent',
@@ -89,22 +87,22 @@ export default {
       correoRecuperacion: '',
       correoRecuperacionFocused: false,
       mensajeRecuperacion: '',
-      isNavigating: false
-    };
+      isNavigating: false,
+    }
   },
   mounted() {
     setTimeout(() => {
-      this.showForgot = true;
-    }, 100);
+      this.showForgot = true
+    }, 100)
   },
   methods: {
     ...mapActions('auth', {
-      forgotPassword: 'forgotPassword'
+      forgotPassword: 'forgotPassword',
     }),
     recuperarPassword() {
       if (!this.correoRecuperacion) {
-        this.mensajeRecuperacion = "Por favor, ingresa tu correo electrónico.";
-        return;
+        this.mensajeRecuperacion = 'Por favor, ingresa tu correo electrónico.'
+        return
       }
 
       this.forgotPassword(this.correoRecuperacion)
@@ -112,46 +110,47 @@ export default {
           this.$alert.success({
             title: 'Email enviado',
             text: response.data.message,
-            nextRoute: 'authLogin'
+            nextRoute: 'authLogin',
           })
         })
         .catch((error) => {
           this.$alert.error(error.response.data.message)
         })
-      
     },
     setFocus(field, focused) {
       if (field === 'correoRecuperacion') {
-        this.correoRecuperacionFocused = focused;
+        this.correoRecuperacionFocused = focused
       }
     },
     volverALogin() {
-      if (this.isNavigating) return;
-      this.isNavigating = true;
-      this.showForgot = false;
+      if (this.isNavigating) return
+      this.isNavigating = true
+      this.showForgot = false
 
       setTimeout(() => {
-        this.$router.push({ name: 'authLogin' }).catch(() => {});
-      }, 600);
+        this.$router.push({ name: 'authLogin' }).catch(() => {})
+      }, 600)
     },
     irARegistro() {
-      if (this.isNavigating) return;
-      this.isNavigating = true;
-      this.showForgot = false;
+      if (this.isNavigating) return
+      this.isNavigating = true
+      this.showForgot = false
 
       setTimeout(() => {
-        this.$router.push({ name: 'authRegister' }).catch(() => {});
-      }, 600);
-    }
-  }
-};
+        this.$router.push({ name: 'authRegister' }).catch(() => {})
+      }, 600)
+    },
+  },
+}
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.6s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -171,7 +170,7 @@ export default {
 }
 
 .floating-input {
-  border: solid #1B515E !important;
+  border: solid #1b515e !important;
   border-radius: 10px !important;
   padding: 14px 10px 6px 10px !important;
   transition: all 0.3s ease;
@@ -187,7 +186,7 @@ export default {
 .floating-label {
   left: 12px;
   top: 11px;
-  color: #1B515E;
+  color: #1b515e;
   font-size: 12px;
   pointer-events: none;
   transition: all 0.3s ease;
@@ -201,10 +200,10 @@ export default {
 .floating-input.has-content + .floating-label,
 .floating-label.active {
   transform: translateY(-20px) scale(0.85);
-  color: #1B515E;
+  color: #1b515e;
 }
 
-hr{
+hr {
   height: 4px;
   background-color: #35aa06;
   border-color: #35aa06;
@@ -214,38 +213,38 @@ hr{
   font-family: 'Open Sans', sans-serif;
   font-weight: 500;
   font-size: 16px;
-  color: #1B515E;
+  color: #1b515e;
 }
 
 .title {
   font-family: 'Open Sans', sans-serif;
   font-weight: 400;
   font-size: 12px;
-  color: #1B515E;
+  color: #1b515e;
 }
 
 .btn-outline-secondary {
-  color: #1B515E !important;
-  background-color: #ABCD9E !important;
-  border-color: #ABCD9E !important;
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #abcd9e !important;
 }
 
 .btn-outline-secondary:focus {
   color: #fff !important;
-  background-color: #1B515E !important;
-  border-color: #1B515E !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
 }
 
 .btn-success {
-  color: #ABCD9E !important;
-  background-color: #1B515E !important;
-  border-color: #1B515E !important;
+  color: #abcd9e !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
 }
 
 .btn-success:focus {
-  color: #1B515E !important;
-  background-color: #ABCD9E !important;
-  border-color: #1B515E !important;
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #1b515e !important;
 }
 
 .green-link {
@@ -260,7 +259,7 @@ hr{
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #1B515E;
+  color: #1b515e;
   font-size: 14px;
   z-index: 1;
   pointer-events: none;
@@ -284,13 +283,13 @@ hr{
 }
 
 .card.shadow-lg {
-  box-shadow: 
+  box-shadow:
     0 1rem 3rem rgba(190, 212, 89, 0.2),
     0 0.5rem 2rem rgba(51, 204, 64, 0.15) !important;
-  }
+}
 
-  .card {
-  border: 0.5px solid #ABCD9E;
+.card {
+  border: 0.5px solid #abcd9e;
 }
 
 .alert-success-custom {

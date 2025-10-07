@@ -2,11 +2,8 @@ import axios from 'axios'
 import store from '../store'
 import router from '../router'
 
+const baseURL = import.meta.env.DEV ? 'http://127.0.0.1:8080/api/' : import.meta.env.VITE_API_BACK
 
-const baseURL = import.meta.env.DEV
-  ? 'http://127.0.0.1:8080/api/'
-  : import.meta.env.VITE_API_BACK
-  
 axios.defaults.baseURL = baseURL
 
 // Token Refresh
@@ -41,7 +38,7 @@ axios.interceptors.request.use(
   },
   (error) => {
     Promise.reject(error)
-  }
+  },
 )
 // Response interceptor
 axios.interceptors.response.use(
@@ -52,11 +49,7 @@ axios.interceptors.response.use(
     const { config, response } = error
     const originalRequest = config
 
-    if (
-      response &&
-      response.status === 401 &&
-      originalRequest.url === `/auth/refresh`
-    ) {
+    if (response && response.status === 401 && originalRequest.url === `/auth/refresh`) {
       store.commit('auth/clearTokens')
       isAlreadyFetchingAccessToken = false
       router
@@ -65,11 +58,7 @@ axios.interceptors.response.use(
         })
         .catch(() => {})
       return Promise.reject(error)
-    } else if (
-      response &&
-      response.status === 401 &&
-      config.url !== '/auth/login'
-    ) {
+    } else if (response && response.status === 401 && config.url !== '/auth/login') {
       if (!isAlreadyFetchingAccessToken) {
         isAlreadyFetchingAccessToken = true
         store.dispatch('auth/refreshToken').then((accessToken) => {
@@ -87,6 +76,6 @@ axios.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
-export default axios;
+export default axios

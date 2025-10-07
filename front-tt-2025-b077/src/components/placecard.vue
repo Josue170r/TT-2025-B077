@@ -24,20 +24,12 @@
       </v-carousel>
 
       <div v-else class="default-image-container">
-        <img
-          :src="defaultImage"
-          alt="Imagen por defecto"
-          class="default-image"
-        />
+        <img :src="defaultImage" alt="Imagen por defecto" class="default-image" />
       </div>
 
       <div class="favorite-btn" @click.stop="handleToggleFavorite">
         <i
-          :class="
-            isFavorite
-              ? 'mdi mdi-heart text-danger'
-              : 'mdi mdi-heart-outline text-white'
-          "
+          :class="isFavorite ? 'mdi mdi-heart text-danger' : 'mdi mdi-heart-outline text-white'"
         ></i>
       </div>
 
@@ -57,9 +49,7 @@
         <span v-if="placeTypeLabel" class="place-type">
           {{ placeTypeLabel }}
         </span>
-        <span v-if="reviewsCount > 0" class="reviews-count">
-          {{ reviewsCount }} reseñas
-        </span>
+        <span v-if="reviewsCount > 0" class="reviews-count"> {{ reviewsCount }} reseñas </span>
       </div>
     </v-card-text>
   </v-card>
@@ -71,16 +61,16 @@ export default {
   props: {
     place: {
       type: Object,
-      required: true
+      required: true,
     },
     isFavorite: {
       type: Boolean,
-      default: false
+      default: false,
     },
     logoUrl: {
       type: String,
-      default: '/logo-letras.png'
-    }
+      default: '/logo-letras.png',
+    },
   },
   emits: ['select-place', 'toggle-favorite'],
   computed: {
@@ -101,7 +91,7 @@ export default {
     },
     reviewsCount() {
       return this.place.reviews?.length || 0
-    }
+    },
   },
   methods: {
     handlePlaceClick() {
@@ -128,8 +118,8 @@ export default {
         lodging: 'Hotel',
       }
       return typeTranslations[type] || type.replace(/_/g, ' ')
-    }
-  }
+    },
+  },
 }
 </script>
 
