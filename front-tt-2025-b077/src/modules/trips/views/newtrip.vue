@@ -233,8 +233,7 @@ export default {
   },
   mounted() {
     this.fetchStates()
-    
-    // Inicializar valores desde el store si existen
+
     if (this.newItinerary.tripTitle) {
       this.tripTitle = this.newItinerary.tripTitle
     }
@@ -244,10 +243,10 @@ export default {
     if (this.newItinerary.startDate && this.newItinerary.endDate) {
       this.selectedDateRange = {
         start: new Date(this.newItinerary.startDate),
-        end: new Date(this.newItinerary.endDate)
+        end: new Date(this.newItinerary.endDate),
       }
     }
-    
+
     setTimeout(() => {
       this.showForm = true
     }, 100)
@@ -296,17 +295,15 @@ export default {
 
     viewAccommodations() {
       if (!this.isFormValid) {
-        const mensaje =
+        const message =
           this.missingFields.length === 1
             ? `Por favor selecciona ${this.missingFields[0]}`
             : `Por favor completa: ${this.missingFields.join(', ')}`
 
-        alert(mensaje)
+        this.$alert.error(message)
         return
       }
-
-      // TODO: Redirigir a la pantalla de hoteles
-      console.log('Validación exitosa - Título, estado y fechas seleccionados')
+      this.$router.push({ name: 'hotels' })
     },
 
     getStateName(stateId) {
