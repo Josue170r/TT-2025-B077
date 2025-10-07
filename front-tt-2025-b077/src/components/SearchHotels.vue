@@ -1,10 +1,18 @@
 <template>
   <nav class="top-navbar-container">
+    <div class="navbar-header">
+      <div class="menu-wrapper">
+        <hamburgermenu @navigate="handleNavigation" />
+      </div>
+      <h1 class="navbar-title">Hoteles</h1>
+      <div class="spacer"></div>
+    </div>
+
     <div class="navbar-content d-flex justify-content-center py-2 px-3">
       <div class="search-container">
-        <div 
-          class="search-wrapper" 
-          :class="{ 'focused': isFocused, 'has-value': query, 'loading': isLoading }"
+        <div
+          class="search-wrapper"
+          :class="{ focused: isFocused, 'has-value': query, loading: isLoading }"
         >
           <input
             type="text"
@@ -25,15 +33,15 @@
             <div class="search-glow"></div>
           </div>
         </div>
-        
+
         <transition name="dropdown">
           <div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown">
-            <div 
-              v-for="(suggestion, index) in suggestions" 
+            <div
+              v-for="(suggestion, index) in suggestions"
               :key="suggestion.placeId"
               class="suggestion-item"
               @click="selectSuggestion(suggestion)"
-              :class="{ 'highlighted': index === selectedIndex }"
+              :class="{ highlighted: index === selectedIndex }"
             >
               <i class="fa-solid fa-hotel suggestion-icon"></i>
               <div class="suggestion-content">
@@ -49,86 +57,127 @@
 </template>
 
 <script>
+import hamburgermenu from '@/components/hamburgermenu.vue'
+
 export default {
-  name: "HotelSearchNavbar",
+  name: 'SearchHotels',
+  components: {
+    hamburgermenu,
+  },
   data() {
     return {
-      query: "",
+      query: '',
       isFocused: false,
       isLoading: false,
       suggestions: [],
       selectedIndex: -1,
       showSuggestions: false,
-    };
+    }
   },
   methods: {
+    handleNavigation(route) {
+      this.$emit('navigate', route)
+    },
     handleFocus() {
-      this.isFocused = true;
-      this.showSuggestions = this.suggestions.length > 0;
+      this.isFocused = true
+      this.showSuggestions = this.suggestions.length > 0
     },
     handleBlur() {
       setTimeout(() => {
-        this.isFocused = false;
-        this.showSuggestions = false;
-      }, 150);
+        this.isFocused = false
+        this.showSuggestions = false
+      }, 150)
     },
     handleInput() {
       if (this.query.length > 2) {
-        this.isLoading = true;
+        this.isLoading = true
         setTimeout(() => {
           this.suggestions = [
-            { placeId: 1, mainText: "Hotel Palace", secondaryText: "Centro Histórico" },
-            { placeId: 2, mainText: "Suites Reforma", secondaryText: "Colonia Juárez" },
-          ];
-          this.isLoading = false;
-          this.showSuggestions = true;
-        }, 500);
+            { placeId: 1, mainText: 'Hotel Palace', secondaryText: 'Centro Histórico' },
+            { placeId: 2, mainText: 'Suites Reforma', secondaryText: 'Colonia Juárez' },
+          ]
+          this.isLoading = false
+          this.showSuggestions = true
+        }, 500)
       } else {
-        this.suggestions = [];
-        this.showSuggestions = false;
-        this.isLoading = false;
+        this.suggestions = []
+        this.showSuggestions = false
+        this.isLoading = false
       }
     },
     performSearch() {
       if (this.query) {
-        console.log("Buscando hoteles:", this.query);
-        this.$emit('search-hotels', this.query);
+        console.log('Buscando hoteles:', this.query)
+        this.$emit('search-hotels', this.query)
       }
     },
     selectSuggestion(suggestion) {
-      this.query = suggestion.mainText;
-      this.showSuggestions = false;
-      this.isFocused = false;
-      this.$emit('place-selected', suggestion);
-      this.performSearch();
-    }
+      this.query = suggestion.mainText
+      this.showSuggestions = false
+      this.isFocused = false
+      this.$emit('place-selected', suggestion)
+      this.performSearch()
+    },
   },
-};
+}
 </script>
 
 <style scoped>
-
 .top-navbar-container {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
-  z-index: 1050;
   background-color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-bottom: 2px solid #b0d4a1;
+}
+
+.navbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.navbar-title {
+  color: #1b515e !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 1.5rem;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.menu-wrapper {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-wrapper :deep(svg),
+.menu-wrapper :deep(i) {
+  color: #1b515e !important;
+  font-size: 28px;
+}
+
+.spacer {
+  width: 40px;
+  flex-shrink: 0;
 }
 
 .navbar-content {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  width: 100%;
 }
 
 .search-container {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 650px;
   margin: 0;
 }
 
@@ -199,7 +248,6 @@ export default {
   transform: scale(0.9);
 }
 
-/* Efectos de brillo */
 .search-effects {
   position: absolute;
   top: 0;
@@ -226,7 +274,6 @@ export default {
   opacity: 1;
 }
 
-/* Spinner de carga */
 .loading-spinner {
   width: 1.2rem;
   height: 1.2rem;
@@ -237,10 +284,11 @@ export default {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Dropdown de sugerencias */
 .suggestions-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -297,7 +345,6 @@ export default {
   color: #777;
 }
 
-/* Animación del dropdown */
 .dropdown-enter-active {
   animation: slideDown 0.3s ease-out;
 }
@@ -317,14 +364,16 @@ export default {
   }
 }
 
-/*
-  ====================================
-  RESPONSIVE
-  ====================================
-*/
-
 /* Tablets */
 @media (max-width: 768px) {
+  .navbar-header {
+    padding: 10px 15px 6px;
+  }
+
+  .navbar-title {
+    font-size: 1.3rem;
+  }
+
   .navbar-content {
     padding: 8px 12px !important;
   }
@@ -345,16 +394,34 @@ export default {
   .suggestion-item {
     padding: 10px 15px;
   }
+
+  .menu-wrapper :deep(svg),
+  .menu-wrapper :deep(i) {
+    font-size: 24px;
+  }
 }
 
 /* Mobile */
 @media (max-width: 576px) {
-  .top-navbar-container {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  .navbar-header {
+    padding: 8px 12px 5px;
+  }
+
+  .navbar-title {
+    font-size: 1.2rem;
   }
 
   .navbar-content {
     padding: 6px 10px !important;
+  }
+
+  .menu-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .spacer {
+    width: 36px;
   }
 
   .search-wrapper {
@@ -404,12 +471,31 @@ export default {
   .suggestion-secondary {
     font-size: 0.8rem;
   }
+
+  .menu-wrapper :deep(svg),
+  .menu-wrapper :deep(i) {
+    font-size: 22px;
+  }
 }
 
 /* Mobile pequeño */
 @media (max-width: 375px) {
-  .search-input::placeholder {
-    content: "Buscar hoteles...";
+  .navbar-title {
+    font-size: 1.1rem;
+  }
+
+  .menu-wrapper {
+    width: 32px;
+    height: 32px;
+  }
+
+  .spacer {
+    width: 32px;
+  }
+
+  .menu-wrapper :deep(svg),
+  .menu-wrapper :deep(i) {
+    font-size: 20px;
   }
 }
 </style>
