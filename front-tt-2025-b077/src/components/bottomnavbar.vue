@@ -2,19 +2,15 @@
   <nav class="bottom-navbar navbar fixed-bottom bg-white border-top shadow-sm">
     <ul class="nav w-100 justify-content-around">
       <li class="nav-item">
-        <router-link 
-          :to="{ name: 'home' }" 
-          class="nav-link" 
-          :class="{ active: isActive('home') }"
-        >
+        <router-link :to="{ name: 'home' }" class="nav-link" :class="{ active: isActive('home') }">
           <i class="fa-solid fa-magnifying-glass icon icon-large"></i>
           <span>Buscar</span>
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link 
-          :to="{ name: 'favorites' }" 
-          class="nav-link" 
+        <router-link
+          :to="{ name: 'favorites' }"
+          class="nav-link"
           :class="{ active: isActive('favorites') }"
         >
           <i class="fa-regular fa-heart icon icon-large"></i>
@@ -22,9 +18,9 @@
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link 
-          :to="{ name: 'new-trips' }" 
-          class="nav-link" 
+        <router-link
+          :to="{ name: 'new-trips' }"
+          class="nav-link"
           :class="{ active: isActive('new-trips') }"
         >
           <img src="/iconogenerar.ico" alt="Itinerario" class="icon-img icon-large" />
@@ -32,9 +28,9 @@
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link 
-          :to="{ name: 'my-trips' }" 
-          class="nav-link" 
+        <router-link
+          :to="{ name: 'my-trips' }"
+          class="nav-link"
           :class="{ active: isActive('my-trips') }"
         >
           <i class="fa-regular fa-map icon icon-large"></i>
@@ -42,9 +38,9 @@
         </router-link>
       </li>
       <li class="nav-item">
-        <router-link 
-          :to="{ name: 'myaccount' }" 
-          class="nav-link" 
+        <router-link
+          :to="{ name: 'myaccount' }"
+          class="nav-link"
           :class="{ active: isActive('myaccount') }"
         >
           <i class="fa-regular fa-circle-user icon icon-large"></i>
@@ -56,16 +52,16 @@
 </template>
 
 <script>
-import { useRoute } from "vue-router";
+import { useRoute } from 'vue-router'
 
 export default {
-  name: "BottomNavbar",
+  name: 'BottomNavbar',
   setup() {
-    const route = useRoute();
-    const isActive = (path) => route.name === path;
-    return { isActive };
+    const route = useRoute()
+    const isActive = (path) => route.name === path
+    return { isActive }
   },
-};
+}
 </script>
 
 <style scoped>
@@ -84,7 +80,7 @@ export default {
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  color: #1B515E;
+  color: #1b515e;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   padding: 8px;
   border-radius: 12px;
@@ -118,7 +114,7 @@ export default {
 }
 
 .bottom-navbar .nav-link:hover {
-  color: #ABCD9E;
+  color: #abcd9e;
   transform: scale(1.05);
   background-color: rgba(171, 205, 158, 0.1);
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -135,7 +131,7 @@ export default {
 }
 
 .bottom-navbar .nav-link.active {
-  color: #ABCD9E;
+  color: #abcd9e;
   font-weight: 600;
   transform: scale(1.05);
   background-color: rgba(171, 205, 158, 0.15);
@@ -184,14 +180,16 @@ export default {
     border-radius: 25px;
     box-shadow: 0 4px 15px rgba(168, 37, 37, 0.2);
     border: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    transition:
+      all 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s ease;
   }
-  
+
   .bottom-navbar:hover {
     box-shadow: 0 6px 20px rgba(168, 37, 37, 0.25);
     transform: translateY(-1px);
   }
-  
+
   .bottom-navbar .icon-img {
     width: 70px;
     height: 50px;

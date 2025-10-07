@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios'
 
 export async function login({ commit }, user) {
   // Set loading page animation
@@ -8,7 +8,7 @@ export async function login({ commit }, user) {
       isLoading: true,
       msg: 'Iniciando sesión',
     },
-    { root: true }
+    { root: true },
   )
 
   return new Promise((resolve, reject) => {
@@ -58,7 +58,7 @@ export async function forgotPassword({ commit }, email) {
       isLoading: true,
       msg: 'Enviando Correo',
     },
-    { root: true }
+    { root: true },
   )
 
   return new Promise((resolve, reject) => {
@@ -89,7 +89,7 @@ export async function singUp({ commit }, data) {
       isLoading: true,
       msg: 'Registrando usuario',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios
@@ -115,7 +115,7 @@ export async function recoverPassword({ commit }, data) {
       isLoading: true,
       msg: 'Creando Contraseña',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios
@@ -140,7 +140,7 @@ export async function userActivation({ commit }, token) {
       isLoading: true,
       msg: 'Activando cuenta',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios

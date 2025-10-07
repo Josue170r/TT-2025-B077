@@ -251,9 +251,7 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({
-        name: 'description'
-      })
+      this.$router.push({name: 'site_description'})
     },
 
     async handleFilterChange(filter) {

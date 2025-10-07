@@ -67,7 +67,7 @@
                   :class="{
                     'has-content': confirmPassword,
                     'is-invalid': confirmPassword && !passwordsMatch,
-                    'is-valid': confirmPassword && passwordsMatch
+                    'is-valid': confirmPassword && passwordsMatch,
                   }"
                   @focus="setFocus('confirmPassword', true)"
                   @blur="setFocus('confirmPassword', false)"
@@ -102,8 +102,8 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
-import { getErrorDetails } from '@/utils/utils';
+import { mapActions } from 'vuex'
+import { getErrorDetails } from '@/utils/utils'
 
 export default {
   name: 'ChangePasswordComponent',
@@ -118,28 +118,19 @@ export default {
       newPasswordFocused: false,
       confirmPasswordFocused: false,
       isNavigating: false,
-    };
+    }
   },
   mounted() {
     setTimeout(() => {
-      this.showChangePassword = true;
-    }, 100);
+      this.showChangePassword = true
+    }, 100)
   },
   computed: {
     passwordsMatch() {
-      return (
-        this.newPassword &&
-        this.confirmPassword &&
-        this.newPassword === this.confirmPassword
-      );
+      return this.newPassword && this.confirmPassword && this.newPassword === this.confirmPassword
     },
     canSubmit() {
-      return (
-        this.currentPassword &&
-        this.newPassword &&
-        this.confirmPassword &&
-        this.passwordsMatch
-      );
+      return this.currentPassword && this.newPassword && this.confirmPassword && this.passwordsMatch
     },
   },
   methods: {
@@ -147,19 +138,19 @@ export default {
       changePassword: 'changePassword',
     }),
     setFocus(field, focused) {
-      if (field === 'currentPassword') this.currentPasswordFocused = focused;
-      else if (field === 'newPassword') this.newPasswordFocused = focused;
-      else if (field === 'confirmPassword') this.confirmPasswordFocused = focused;
+      if (field === 'currentPassword') this.currentPasswordFocused = focused
+      else if (field === 'newPassword') this.newPasswordFocused = focused
+      else if (field === 'confirmPassword') this.confirmPasswordFocused = focused
     },
 
     submitChange() {
-      if (!this.canSubmit) return;
+      if (!this.canSubmit) return
 
       const data = {
         currentPassword: this.currentPassword,
         newPassword: this.newPassword,
         confirmPassword: this.confirmPassword,
-      };
+      }
 
       this.changePassword(data)
         .then((response) => {
@@ -167,28 +158,34 @@ export default {
             title: 'Contraseña actualizada',
             text: response.data.message,
             nextRoute: 'myaccount',
-          });
+          })
         })
         .catch((error) => {
-          this.$alert.error(getErrorDetails(error));
-        });
+          this.$alert.error(getErrorDetails(error))
+        })
     },
 
     goBack() {
-      if (this.isNavigating) return;
-      this.isNavigating = true;
-      this.showChangePassword = false;
+      if (this.isNavigating) return
+      this.isNavigating = true
+      this.showChangePassword = false
       setTimeout(() => {
-        this.$router.go(-1);
-      }, 600);
+        this.$router.go(-1)
+      }, 600)
     },
   },
-};
+}
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.6s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.6s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
 .change-password-container {
   min-height: 100vh;
@@ -208,12 +205,24 @@ export default {
   width: 100%;
 }
 
-.logo-section { text-align: center; margin-bottom: 3rem; }
-.logo-size { max-height: 200px; object-fit: contain; }
+.logo-section {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.logo-size {
+  max-height: 200px;
+  object-fit: contain;
+}
 @media (max-width: 767.98px) {
-  .logo-size { max-height: 120px; }
-  .content-wrapper { padding: 1rem; }
-  .logo-section { margin-bottom: 2rem; }
+  .logo-size {
+    max-height: 120px;
+  }
+  .content-wrapper {
+    padding: 1rem;
+  }
+  .logo-section {
+    margin-bottom: 2rem;
+  }
 }
 
 .form-section {
@@ -224,14 +233,22 @@ export default {
   padding: 2.5rem;
 }
 @media (max-width: 767.98px) {
-  .form-section { padding: 1.5rem; border-radius: 15px; }
+  .form-section {
+    padding: 1.5rem;
+    border-radius: 15px;
+  }
 }
 
-.input-section { margin-bottom: 1.5rem; }
-.buttons-section { margin-top: 2rem; padding-top: 1rem; }
+.input-section {
+  margin-bottom: 1.5rem;
+}
+.buttons-section {
+  margin-top: 2rem;
+  padding-top: 1rem;
+}
 
 .floating-input {
-  border: solid #1B515E !important;
+  border: solid #1b515e !important;
   border-radius: 10px !important;
   padding: 14px 10px 6px 10px !important;
   transition: all 0.3s ease;
@@ -254,7 +271,7 @@ export default {
 .floating-label {
   left: 12px;
   top: 11px;
-  color: #1B515E;
+  color: #1b515e;
   font-size: 12px;
   pointer-events: none;
   transition: all 0.3s ease;
@@ -267,50 +284,56 @@ export default {
 .floating-input.has-content + .floating-label,
 .floating-label.active {
   transform: translateY(-20px) scale(0.85);
-  color: #1B515E;
+  color: #1b515e;
 }
 
-.sub-text { font-family: 'Open Sans', sans-serif; font-weight: 600; font-size: 24px; color: #1B515E; margin-bottom: 2rem; }
-
-.btn-outline-secondary { 
-  color: #1B515E !important; 
-  background-color: #ABCD9E !important; 
-  border-color: #ABCD9E !important; 
-}
-.btn-outline-secondary:hover { 
-  color: #fff !important; 
-  background-color: #1B515E !important; 
-  border-color: #1B515E !important; 
-}
-.btn-success { 
-  color: #ABCD9E !important; 
-  background-color: #1B515E !important; 
-  border-color: #1B515E !important; 
-}
-.btn-success:hover:not(:disabled) { 
-  color: #1B515E !important; 
-  background-color: #ABCD9E !important; 
-  border-color: #1B515E !important; 
-}
-.btn-success:disabled { 
-  opacity: 0.6; 
-  cursor: not-allowed; 
+.sub-text {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  color: #1b515e;
+  margin-bottom: 2rem;
 }
 
-.icon-input { 
-  left: 15px; 
-  top: 50%; 
-  transform: translateY(-50%); 
-  color: #1B515E; 
-  font-size: 14px; 
-  z-index: 1; 
-  pointer-events: none; 
+.btn-outline-secondary {
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #abcd9e !important;
 }
-.has-icon .floating-input { 
-  padding-left: 2.2rem !important; 
+.btn-outline-secondary:hover {
+  color: #fff !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
 }
-.has-icon .floating-label { 
-  left: 40px !important; 
-  z-index: 2 !important; 
+.btn-success {
+  color: #abcd9e !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
+}
+.btn-success:hover:not(:disabled) {
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #1b515e !important;
+}
+.btn-success:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.icon-input {
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1b515e;
+  font-size: 14px;
+  z-index: 1;
+  pointer-events: none;
+}
+.has-icon .floating-input {
+  padding-left: 2.2rem !important;
+}
+.has-icon .floating-label {
+  left: 40px !important;
+  z-index: 2 !important;
 }
 </style>

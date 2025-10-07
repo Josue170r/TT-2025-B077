@@ -1,28 +1,20 @@
 <template>
-  <div 
+  <div
     class="w-100 vh-100 position-relative bg-white overflow-hidden"
     :class="{ 'fade-out': fading }"
   >
-    <img 
-      :src="windowWidth >= 992 ? '/portada2.jpg' : '/portada.jpg'" 
-      alt="Portada" 
+    <img
+      :src="windowWidth >= 992 ? '/portada2.jpg' : '/portada.jpg'"
+      alt="Portada"
       class="portada-background"
     />
 
     <div class="overlay"></div>
 
     <div class="content-container text-center text-white">
-        
-      <h2 class="mb-3 fw-light animate-fade-up">
-        Bienvenido a
-      </h2>
+      <h2 class="mb-3 fw-light animate-fade-up">Bienvenido a</h2>
       <div class="logo-box mb-3 animate-fade-down">
-        <img 
-          src="/logo-letras.png" 
-          alt="Logo letras" 
-          class="img-fluid"
-          style="max-width: 300px;"
-        />
+        <img src="/logo-letras.png" alt="Logo letras" class="img-fluid" style="max-width: 300px" />
       </div>
 
       <p class="lead animate-fade-up delay-1">
@@ -37,7 +29,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'FrontPage',
@@ -48,38 +40,38 @@ export default {
       frases: [
         'Donde cada destino es un regalo y cada huella, un compromiso.',
         'Porque explorar México también es aprender a protegerlo',
-        'Donde cada paso cuenta'
+        'Donde cada paso cuenta',
       ],
-      fraseActual: ''
-    };
+      fraseActual: '',
+    }
   },
   computed: {
     ...mapGetters('auth', { isLogged: 'isLogged' }),
   },
   mounted() {
-    this.fraseActual = this.frases[Math.floor(Math.random() * this.frases.length)];
+    this.fraseActual = this.frases[Math.floor(Math.random() * this.frases.length)]
     setTimeout(() => {
-      this.fading = true;
+      this.fading = true
       setTimeout(() => {
         if (this.isLogged) {
-          this.$router.push({ name: 'home' });
+          this.$router.push({ name: 'home' })
         } else {
-          this.$router.push({ name: 'authLogin' });
+          this.$router.push({ name: 'authLogin' })
         }
-      }, 600);
-    }, 2500);
+      }, 600)
+    }, 2500)
 
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('resize', this.handleResize)
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('resize', this.handleResize)
   },
   methods: {
     handleResize() {
-      this.windowWidth = window.innerWidth;
-    }
-  }
-};
+      this.windowWidth = window.innerWidth
+    },
+  },
+}
 </script>
 
 <style scoped>

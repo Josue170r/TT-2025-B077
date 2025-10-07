@@ -1,10 +1,7 @@
 <template>
   <nav class="bottom-navbar">
     <div class="container-fluid d-flex justify-content-center py-2">
-      <button 
-        @click="generateItinerary" 
-        class="btn btn-primary btn-lg w-100 generate-btn"
-      >
+      <button @click="generateItinerary" class="btn btn-primary btn-lg w-100 generate-btn">
         <span class="btn-text">Generar itinerario</span>
         <i class="fas fa-route ms-2"></i>
       </button>
@@ -17,10 +14,10 @@ export default {
   name: 'BottomNavbar',
   methods: {
     generateItinerary() {
-      console.log('¡Itinerario generado!');
-      alert('Activando la generación de itinerario...');
-    }
-  }
+      console.log('¡Itinerario generado!')
+      alert('Activando la generación de itinerario...')
+    },
+  },
 }
 </script>
 
@@ -67,7 +64,9 @@ export default {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition:
+    width 0.6s,
+    height 0.6s;
 }
 
 .generate-btn:active::before {

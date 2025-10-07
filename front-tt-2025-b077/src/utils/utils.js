@@ -1,10 +1,6 @@
 export function getUrlVars() {
   let vars = {}
-  window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (
-    m,
-    key,
-    value
-  ) {
+  window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
     vars[key] = value
   })
   return vars
@@ -12,7 +8,8 @@ export function getUrlVars() {
 
 export function getErrorDetails(error) {
   const data = error?.response?.data ?? error
-  const first = Array.isArray(data?.fieldErrors) && data.fieldErrors.length ? data.fieldErrors[0] : null
+  const first =
+    Array.isArray(data?.fieldErrors) && data.fieldErrors.length ? data.fieldErrors[0] : null
   if (first) {
     const field = String(first.property ?? first.path ?? '').trim()
     const msg = String(first.message ?? '').trim()
