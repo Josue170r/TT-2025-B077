@@ -9,9 +9,9 @@ export default {
     first: true,
     last: true,
     numberOfElements: 0,
-    empty: true
+    empty: true,
   },
-  selectedPlaceId: "",
-  selectedPlaceName: "",
-  selectedPlaceDetails: {}
+  selectedPlaceId: '',
+  selectedPlaceName: '',
+  selectedPlaceDetails: {},
 }

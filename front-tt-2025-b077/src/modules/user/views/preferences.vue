@@ -3,43 +3,47 @@
     <div v-if="show" class="container my-5">
       <div class="header">
         <h2 class="title text-center fw-bold">Escoge tus preferencias de viaje</h2>
-        <h6 class="sub-text text-center mb-4">Se recomendarán lugares de acuerdo a tus preferencias</h6>
-        <hr>
+        <h6 class="sub-text text-center mb-4">
+          Se recomendarán lugares de acuerdo a tus preferencias
+        </h6>
+        <hr />
       </div>
 
       <div class="categorias-wrapper">
         <div class="row g-3">
-          <div 
-            v-for="(categoria, index) in categorias" 
-            :key="index" 
+          <div
+            v-for="(categoria, index) in categorias"
+            :key="index"
             class="col-6 col-md-4 col-lg-3"
           >
-              <div 
-                  class="categoria-card d-flex flex-column justify-content-center align-items-center"
-                  :class="{ selected: selectedCategorias.includes(index) }"
-                  @click="toggleCategoria(index)"
-                  role="button"
-                  tabindex="0"
-                  @keydown.enter.prevent="toggleCategoria(index)"
-                  @keydown.space.prevent="toggleCategoria(index)"
-                  :style="{ backgroundImage: `url(${categoria.img})` }"
-                  loading="lazy"
+            <div
+              class="categoria-card d-flex flex-column justify-content-center align-items-center"
+              :class="{ selected: selectedCategorias.includes(index) }"
+              @click="toggleCategoria(index)"
+              role="button"
+              tabindex="0"
+              @keydown.enter.prevent="toggleCategoria(index)"
+              @keydown.space.prevent="toggleCategoria(index)"
+              :style="{ backgroundImage: `url(${categoria.img})` }"
+              loading="lazy"
+            >
+              <span class="categoria-text">
+                <strong>{{ categoria.name.split(' ')[0] }}</strong>
+                <span v-if="categoria.name.split(' ').length > 1">
+                  <br />
+                  {{ categoria.name.split(' ').slice(1).join(' ') }}
+                </span>
+              </span>
+              <span v-if="selectedCategorias.includes(index)" class="selected-label"
+                >Seleccionada ✓</span
               >
-                  <span class="categoria-text">
-                      <strong>{{ categoria.name.split(' ')[0] }}</strong>
-                      <span v-if="categoria.name.split(' ').length > 1">
-                          <br>
-                          {{ categoria.name.split(' ').slice(1).join(' ') }}
-                      </span>
-                  </span>
-                  <span v-if="selectedCategorias.includes(index)" class="selected-label">Seleccionada ✓</span>
-              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="text-center mt-4">
-        <hr class="mt-0">
+        <hr class="mt-0" />
         <button class="btn-confirmar" @click="confirmarSeleccion">Confirmar</button>
       </div>
     </div>
@@ -50,60 +54,60 @@
 // import axios from "axios";
 
 export default {
-  name: "UserPreferences",
+  name: 'UserPreferences',
   data() {
     return {
       show: false,
       categorias: [
-        { name: "Museos", img: "/public/museos.webp" },
-        { name: "Parques", img: "/images/parques.webp" },
-        { name: "Restaurantes", img: "/images/restaurantes.webp" },
-        { name: "Playas", img: "/images/playas.webp" },
-        { name: "Zonas Arqueológicas", img: "/images/zonas.webp" },
-        { name: "Montañas", img: "/images/montanas.webp" },
-        { name: "Pueblos Mágicos", img: "/images/pueblos.webp" },
-        { name: "Cenotes", img: "/images/cenotes.webp" },
-        { name: "Lagunas", img: "/images/lagunas.webp" },
-        { name: "Hoteles", img: "/images/hoteles.webp" },
-        { name: "Bares", img: "/images/bares.webp" },
-        { name: "Cafeterías", img: "/images/cafeterias.webp" },
-        { name: "Centros Comerciales", img: "/images/centros.webp" },
-        { name: "Balnearios", img: "/images/balnearios.webp" },
-        { name: "Eventos Culturales", img: "/images/eventos.webp" }
+        { name: 'Museos', img: '/public/museos.webp' },
+        { name: 'Parques', img: '/images/parques.webp' },
+        { name: 'Restaurantes', img: '/images/restaurantes.webp' },
+        { name: 'Playas', img: '/images/playas.webp' },
+        { name: 'Zonas Arqueológicas', img: '/images/zonas.webp' },
+        { name: 'Montañas', img: '/images/montanas.webp' },
+        { name: 'Pueblos Mágicos', img: '/images/pueblos.webp' },
+        { name: 'Cenotes', img: '/images/cenotes.webp' },
+        { name: 'Lagunas', img: '/images/lagunas.webp' },
+        { name: 'Hoteles', img: '/images/hoteles.webp' },
+        { name: 'Bares', img: '/images/bares.webp' },
+        { name: 'Cafeterías', img: '/images/cafeterias.webp' },
+        { name: 'Centros Comerciales', img: '/images/centros.webp' },
+        { name: 'Balnearios', img: '/images/balnearios.webp' },
+        { name: 'Eventos Culturales', img: '/images/eventos.webp' },
       ],
-      selectedCategorias: []
-    };
+      selectedCategorias: [],
+    }
   },
   mounted() {
-    this.show = true;
+    this.show = true
   },
   methods: {
     toggleCategoria(index) {
-      const i = this.selectedCategorias.indexOf(index);
+      const i = this.selectedCategorias.indexOf(index)
       if (i !== -1) {
-        this.selectedCategorias.splice(i, 1);
+        this.selectedCategorias.splice(i, 1)
       } else {
-        this.selectedCategorias.push(index);
+        this.selectedCategorias.push(index)
       }
     },
     confirmarSeleccion() {
-      this.show = false;
+      this.show = false
 
       setTimeout(() => {
-        console.log("IDs seleccionadas:", this.selectedCategorias);
+        console.log('IDs seleccionadas:', this.selectedCategorias)
 
-        axiospost("/api/categorias/seleccionadas", {
-          categorias: this.selectedCategorias
+        axiospost('/api/categorias/seleccionadas', {
+          categorias: this.selectedCategorias,
         })
-        .then(res => {
-          console.log("Respuesta backend:", res.data);
-          // this.$router.push("/poner el end point correcto");
-        })
-        .catch(err => console.error(err));
-      }, 500);
-    }
-  }
-};
+          .then((res) => {
+            console.log('Respuesta backend:', res.data)
+            // this.$router.push("/poner el end point correcto");
+          })
+          .catch((err) => console.error(err))
+      }, 500)
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -127,13 +131,15 @@ export default {
 
 .categoria-card {
   position: relative;
-  border: 2px solid #ABCD9E;
+  border: 2px solid #abcd9e;
   border-radius: 12px;
   height: 100px;
   user-select: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-  transition: transform 0.15s ease, border-color 0.2s ease;
-  background-size: cover;      
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.15s ease,
+    border-color 0.2s ease;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -144,7 +150,7 @@ export default {
   left: 8px;
   font-size: clamp(16px, 1vw, 20px);
   font-weight: normal;
-  color: #1B515E;
+  color: #1b515e;
   line-height: 1.1;
 }
 .categoria-text strong {
@@ -153,68 +159,72 @@ export default {
 
 .categoria-card:not(.selected):hover {
   transform: translateY(-4px);
-  border-color: #1B515E;          
+  border-color: #1b515e;
   cursor: pointer;
 }
 
 .categoria-card.selected {
-  border-color: #1B515E;          
+  border-color: #1b515e;
 }
 
 .categoria-card.selected:hover {
-  border-color: #1B515E;
+  border-color: #1b515e;
   transform: translateY(-4px);
 }
 .selected-label {
   position: absolute;
   top: 8px;
   right: 8px;
-  background-color: #ABCD9E;
-  color: #1B515E;
-  padding: clamp(1px, 0.3vw, 3px) clamp(2px, 0.5vw, 6px); 
+  background-color: #abcd9e;
+  color: #1b515e;
+  padding: clamp(1px, 0.3vw, 3px) clamp(2px, 0.5vw, 6px);
   border-radius: 6px;
-  font-size: clamp(0.5rem, 1vw, 0.75rem); 
+  font-size: clamp(0.5rem, 1vw, 0.75rem);
   font-weight: bold;
 }
 
-hr{
+hr {
   height: 4px;
   background-color: #35aa06;
   border-color: #35aa06;
 }
 
-.title{
-    color: #1B515E;
+.title {
+  color: #1b515e;
 }
 
 .sub-text {
   font-weight: 400;
   font-size: 12px;
-  color: #1B515E;
+  color: #1b515e;
   text-align: center;
 }
 
 .btn-confirmar {
-  background-color: #1B515E;
+  background-color: #1b515e;
   color: #ffffff;
   border: none;
-  border-radius: 12px; 
+  border-radius: 12px;
   padding: 10px 20px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .btn-confirmar:hover {
-  background-color: #2a798d; 
+  background-color: #2a798d;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px #1B515E; 
+  box-shadow: 0 4px 12px #1b515e;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

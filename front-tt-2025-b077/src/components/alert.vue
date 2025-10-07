@@ -24,13 +24,7 @@
     </div>
 
     <template v-slot:actions>
-      <v-btn
-        variant="text"
-        @click="close"
-        icon="mdi-close"
-        size="small"
-        color="white"
-      />
+      <v-btn variant="text" @click="close" icon="mdi-close" size="small" color="white" />
     </template>
   </v-snackbar>
 </template>
@@ -45,7 +39,7 @@ export default {
       type: 'success',
       timeout: 2500,
       customTitle: '',
-      nextRoute: null
+      nextRoute: null,
     }
   },
   computed: {
@@ -57,12 +51,12 @@ export default {
     },
     alertColor() {
       return this.type === 'success' ? '#388e3c' : '#d32f2f'
-    }
+    },
   },
   methods: {
     close() {
       this.show = false
-    }
-  }
+    },
+  },
 }
 </script>

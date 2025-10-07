@@ -6,14 +6,17 @@
           <div class="col-12 col-lg-10">
             <div class="card shadow-lg overflow-hidden">
               <div class="row g-0 min-vh-400">
-                
                 <!-- Logo -->
-                <div class="col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white">
+                <div
+                  class="col-12 col-md-6 order-1 order-md-2 d-flex justify-content-center align-items-center p-5 bg-white"
+                >
                   <img :src="logoUrl" alt="Logo letras" class="img-fluid logo-size" />
                 </div>
 
                 <!-- Formulario -->
-                <div class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2">
+                <div
+                  class="col-12 col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center p-4 bg-white mt-2"
+                >
                   <h4 class="title text-center mb-2">Restablece tu contraseña</h4>
                   <hr />
                   <h6 class="sub-text mt-2 mb-5">Introduce tu nueva contraseña</h6>
@@ -54,17 +57,22 @@
                       <label
                         for="confirmPassword"
                         class="floating-label position-absolute fs-6"
-                        :class="{ active: confirmPasswordFocused || !!passwordForm.confirmPassword }"
+                        :class="{
+                          active: confirmPasswordFocused || !!passwordForm.confirmPassword,
+                        }"
                       >
                         Confirma tu contraseña
                       </label>
                     </div>
-                     <!-- Mensaje de error -->
+                    <!-- Mensaje de error -->
                     <div v-if="errorMessage" class="alert alert-danger py-2 px-3 mb-3">
                       {{ errorMessage }}
                     </div>
                     <!-- Mensaje de éxito -->
-                    <div v-if="successMessage" class="alert alert-success-custom py-2 px-3 mb-3 d-flex align-items-start">
+                    <div
+                      v-if="successMessage"
+                      class="alert alert-success-custom py-2 px-3 mb-3 d-flex align-items-start"
+                    >
                       <i class="fa-regular fa-circle-check check-icon me-2"></i>
                       <span>{{ successMessage }}</span>
                     </div>
@@ -72,9 +80,7 @@
                       <button type="button" class="btn btn-outline-secondary" @click="cancelar">
                         Cancelar
                       </button>
-                      <button type="submit" class="btn btn-success">
-                        Guardar contraseña
-                      </button>
+                      <button type="submit" class="btn btn-success">Guardar contraseña</button>
                     </div>
                   </form>
                 </div>
@@ -105,7 +111,7 @@ export default {
       passwordFocused: false,
       confirmPasswordFocused: false,
       errorMessage: '',
-      successMessage: ''
+      successMessage: '',
     }
   },
   created() {
@@ -139,22 +145,24 @@ export default {
         .then((response) => {
           this.$alert.success({
             message: response.data.message,
-            nextRoute: 'authLogin'
+            nextRoute: 'authLogin',
           })
         })
         .catch((error) => {
           this.$alert.error(getErrorDetails(error))
         })
-    }
+    },
   },
 }
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.6s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -174,7 +182,7 @@ export default {
 }
 
 .floating-input {
-  border: solid #1B515E !important;
+  border: solid #1b515e !important;
   border-radius: 10px !important;
   padding: 14px 10px 6px 10px !important;
   transition: all 0.3s ease;
@@ -190,7 +198,7 @@ export default {
 .floating-label {
   left: 12px;
   top: 11px;
-  color: #1B515E;
+  color: #1b515e;
   font-size: 12px;
   pointer-events: none;
   transition: all 0.3s ease;
@@ -204,46 +212,46 @@ export default {
 .floating-input.has-content + .floating-label,
 .floating-label.active {
   transform: translateY(-20px) scale(0.85);
-  color: #1B515E;
+  color: #1b515e;
 }
 
 .btn-outline-secondary {
-  color: #1B515E !important;
-  background-color: #ABCD9E !important;
-  border-color: #ABCD9E !important;
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #abcd9e !important;
 }
 
 .btn-outline-secondary:focus {
   color: #fff !important;
-  background-color: #1B515E !important;
-  border-color: #1B515E !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
 }
 
 .btn-success {
-  color: #ABCD9E !important;
-  background-color: #1B515E !important;
-  border-color: #1B515E !important;
+  color: #abcd9e !important;
+  background-color: #1b515e !important;
+  border-color: #1b515e !important;
 }
 
 .btn-success:focus {
-  color: #1B515E !important;
-  background-color: #ABCD9E !important;
-  border-color: #ABCD9E !important;
+  color: #1b515e !important;
+  background-color: #abcd9e !important;
+  border-color: #abcd9e !important;
 }
 
-.title{
-  color: #1B515E;
+.title {
+  color: #1b515e;
 }
 
 .sub-text {
   font-family: 'Open Sans', sans-serif;
   font-weight: 400;
   font-size: 12px;
-  color: #1B515E;
+  color: #1b515e;
   text-align: center;
 }
 
-hr{
+hr {
   height: 4px;
   background-color: #35aa06;
   border-color: #35aa06;

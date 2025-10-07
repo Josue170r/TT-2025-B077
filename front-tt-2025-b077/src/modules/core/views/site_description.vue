@@ -1,6 +1,16 @@
 <template>
   <div class="container-fluid p-0 place-detail-container">
-    <div class="container-lg my-4">
+    <div class="fixed-header">
+      <div class="header-content">
+        <hamburgermenu @navigate="handleNavigation" />
+        <div class="header-title">
+          <p class="mb-1">{{ placeName }}</p>
+        </div>
+        <div class="header-spacer"></div>
+      </div>
+    </div>
+
+    <div class="container-lg my-12 mb-4">
       <div id="partearriba" class="row g-4 shadow-sm rounded-3 bg-white overflow-hidden">
         <div class="col-12 col-lg-6 p-0 position-relative">
           <v-defaults-provider :defaults="{ VBtn: { variant: 'outlined', color: '#eee' } }">
@@ -100,10 +110,20 @@
                     <i class="fa-regular fa-star me-3 star-icon"></i>
                     <span class="rating-value">{{ rating }}</span>
                   </div>
-                  <p class="distance-info mb-0">
-                    <i class="fa-solid fa-road me-3"></i>
-                    A {{ distance }} km
-                  </p>
+                  <div class="contact-info">
+                    <p v-if="placePhone" class="contact-item mb-2">
+                      <i class="fa-solid fa-phone me-2"></i>
+                      <a :href="'tel:' + placePhone" class="contact-link">{{ placePhone }}</a>
+                    </p>
+                    <p v-if="placeWebsite" class="contact-item mb-2">
+                      <i class="fa-solid fa-globe me-2"></i>
+                      <a :href="placeWebsite" target="_blank" class="contact-link">Sitio web</a>
+                    </p>
+                    <p v-if="googleMapsUrl" class="contact-item mb-0">
+                      <i class="fa-brands fa-google me-2"></i>
+                      <a :href="googleMapsUrl" target="_blank" class="contact-link">Ver en Maps</a>
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -111,7 +131,7 @@
                 <div
                   class="d-flex align-items-center justify-content-between justify-content-md-center"
                 >
-                  <div class="weather-info">
+                  <div class="weather-info mx-2">
                     <div class="d-flex align-items-center">
                       <i :class="weather.iconClass + ' me-3'"></i>
                       <div class="weather-details">
@@ -222,30 +242,19 @@
       </div>
 
       <div class="bg-white rounded-3 shadow-sm p-4 p-lg-5 mb-5">
-        <h5 class="section-title mb-4">Cerca de {{ placeName }}</h5>
-        <div class="row g-3">
-          <div v-for="place in nearbyPlaces" :key="place.id" class="col-12 col-md-6">
-            <div class="card h-100 border border-light shadow-sm nearby-place-card">
-              <div class="row g-0 h-100">
-                <div class="col-4">
-                  <img
-                    :src="place.image"
-                    class="img-fluid h-100 object-fit-cover"
-                    :alt="place.name"
-                  />
-                </div>
-                <div class="col-8">
-                  <div class="card-body p-3">
-                    <h6 class="card-title fw-semibold mb-2 text-truncate">{{ place.name }}</h6>
-                    <div class="d-flex align-items-center mb-2">
-                      <i class="fa-regular fa-star me-3 star-icon"></i>
-                      <span class="small text-muted">{{ place.rating }}</span>
-                    </div>
-                    <p class="card-text small text-muted mb-0 lh-sm">{{ place.description }}</p>
-                  </div>
-                </div>
+        <h5 class="section-title mb-4">Horario</h5>
+        <div class="schedule-container">
+          <div v-if="weekdaySchedule && Object.keys(weekdaySchedule).length > 0" class="row g-3">
+            <div v-for="(hours, day) in weekdaySchedule" :key="day" class="col-6 col-md-4 col-lg-3">
+              <div class="schedule-item">
+                <div class="day-name">{{ day }}</div>
+                <div class="day-hours">{{ hours }}</div>
               </div>
             </div>
+          </div>
+          <div v-else class="text-center text-muted py-3">
+            <i class="fa-regular fa-clock me-2"></i>
+            Horario no disponible
           </div>
         </div>
       </div>
@@ -341,11 +350,13 @@
 import { getErrorDetails } from '@/utils/utils'
 import { mapActions, mapState, mapGetters } from 'vuex'
 import ResilientAvatar from '@/components/resilient-avatar.vue'
+import hamburgermenu from '@/components/hamburgermenu.vue'
 
 export default {
   name: 'PlaceDetail',
   components: {
     ResilientAvatar,
+    hamburgermenu,
   },
   data() {
     return {
@@ -355,7 +366,6 @@ export default {
         temperature: '--',
         iconClass: 'fa-solid fa-sun',
       },
-      distance: 36.25,
       logoUrl: '/logo-letras.png',
       reviewModalOpen: false,
       selectedReview: null,
@@ -365,25 +375,6 @@ export default {
         text: '',
         rating: 0,
       },
-      nearbyPlaces: [
-        {
-          id: 1,
-          name: 'Estación de Amatitán',
-          image: 'https://images.unsplash.com/photo-1544928147-79a2dbc1f389?w=150&h=100&fit=crop',
-          rating: '4.2',
-          description:
-            'La estación de Amatitán es un importante punto de partida para recorrer los campos de agave y vivir todo sin olvidar su sabor tradicional.',
-        },
-        {
-          id: 2,
-          name: 'Cascada Los Azules',
-          image:
-            'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=150&h=100&fit=crop',
-          rating: '4.5',
-          description:
-            'Es un lugar espectacular donde corre el río proveniente de los terrenos y montañas.',
-        },
-      ],
     }
   },
   computed: {
@@ -416,7 +407,21 @@ export default {
       return this.newReview.text.trim().length > 0 && this.newReview.rating > 0
     },
     isFavorite() {
-      return this.selectedPlaceDetails?.id && this.favoriteIds.includes(this.selectedPlaceDetails.id)
+      return (
+        this.selectedPlaceDetails?.id && this.favoriteIds.includes(this.selectedPlaceDetails.id)
+      )
+    },
+    placePhone() {
+      return this.selectedPlaceDetails?.formattedPhoneNumber || null
+    },
+    placeWebsite() {
+      return this.selectedPlaceDetails?.website || null
+    },
+    googleMapsUrl() {
+      return this.selectedPlaceDetails?.googleMapsUrl || null
+    },
+    weekdaySchedule() {
+      return this.selectedPlaceDetails?.weekdayText || {}
     },
   },
   async mounted() {
@@ -438,7 +443,7 @@ export default {
     }),
     async toggleFavorite() {
       if (!this.selectedPlaceDetails?.id) return
-      
+
       try {
         await this.toggleFavoritePlace(this.selectedPlaceDetails.id)
       } catch (error) {
@@ -560,6 +565,9 @@ export default {
         this.submittingReview = false
       }
     },
+    handleNavigation(route) {
+      this.$router.push({ name: route })
+    },
   },
 }
 </script>
@@ -568,6 +576,46 @@ export default {
 .place-detail-container {
   background-color: #f8f9fa;
   min-height: 100vh;
+  padding-top: 60px;
+}
+
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  height: 60px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 1rem;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+.header-title p {
+  font-weight: 600;
+  color: #1b515e;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 1rem;
+}
+
+.header-spacer {
+  width: 40px;
 }
 
 #partearriba {
@@ -681,10 +729,26 @@ export default {
   font-size: 1.1rem;
 }
 
-.distance-info {
-  color: #6c757d;
+.contact-info {
+  margin-top: 0.5rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
   font-size: 0.9rem;
-  font-weight: 500;
+  color: #495057;
+}
+
+.contact-link {
+  color: #1b515e;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-link:hover {
+  color: #143e48;
+  text-decoration: underline;
 }
 
 .weather-icon {
@@ -835,20 +899,36 @@ export default {
   cursor: pointer;
 }
 
-.nearby-place-card {
+.schedule-container {
+  max-width: 100%;
+}
+
+.schedule-item {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid #e9ecef;
   transition: all 0.3s ease;
-  border-radius: 8px !important;
-  overflow: hidden;
 }
 
-.nearby-place-card:hover {
+.schedule-item:hover {
+  background-color: #e9ecef;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
-  border-color: #1b515e !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.nearby-place-card .card-title {
+.day-name {
+  font-weight: 600;
   color: #1b515e;
+  text-transform: capitalize;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.day-hours {
+  color: #495057;
+  font-size: 0.9rem;
 }
 
 .object-fit-cover {
@@ -879,6 +959,10 @@ export default {
   #partearriba {
     border-radius: 0 !important;
   }
+
+  .contact-item {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 770px) {
@@ -908,7 +992,7 @@ export default {
     font-size: 1rem;
   }
 
-  .distance-info {
+  .contact-item {
     font-size: 0.8rem;
   }
 
@@ -956,6 +1040,22 @@ export default {
   .btn-icon-overlay i {
     font-size: 1rem;
   }
+
+  .header-title p {
+    font-size: 1rem;
+  }
+
+  .schedule-item {
+    padding: 0.75rem;
+  }
+
+  .day-name {
+    font-size: 0.85rem;
+  }
+
+  .day-hours {
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -975,7 +1075,7 @@ export default {
     font-size: 0.9rem;
   }
 
-  .distance-info {
+  .contact-item {
     font-size: 0.75rem;
   }
 
@@ -996,6 +1096,10 @@ export default {
   .btn-icon-overlay {
     width: 36px;
     height: 36px;
+  }
+
+  .header-title p {
+    font-size: 0.9rem;
   }
 }
 </style>

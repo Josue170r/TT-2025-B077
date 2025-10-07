@@ -41,11 +41,11 @@ const AlertPlugin = {
         })
 
         return instance
-      }
+      },
     }
 
     app.config.globalProperties.$alert = alert
-  }
+  },
 }
 
 export default AlertPlugin

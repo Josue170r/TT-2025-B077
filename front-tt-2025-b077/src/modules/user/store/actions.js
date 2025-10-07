@@ -61,7 +61,7 @@ export async function changePassword({ commit }, data) {
       isLoading: true,
       msg: 'Cambiando contraseña',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios

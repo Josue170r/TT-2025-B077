@@ -1,24 +1,14 @@
 <template>
   <v-avatar :size="size" :class="avatarClass" :style="avatarStyle">
-    <v-img
-      v-if="!useDefault && imageUrl"
-      :src="currentImageUrl"
-      @error="handleError"
-      :alt="alt"
-    >
+    <v-img v-if="!useDefault && imageUrl" :src="currentImageUrl" @error="handleError" :alt="alt">
       <template v-slot:placeholder>
         <div class="d-flex align-center justify-center fill-height">
           <v-icon :icon="defaultIcon" :size="iconSize" color="grey-lighten-1"></v-icon>
         </div>
       </template>
     </v-img>
-    
-    <v-icon 
-      v-else 
-      :icon="defaultIcon" 
-      :size="iconSize" 
-      :color="iconColor"
-    ></v-icon>
+
+    <v-icon v-else :icon="defaultIcon" :size="iconSize" :color="iconColor"></v-icon>
   </v-avatar>
 </template>
 
@@ -28,130 +18,130 @@ export default {
   props: {
     src: {
       type: String,
-      default: null
+      default: null,
     },
     size: {
       type: [String, Number],
-      default: 50
+      default: 50,
     },
     avatarClass: {
       type: String,
-      default: ''
+      default: '',
     },
     avatarStyle: {
       type: [String, Object],
-      default: ''
+      default: '',
     },
     defaultIcon: {
       type: String,
-      default: 'mdi-account'
+      default: 'mdi-account',
     },
     iconColor: {
       type: String,
-      default: 'grey-lighten-1'
+      default: 'grey-lighten-1',
     },
     alt: {
       type: String,
-      default: 'Avatar'
+      default: 'Avatar',
     },
     maxRetries: {
       type: Number,
-      default: 2
+      default: 2,
     },
     retryDelay: {
       type: Number,
-      default: 1000
-    }
+      default: 1000,
+    },
   },
-  
+
   data() {
     return {
       useDefault: false,
       imageUrl: null,
       currentImageUrl: null,
       retryCount: 0,
-      hasError: false
+      hasError: false,
     }
   },
-  
+
   computed: {
     iconSize() {
       const size = typeof this.size === 'string' ? parseInt(this.size) : this.size
       return Math.floor(size * 0.6)
-    }
+    },
   },
-  
+
   watch: {
     src: {
       immediate: true,
       handler(newSrc) {
         this.resetAndLoadImage(newSrc)
-      }
-    }
+      },
+    },
   },
-  
+
   methods: {
     resetAndLoadImage(src) {
       this.useDefault = false
       this.retryCount = 0
       this.hasError = false
-      
+
       if (!src) {
         this.useDefault = true
         return
       }
-      
+
       this.imageUrl = src
       this.currentImageUrl = this.processGoogleUrl(src)
     },
-    
+
     processGoogleUrl(url) {
       if (!url || !url.includes('googleusercontent.com')) {
         return url
       }
-      
+
       // Usar proxy del servidor para evitar rate limiting
       const encodedUrl = encodeURIComponent(url)
       return `/api/proxy-avatar?url=${encodedUrl}`
     },
-    
+
     async handleError() {
       this.hasError = true
       this.retryCount++
-      
+
       if (this.retryCount <= this.maxRetries) {
         const delay = this.retryDelay * this.retryCount
-        
-        await new Promise(resolve => setTimeout(resolve, delay))
-        
+
+        await new Promise((resolve) => setTimeout(resolve, delay))
+
         if (this.imageUrl.includes('googleusercontent.com')) {
           const currentSize = this.getCurrentImageSize()
           const newSize = Math.max(Math.floor(currentSize / 1.5), 24)
-          
+
           this.currentImageUrl = this.imageUrl
             .replace(/=s\d+/, `=s${newSize}`)
             .replace(/=w\d+/, `=w${newSize}`)
-          
+
           this.currentImageUrl += `${this.currentImageUrl.includes('?') ? '&' : '?'}retry=${this.retryCount}&t=${Date.now()}`
         }
       } else {
         this.useDefault = true
       }
     },
-    
+
     getCurrentImageSize() {
       if (!this.currentImageUrl) return 64
-      
+
       const match = this.currentImageUrl.match(/=s(\d+)/)
       return match ? parseInt(match[1]) : 64
     },
-    
+
     retry() {
       if (this.imageUrl) {
         this.resetAndLoadImage(this.imageUrl)
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
