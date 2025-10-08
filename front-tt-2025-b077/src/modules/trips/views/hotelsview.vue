@@ -115,7 +115,12 @@
 
       <main class="main-content">
         <div class="hotels-list">
-          <div v-for="hotel in hotels" :key="hotel.id" class="hotel-card-wrapper">
+          <div 
+            v-for="hotel in hotels" 
+            :key="hotel.id" 
+            class="hotel-card-wrapper"
+            :class="{ 'hotel-selected': selectedHotel === hotel.place.id }"
+          >
             <div
               v-if="hotel.certifications && hotel.certifications.length > 0"
               class="certifications-container"
@@ -148,6 +153,15 @@
               @select-place="selectPlace"
               @toggle-favorite="toggleFavorite"
             />
+
+            <button 
+              @click="selectHotel(hotel)"
+              class="btn-select-hotel"
+              :class="{ 'selected': selectedHotel === hotel.place.id }"
+            >
+              <i class="mdi" :class="selectedHotel === hotel.place.id ? 'mdi-check-circle' : 'mdi-plus-circle'"></i>
+              {{ selectedHotel === hotel.place.id ? 'Hotel Seleccionado' : 'Seleccionar Hotel' }}
+            </button>
           </div>
 
           <div v-if="hotels.length === 0" class="no-results">
@@ -167,7 +181,7 @@
       </main>
     </div>
 
-    <NavButtom />
+    <NavButtom :has-hotel-selected="!!selectedHotel" />
   </div>
 </template>
 
@@ -190,12 +204,14 @@ export default {
       tempSettlement: null,
       locationType: 'none',
       currentPageModel: 1,
-      logoUrl: '',
+      logoUrl: '/logo-letras.png',
+      userLocation: null,
     }
   },
   computed: {
     ...mapGetters('trips', [
       'hotels',
+      'hotelIds',
       'certifications',
       'settlements',
       'pagination',
@@ -204,7 +220,9 @@ export default {
       'newItinerary',
       'favoriteIds',
     ]),
-
+    selectedHotel() {
+      return this.newItinerary.hotelPlaceId
+    },
     selectedCertifications() {
       return this.certifications.filter((cert) => this.filters.certifications.includes(cert.id))
     },
@@ -219,12 +237,17 @@ export default {
   },
   async mounted() {
     try {
+      await this.getUserLocation()
       await this.fetchCertifications()
       await this.fetchFavorites()
 
       if (this.newItinerary.selectedState) {
         await this.fetchSettlements(this.newItinerary.selectedState)
-        await this.fetchHotels({ page: 0, size: 10 })
+        
+        await this.$nextTick()
+        this.restoreFilters()
+        
+        await this.loadHotels()
       }
     } catch (error) {
       console.error('Error al cargar datos:', error)
@@ -239,16 +262,62 @@ export default {
       fetchFavorites: 'fetchFavorites',
       toggleFavoritePlace: 'toggleFavoritePlace',
     }),
-    ...mapMutations('trips', [
-      'setFilterCertifications',
-      'setFilterSettlement',
-      'setFilterUseLocation',
-      'setFilterCoordinates',
-      'clearFilters',
-    ]),
+    ...mapActions('places', {
+      fetchNearbyPlaces: 'fetchNearbyPlaces',
+      fetchPlacesByIds: 'fetchPlacesByIds',
+    }),
+    ...mapMutations('trips', {
+      setFilterCertifications: 'setFilterCertifications',
+      setFilterSettlement: 'setFilterSettlement',
+      setFilterUseLocation: 'setFilterUseLocation',
+      setFilterCoordinates: 'setFilterCoordinates',
+      clearFilters: 'clearFilters',
+      clearSelectedHotel: 'clearSelectedHotel',
+      setHotels: 'setHotels',
+      setHotelIds: 'setHotelIds',
+      setPagination: 'setPagination',
+      setSelectedHotel: 'setSelectedHotel',
+    }),
     ...mapMutations('places', {
       setSelectedPlaceId: 'setSelectedPlaceId',
     }),
+    async getUserLocation() {
+      try {
+        if (!navigator.geolocation) {
+          throw new Error('Geolocalización no disponible')
+        }
+
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            timeout: 15000,
+            enableHighAccuracy: false,
+            maximumAge: 600000,
+          })
+        })
+
+        this.userLocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }
+      } catch {
+        this.userLocation = { lat: 19.4326, lng: -99.1332 }
+      }
+    },
+
+    restoreFilters() {
+      if (this.filters.certifications && this.filters.certifications.length > 0) {
+        this.tempCertifications = [...this.filters.certifications]
+      }
+      
+      if (this.filters.settlement) {
+        this.locationType = 'settlement'
+        this.tempSettlement = this.filters.settlement
+      } else if (this.filters.useLocation) {
+        this.locationType = 'location'
+      } else {
+        this.locationType = 'none'
+      }
+    },
 
     handleNavigation(route) {
       this.$router.push(route)
@@ -262,9 +331,11 @@ export default {
       console.log('Place selected:', place)
     },
 
-    handleSustainableChange() {
+    async handleSustainableChange() {
       if (!this.isSustainable) {
         this.clearAllFilters()
+      } else {
+        await this.reloadHotels()
       }
     },
 
@@ -296,15 +367,47 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({name: 'site_description',})
+      this.$router.push({ name: 'site_description' })
+    },
+
+    selectHotel(hotel) {
+      const hotelId = hotel.place.id
+      
+      if (this.selectedHotel === hotelId) {
+        this.selectedHotel = null
+        this.setSelectedHotel({ hotelPlaceId: null, isCertificatedHotel: false })
+      } else {
+        this.selectedHotel = hotelId
+        this.setSelectedHotel({
+          hotelPlaceId: hotelId,
+          isCertificatedHotel: this.isSustainable,
+        })
+      }
     },
 
     async handlePageChange(page) {
       try {
-        await this.fetchHotels({
-          page: page - 1,
-          size: this.pagination.pageSize,
-        })
+        if (this.isSustainable) {
+          await this.fetchHotels({
+            page: page - 1,
+            size: this.pagination.pageSize,
+          })
+        } else {
+          const response = await this.fetchPlacesByIds({
+            place_ids: this.hotelIds,
+            page: page - 1,
+            size: this.pagination.pageSize,
+          })
+          
+          const hotels = response.content.map(place => ({
+            id: place.id,
+            place: place,
+            certifications: [],
+          }))
+          
+          this.setHotels(hotels)
+          this.setPagination(response)
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } catch (error) {
         console.error('Error al cambiar página:', error)
@@ -344,7 +447,7 @@ export default {
           this.setFilterUseLocation(false)
           this.setFilterCoordinates({ latitude: null, longitude: null })
         } else if (this.locationType === 'location') {
-          await this.getUserLocation()
+          await this.applyUserLocation()
           this.setFilterSettlement(null)
         } else {
           this.setFilterSettlement(null)
@@ -359,7 +462,7 @@ export default {
       }
     },
 
-    async getUserLocation() {
+    async applyUserLocation() {
       try {
         if (!navigator.geolocation) {
           throw new Error('Geolocalización no disponible')
@@ -395,9 +498,66 @@ export default {
       this.reloadHotels()
     },
 
+    async loadHotels() {
+      if (this.isSustainable) {
+        await this.fetchHotels({ page: 0, size: 10 })
+      } else {
+        if (!this.hotelIds || this.hotelIds.length === 0) {
+          await this.loadNearbyHotels()
+        } else {
+          const response = await this.fetchPlacesByIds({
+            place_ids: this.hotelIds,
+            page: 0,
+            size: 10,
+          })
+          
+          const hotels = response.content.map(place => ({
+            id: place.id,
+            place: place,
+            certifications: [],
+          }))
+          
+          this.setHotels(hotels)
+          this.setPagination(response)
+        }
+      }
+    },
+
+    async loadNearbyHotels() {
+      try {
+        if (!this.userLocation) {
+          await this.getUserLocation()
+        }
+
+        await this.fetchNearbyPlaces({
+          latitude: this.userLocation.lat,
+          longitude: this.userLocation.lng,
+          types: ['lodging'],
+        }).then((response) => {
+          this.setHotelIds(response)
+          this.fetchPlacesByIds({
+            place_ids: this.hotelIds,
+          }).then((response) => {
+            const hotels = response.content.map(place => ({
+              id: place.id,
+              place: place,
+              certifications: [],
+            }))
+            
+            this.setHotels(hotels)
+            this.setPagination(response)
+          })
+        })
+      } catch (error) {
+        console.error('Error al cargar hoteles cercanos:', error)
+        this.$alert.error('Error al cargar hoteles de Google')
+      }
+    },
+
     async reloadHotels() {
       this.currentPageModel = 1
-      await this.fetchHotels({ page: 0, size: 10 })
+      this.clearSelectedHotel()
+      await this.loadHotels()
     },
 
     getSettlementName(settlementId) {
@@ -437,12 +597,8 @@ export default {
   padding: 12px 0;
   z-index: 90;
   min-height: 50px;
-}
-
-.filters-chips-wrapper {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 15px;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .filters-chips-wrapper {
@@ -583,6 +739,49 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.hotel-card-wrapper.hotel-selected {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(53, 170, 6, 0.2);
+}
+
+.btn-select-hotel {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #1b515e;
+  background: white;
+  color: #1b515e;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-select-hotel:hover {
+  background: #e8f2f4;
+}
+
+.btn-select-hotel.selected {
+  background: #1b515e;
+  color: white;
+  border-color: #1b515e;
+}
+
+.btn-select-hotel.selected:hover {
+  background: #164450;
+  border-color: #164450;
+}
+
+.btn-select-hotel i {
+  font-size: 1.2rem;
 }
 
 .certifications-container {
@@ -686,13 +885,19 @@ export default {
 @media (max-width: 768px) {
   .content-layout {
     flex-direction: column;
-    margin-top: 100px;
+    margin-top: 50px;
+    padding: 15px 10px;
   }
 
   .filters-sidebar {
     width: 100%;
     position: static;
     max-height: none;
+    margin-bottom: 20px;
+  }
+
+  .filters-sidebar-content {
+    padding: 15px;
   }
 
   .hotels-list {
@@ -704,7 +909,7 @@ export default {
 @media (max-width: 576px) {
   .main-container {
     padding-top: 130px;
-    padding-bottom: 75px;
+    padding-bottom: 85px;
   }
 
   .filters-chips-container {
@@ -716,7 +921,21 @@ export default {
   }
 
   .content-layout {
-    padding: 15px 10px;
+    padding: 10px 8px;
+    margin-top: 50px;
+  }
+
+  .filters-sidebar-content {
+    padding: 12px;
+  }
+
+  .sidebar-title {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+
+  .filter-section-title {
+    font-size: 0.9rem;
   }
 
   .hotels-list {
@@ -736,6 +955,11 @@ export default {
   .certification-badge {
     font-size: 0.8rem;
     padding: 6px 10px;
+  }
+
+  .btn-select-hotel {
+    font-size: 0.9rem;
+    padding: 10px 14px;
   }
 }
 
