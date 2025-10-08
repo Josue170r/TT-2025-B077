@@ -26,8 +26,20 @@ export function hotels(state) {
   return state.hotels
 }
 
+export function hotelIds(state) {
+  return state.hotelIds
+}
+
 export function newItinerary(state) {
   return state.newItinerary
+}
+
+export function selectedHotelId(state) {
+  return state.newItinerary.hotelPlaceId
+}
+
+export function isCertificatedHotel(state) {
+  return state.newItinerary.isCertificatedHotel
 }
 
 export function pagination(state) {
