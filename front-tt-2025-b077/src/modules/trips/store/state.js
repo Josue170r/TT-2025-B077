@@ -1,5 +1,6 @@
 export default function () {
   return {
+    favoriteIds: [],
     states: [],
     certifications: [],
     settlements: [],
@@ -9,6 +10,8 @@ export default function () {
       selectedState: '',
       startDate: '',
       endDate: '',
+      hotelPlaceId: null,
+      isCertificatedHotel: false,
     },
     pagination: {
       pageNumber: 0,

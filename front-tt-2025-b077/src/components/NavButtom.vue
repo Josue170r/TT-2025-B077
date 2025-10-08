@@ -1,7 +1,12 @@
 <template>
   <nav class="bottom-navbar">
     <div class="container-fluid d-flex justify-content-center py-2">
-      <button @click="generateItinerary" class="btn btn-primary btn-lg w-100 generate-btn">
+      <button 
+        @click="generateItinerary" 
+        class="btn btn-primary btn-lg w-100 generate-btn"
+        :disabled="!hasHotelSelected"
+        :class="{ 'btn-disabled': !hasHotelSelected }"
+      >
         <span class="btn-text">Generar itinerario</span>
         <i class="fas fa-route ms-2"></i>
       </button>
@@ -11,11 +16,20 @@
 
 <script>
 export default {
-  name: 'BottomNavbar',
+  name: 'NavButtom',
+  props: {
+    hasHotelSelected: {
+      type: Boolean,
+      default: false,
+    },
+  },
   methods: {
     generateItinerary() {
+      if (!this.hasHotelSelected) {
+        return
+      }
       console.log('¡Itinerario generado!')
-      alert('Activando la generación de itinerario...')
+      this.$router.push({ name: 'generate_itinerary' })
     },
   },
 }
@@ -44,13 +58,29 @@ export default {
 }
 
 /* Efecto hover */
-.generate-btn:hover {
+.generate-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(27, 81, 94, 0.3);
 }
 
-.generate-btn:active {
+.generate-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+
+/* Estado deshabilitado */
+.generate-btn:disabled,
+.btn-disabled {
+  background-color: #ccc !important;
+  border-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.generate-btn:disabled:hover,
+.btn-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* Efecto de ripple sutil al hacer clic */
@@ -69,7 +99,7 @@ export default {
     height 0.6s;
 }
 
-.generate-btn:active::before {
+.generate-btn:active:not(:disabled)::before {
   width: 300px;
   height: 300px;
 }
@@ -85,7 +115,7 @@ export default {
   transition: transform 0.3s ease;
 }
 
-.generate-btn:hover i {
+.generate-btn:hover:not(:disabled) i {
   transform: translateX(3px);
 }
 
@@ -94,7 +124,7 @@ export default {
   border-color: #1b515e;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #164450;
   border-color: #164450;
 }
