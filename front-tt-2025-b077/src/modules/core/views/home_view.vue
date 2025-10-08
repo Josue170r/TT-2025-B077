@@ -89,12 +89,12 @@ import Inputexplore from '@/components/inputexplore.vue'
 import PlaceCard from '@/components/placecard.vue'
 
 export default {
-  components: { 
-    BottomNavbar, 
-    hamburgermenu, 
-    topnavbar, 
+  components: {
+    BottomNavbar,
+    hamburgermenu,
+    topnavbar,
     Inputexplore,
-    PlaceCard
+    PlaceCard,
   },
   data() {
     return {
@@ -132,7 +132,10 @@ export default {
       toggleFavoritePlace: 'toggleFavoritePlace',
     }),
     ...mapMutations('places', {
-      setSelectedPlaceId: 'setSelectedPlaceId'
+      setSelectedPlaceId: 'setSelectedPlaceId',
+      setPlaceIds: 'setPlaceIds',
+      setPlaces: 'setPlaces',
+      setPagination: 'setPagination'
     }),
     async getUserLocation() {
       try {
@@ -169,9 +172,13 @@ export default {
       await this.fetchPreferencePlaces({
         latitude: this.userLocation.lat,
         longitude: this.userLocation.lng,
-      }).then(() => {
+      }).then((response) => {
+        this.setPlaceIds(response)
         this.fetchPlacesByIds({
           place_ids: this.placesIds,
+        }).then((response) => {
+          this.setPlaces(response.content)
+          this.setPagination(response)
         })
       })
     },
@@ -181,9 +188,13 @@ export default {
         latitude: this.userLocation.lat,
         longitude: this.userLocation.lng,
         types: types,
-      }).then(() => {
+      }).then((response) => {
+        this.setPlaceIds(response)
         this.fetchPlacesByIds({
           place_ids: this.placesIds,
+        }).then((response) => {
+          this.setPlaces(response.content)
+          this.setPagination(response)
         })
       })
     },
@@ -233,11 +244,13 @@ export default {
 
     async handlePageChange(page) {
       try {
-        await this.fetchPlacesByIds({
+        const response = await this.fetchPlacesByIds({
           place_ids: this.placesIds,
           page: page - 1,
           size: this.pagination.pageSize,
         })
+        this.setPlaces(response.content)
+        this.setPagination(response)
       } catch (error) {
         console.error('Error al cambiar página:', error)
         this.error = 'Error al cargar la página'
@@ -251,7 +264,7 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({name: 'site_description'})
+      this.$router.push({ name: 'site_description' })
     },
 
     async handleFilterChange(filter) {
