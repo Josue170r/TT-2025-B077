@@ -18,8 +18,7 @@ export async function fetchNearbyPlaces({ commit }, { latitude, longitude, types
       })
       .then((response) => {
         const data = response.data
-        commit('setPlaceIds', data.data)
-        resolve()
+        resolve(data.data)
       })
       .catch((error) => {
         reject(error)
@@ -75,9 +74,7 @@ export async function fetchPlacesByIds({ commit }, { place_ids, page = 0, size =
       })
       .then((response) => {
         const data = response.data
-        commit('setPlaces', data.content)
-        commit('setPagination', data)
-        resolve()
+        resolve(data)
       })
       .catch((error) => {
         reject(error)
