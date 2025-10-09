@@ -21,18 +21,16 @@
         
         <!-- Icono Lista (Derecha) -->
         <div class="navbar-brand-right">
-          <button 
-            @click="verItinerarios"
+          <router-link 
+            :to="{ name: 'itinerary' }" 
             class="btn btn-outline-primary btn-navbar-icon"
-            type="button"
             :title="tooltipText"
             aria-label="Ver mis itinerarios creados"
           >
-          <i class="fa-solid fa-list-check " aria-hidden="true"></i>
+            <i class="fa-solid fa-list-check" aria-hidden="true"></i>
             <span class="d-none d-lg-inline-block ms-2">Itinerarios</span>
-          </button>
+          </router-link>
         </div>
-        
       </div>
     </nav>
   </header>
