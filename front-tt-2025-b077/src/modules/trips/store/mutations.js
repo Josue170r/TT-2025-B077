@@ -32,6 +32,15 @@ export default {
     state.newItinerary.endDate = date ? date.toISOString() : null
   },
 
+  setSelectedHotel(state, { hotelPlaceId, isCertificatedHotel }) {
+    state.newItinerary.hotelPlaceId = hotelPlaceId
+    state.newItinerary.isCertificatedHotel = isCertificatedHotel
+  },
+
+  clearSelectedHotel(state) {
+    state.newItinerary.hotelPlaceId = null
+  },
+
   setCertifications(state, certifications) {
     state.certifications = certifications
   },
@@ -42,6 +51,10 @@ export default {
 
   setHotels(state, hotels) {
     state.hotels = hotels
+  },
+
+  setHotelIds(state, hotelIds) {
+    state.hotelIds = hotelIds
   },
 
   setPagination(state, paginationData) {

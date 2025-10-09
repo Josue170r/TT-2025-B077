@@ -87,7 +87,17 @@ export default {
     },
     placeTypeLabel() {
       if (!this.place.placeTypes || this.place.placeTypes.length === 0) return null
-      return this.getPlaceTypeTranslation(this.place.placeTypes[0])
+
+      if (this.place.placeTypes.length === 1) {
+        return this.getPlaceTypeTranslation(this.place.placeTypes[0])
+      }
+
+      const filteredTypes = this.place.placeTypes.filter(
+        (type) => type !== 'point_of_interest' && type !== 'establishment',
+      )
+
+      const typesToShow = filteredTypes.length > 0 ? filteredTypes : this.place.placeTypes
+      return typesToShow.map((type) => this.getPlaceTypeTranslation(type)).join(', ')
     },
     reviewsCount() {
       return this.place.reviews?.length || 0
@@ -116,6 +126,9 @@ export default {
         establishment: 'Establecimiento',
         point_of_interest: 'Punto de Interés',
         lodging: 'Hotel',
+        church: 'Iglesia',
+        university: 'Universidad',
+        store: 'Tienda',
       }
       return typeTranslations[type] || type.replace(/_/g, ' ')
     },
