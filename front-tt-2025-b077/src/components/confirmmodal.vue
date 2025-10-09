@@ -29,47 +29,48 @@ export default {
   props: {
     show: {
       type: Boolean,
-      default: false
+      default: false,
     },
     title: {
       type: String,
-      default: 'Cambios sin guardar'
+      default: 'Cambios sin guardar',
     },
     message: {
       type: String,
-      default: 'Has realizado cambios en tus datos que no han sido guardados.'
+      default: 'Has realizado cambios en tus datos que no han sido guardados.',
     },
     submessage: {
       type: String,
-      default: 'Si continúas, perderás todos los cambios realizados. Para guardar los cambios, selecciona el botón "Modificar".'
+      default:
+        'Si continúas, perderás todos los cambios realizados. Para guardar los cambios, selecciona el botón "Modificar".',
     },
     cancelText: {
       type: String,
-      default: 'Quedarme aquí'
+      default: 'Quedarme aquí',
     },
     confirmText: {
       type: String,
-      default: 'Salir sin guardar'
+      default: 'Salir sin guardar',
     },
     closeOnOverlay: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   methods: {
     handleConfirm() {
-      this.$emit('confirm');
+      this.$emit('confirm')
     },
     handleCancel() {
-      this.$emit('cancel');
+      this.$emit('cancel')
     },
     handleOverlayClick() {
       if (this.closeOnOverlay) {
-        this.$emit('close');
+        this.$emit('close')
       }
-    }
-  }
-};
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -131,7 +132,8 @@ export default {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -143,7 +145,7 @@ export default {
   margin: 0;
   font-size: 1.4rem;
   font-weight: 600;
-  color: #1B515E;
+  color: #1b515e;
 }
 
 .modal-body {
@@ -184,7 +186,7 @@ export default {
 }
 
 .btn-cancel {
-  background-color: #ABCD9E;
+  background-color: #abcd9e;
   color: white;
   box-shadow: 0 2px 8px rgba(171, 205, 158, 0.3);
 }
@@ -212,25 +214,25 @@ export default {
   .modal-overlay {
     padding: 1rem;
   }
-  
+
   .modal-header {
     padding: 1.5rem 1.5rem 1rem 1.5rem;
   }
-  
+
   .modal-body {
     padding: 1rem 1.5rem;
   }
-  
+
   .modal-footer {
     flex-direction: column-reverse;
     padding: 1rem 1.5rem 1.5rem 1.5rem;
   }
-  
+
   .modal-footer .btn {
     width: 100%;
     min-width: auto;
   }
-  
+
   .warning-icon {
     font-size: 2.5rem;
     padding: 0.8rem;

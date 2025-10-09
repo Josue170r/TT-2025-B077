@@ -1,44 +1,44 @@
-import Preferences from "../views/preferences.vue";
-import UserProfile from "../views/userprofile.vue";
-import Deleteaccount from "../views/deleteaccount.vue";
-import ChangePassword from "../views/changepassword.vue";
+import Preferences from '../views/preferences.vue'
+import UserProfile from '../views/userprofile.vue'
+import Deleteaccount from '../views/deleteaccount.vue'
+import ChangePassword from '../views/changepassword.vue'
 
 export default [
-    {
-        path: '/user/preferences',
-        name: 'preferences',
-        meta: {
-            title: 'Preferencias',
-            rule: 'auth',
-        },
-        component: Preferences,
+  {
+    path: '/user/preferences',
+    name: 'preferences',
+    meta: {
+      title: 'Preferencias',
+      rule: 'auth',
     },
-    {
-        path: '/user/my-profile',
-        name: 'myaccount',
-        meta: {
-            title: 'Mi cuenta',
-            rule: 'auth',
-        },
-        component: UserProfile,
+    component: Preferences,
+  },
+  {
+    path: '/user/my-profile',
+    name: 'myaccount',
+    meta: {
+      title: 'Mi cuenta',
+      rule: 'auth',
     },
-    
-    {
-        path: '/user/delete-account',
-        name: 'deleteaccount',
-        meta: {
-            title: 'Borrar cuenta',
-            rule: 'auth',
-        },
-        component: Deleteaccount,
+    component: UserProfile,
+  },
+
+  {
+    path: '/user/delete-account',
+    name: 'deleteaccount',
+    meta: {
+      title: 'Borrar cuenta',
+      rule: 'auth',
     },
-    {
-        path: '/user/change-password',
-        name: 'changepassword',
-        meta: {
-            title: 'Cambia tu contraseña',
-            rule: 'auth',
-        },
-        component: ChangePassword,
+    component: Deleteaccount,
+  },
+  {
+    path: '/user/change-password',
+    name: 'changepassword',
+    meta: {
+      title: 'Cambia tu contraseña',
+      rule: 'auth',
     },
+    component: ChangePassword,
+  },
 ]

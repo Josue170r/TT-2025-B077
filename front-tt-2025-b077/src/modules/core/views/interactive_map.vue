@@ -1,6 +1,5 @@
 <template>
   <div class="map-container">
-    <!-- Inputs -->
     <RouteInputs
       :origin="originInput"
       :destination="destinationInput"
@@ -20,7 +19,9 @@
         <div class="card info-card border-0">
           <div class="card-body p-4">
             <!-- Header siempre visible con botón de colapso -->
-            <div class="info-header-with-toggle d-flex align-items-center justify-content-between mb-0">
+            <div
+              class="info-header-with-toggle d-flex align-items-center justify-content-between mb-0"
+            >
               <div class="info-header-main flex-fill">
                 <div class="d-flex align-items-center justify-content-between">
                   <div class="flex-fill">
@@ -30,12 +31,12 @@
                       <span class="text-muted small">• {{ routeInfo.distance }}</span>
                     </div>
                   </div>
-                  <button 
-                    class="btn toggle-btn p-2 ms-3 d-flex align-items-center justify-content-center" 
+                  <button
+                    class="btn toggle-btn p-2 ms-3 d-flex align-items-center justify-content-center"
                     @click="toggleCardExpanded"
                     :title="isCardExpanded ? 'Contraer información' : 'Expandir información'"
                   >
-                    <span class="toggle-icon" :class="{ 'expanded': isCardExpanded }">
+                    <span class="toggle-icon" :class="{ expanded: isCardExpanded }">
                       {{ isCardExpanded ? '▼' : '▲' }}
                     </span>
                   </button>
@@ -48,7 +49,7 @@
               <div v-show="isCardExpanded" class="expandable-content pt-3">
                 <div class="info-details mb-3">
                   <p class="card-text text-muted small mb-2">{{ routeInfo.address }}</p>
-                  
+
                   <div class="row g-2 mb-3">
                     <div class="col-6">
                       <div class="detail-item text-center">
@@ -63,9 +64,11 @@
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
-                    <span class="badge bg-light text-dark rating"><i class="fa-solid fa-star m-1"></i> {{ routeInfo.rating || 'N/A' }}</span>
+                    <span class="badge bg-light text-dark rating"
+                      ><i class="fa-solid fa-star m-1"></i> {{ routeInfo.rating || 'N/A' }}</span
+                    >
                   </div>
                 </div>
 
@@ -79,31 +82,52 @@
                     >
                       <div class="d-flex align-items-center gap-2">
                         <i v-if="travelMode === 'DRIVING'" class="fa-solid fa-car text-primary"></i>
-                        <i v-else-if="travelMode === 'WALKING'" class="fa-solid fa-person-walking text-success"></i>
-                        <i v-else-if="travelMode === 'BICYCLING'" class="fa-solid fa-bicycle text-warning"></i>
-                        <i v-else-if="travelMode === 'TRANSIT'" class="fa-solid fa-bus text-info"></i>
+                        <i
+                          v-else-if="travelMode === 'WALKING'"
+                          class="fa-solid fa-person-walking text-success"
+                        ></i>
+                        <i
+                          v-else-if="travelMode === 'BICYCLING'"
+                          class="fa-solid fa-bicycle text-warning"
+                        ></i>
+                        <i
+                          v-else-if="travelMode === 'TRANSIT'"
+                          class="fa-solid fa-bus text-info"
+                        ></i>
                         <span>{{ travelModeText }}</span>
                       </div>
                     </button>
 
                     <ul v-show="isDropdownOpen" class="dropdown-menu-custom w-100 show">
                       <li>
-                        <button class="dropdown-item d-flex align-items-center gap-2" @click="setTravelMode('DRIVING')">
+                        <button
+                          class="dropdown-item d-flex align-items-center gap-2"
+                          @click="setTravelMode('DRIVING')"
+                        >
                           <i class="fa-solid fa-car text-primary"></i> Automóvil
                         </button>
                       </li>
                       <li>
-                        <button class="dropdown-item d-flex align-items-center gap-2" @click="setTravelMode('WALKING')">
+                        <button
+                          class="dropdown-item d-flex align-items-center gap-2"
+                          @click="setTravelMode('WALKING')"
+                        >
                           <i class="fa-solid fa-person-walking text-success"></i> A pie
                         </button>
                       </li>
                       <li>
-                        <button class="dropdown-item d-flex align-items-center gap-2" @click="setTravelMode('BICYCLING')">
+                        <button
+                          class="dropdown-item d-flex align-items-center gap-2"
+                          @click="setTravelMode('BICYCLING')"
+                        >
                           <i class="fa-solid fa-bicycle text-warning"></i> Bicicleta
                         </button>
                       </li>
                       <li>
-                        <button class="dropdown-item d-flex align-items-center gap-2" @click="setTravelMode('TRANSIT')">
+                        <button
+                          class="dropdown-item d-flex align-items-center gap-2"
+                          @click="setTravelMode('TRANSIT')"
+                        >
                           <i class="fa-solid fa-bus text-info"></i> Transporte
                         </button>
                       </li>
@@ -123,19 +147,19 @@
 </template>
 
 <script>
-import RouteInputs from '@/components/mapInputs.vue';
+import RouteInputs from '@/components/mapInputs.vue'
 
 export default {
-  name: "GoogleMapDirectionsWithInfo",
+  name: 'GoogleMapDirectionsWithInfo',
   components: {
-    RouteInputs
+    RouteInputs,
   },
   data() {
     return {
-      originInput: "",
-      destinationInput: "",
+      originInput: '',
+      destinationInput: '',
       userLocation: null,
-      travelMode: "DRIVING",
+      travelMode: 'DRIVING',
       map: null,
       directionsService: null,
       directionsRenderer: null,
@@ -143,79 +167,77 @@ export default {
       isCardExpanded: true,
       isMapReady: false,
       isDropdownOpen: false,
-    };
+    }
   },
   computed: {
     travelModeText() {
       switch (this.travelMode) {
-        case "DRIVING":
-          return "Automóvil";
-        case "WALKING":
-          return "A pie";
-        case "BICYCLING":
-          return "Bicicleta";
-        case "TRANSIT":
-          return "Transporte";
+        case 'DRIVING':
+          return 'Automóvil'
+        case 'WALKING':
+          return 'A pie'
+        case 'BICYCLING':
+          return 'Bicicleta'
+        case 'TRANSIT':
+          return 'Transporte'
         default:
-          return "";
+          return ''
       }
     },
   },
   mounted() {
-    this.loadBootstrap();
-    
+    this.loadBootstrap()
+
     if (!window.google) {
-      this.loadGoogleMapsScript().then(this.getCurrentLocation);
+      this.loadGoogleMapsScript().then(this.getCurrentLocation)
     } else {
-      this.getCurrentLocation();
+      this.getCurrentLocation()
     }
   },
   methods: {
     loadBootstrap() {
       if (!document.querySelector('link[href*="bootstrap"]')) {
-        const bootstrapCSS = document.createElement('link');
-        bootstrapCSS.rel = 'stylesheet';
-        bootstrapCSS.href = 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css';
-        document.head.appendChild(bootstrapCSS);
+        const bootstrapCSS = document.createElement('link')
+        bootstrapCSS.rel = 'stylesheet'
+        bootstrapCSS.href =
+          'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css'
+        document.head.appendChild(bootstrapCSS)
       }
     },
 
     setTravelMode(mode) {
-      this.travelMode = mode;
-      this.isDropdownOpen = false;
+      this.travelMode = mode
+      this.isDropdownOpen = false
       if (this.routeInfo) {
-        this.calculateRoute();
+        this.calculateRoute()
       }
     },
 
     handleSwap() {
-      console.log('Inputs intercambiados');
+      console.log('Inputs intercambiados')
     },
 
     toggleCardExpanded() {
-      this.isCardExpanded = !this.isCardExpanded;
+      this.isCardExpanded = !this.isCardExpanded
     },
 
     loadGoogleMapsScript() {
       return new Promise((resolve, reject) => {
         if (window.google && window.google.maps && window.google.maps.places) {
-          resolve();
-          return;
+          resolve()
+          return
         }
 
-        const existingScript = document.querySelector(
-          "script[src*='maps.googleapis.com']"
-        );
-        if (existingScript) existingScript.remove();
+        const existingScript = document.querySelector("script[src*='maps.googleapis.com']")
+        if (existingScript) existingScript.remove()
         //Llamar a la API
-        const script = document.createElement("script");
-        script.src = "",
-        script.async = true;
-        script.defer = true;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
+        const script = document.createElement('script')
+        ;(script.src = ''), (script.async = true)
+        script.defer = true
+        script.onload = resolve
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
     },
 
     getCurrentLocation() {
@@ -225,93 +247,92 @@ export default {
             this.userLocation = {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
-            };
-            this.initMap(this.userLocation);
+            }
+            this.initMap(this.userLocation)
           },
           () => {
-            this.userLocation = { lat: -34.397, lng: 150.644 };
-            this.initMap(this.userLocation);
-          }
-        );
+            this.userLocation = { lat: -34.397, lng: 150.644 }
+            this.initMap(this.userLocation)
+          },
+        )
       } else {
-        this.userLocation = { lat: -34.397, lng: 150.644 };
-        this.initMap(this.userLocation);
+        this.userLocation = { lat: -34.397, lng: 150.644 }
+        this.initMap(this.userLocation)
       }
     },
 
     initMap(center) {
-      this.map = new google.maps.Map(document.getElementById("map"), {
+      this.map = new google.maps.Map(document.getElementById('map'), {
         center,
         zoom: 14,
-      });
+      })
 
-      this.directionsService = new google.maps.DirectionsService();
-      this.directionsRenderer = new google.maps.DirectionsRenderer();
-      this.directionsRenderer.setMap(this.map);
+      this.directionsService = new google.maps.DirectionsService()
+      this.directionsRenderer = new google.maps.DirectionsRenderer()
+      this.directionsRenderer.setMap(this.map)
 
       new google.maps.Marker({
         position: center,
         map: this.map,
-        title: "Tu ubicación actual",
-      });
+        title: 'Tu ubicación actual',
+      })
 
-      this.isMapReady = true;
+      this.isMapReady = true
     },
 
     calculateRoute() {
       if (!this.destinationInput) {
-        alert("Por favor, ingresa un destino.");
-        return;
+        alert('Por favor, ingresa un destino.')
+        return
       }
 
       if (!this.directionsService || !this.directionsRenderer) {
-        alert("El mapa aún se está cargando. Por favor, espera un momento.");
-        return;
+        alert('El mapa aún se está cargando. Por favor, espera un momento.')
+        return
       }
 
-      const origin =
-        this.originInput.trim() !== "" ? this.originInput : this.userLocation;
+      const origin = this.originInput.trim() !== '' ? this.originInput : this.userLocation
 
       const request = {
         origin,
         destination: this.destinationInput,
         travelMode: this.travelMode,
-      };
+      }
 
       this.directionsService.route(request, (result, status) => {
-        if (status === "OK") {
-          this.directionsRenderer.setDirections(result);
+        if (status === 'OK') {
+          this.directionsRenderer.setDirections(result)
 
-          const leg = result.routes[0].legs[0];
-          const destinationLatLng = leg.end_location;
+          const leg = result.routes[0].legs[0]
+          const destinationLatLng = leg.end_location
 
-          const placesService = new google.maps.places.PlacesService(this.map);
+          const placesService = new google.maps.places.PlacesService(this.map)
           const placesRequest = {
             location: destinationLatLng,
             radius: 50,
-          };
+          }
 
           placesService.nearbySearch(placesRequest, (places, status) => {
-            const place = places?.[0] || {};
+            const place = places?.[0] || {}
 
             this.routeInfo = {
-              name: leg.end_address.split(",")[0],
+              name: leg.end_address.split(',')[0],
               address: leg.end_address,
               rating: place.rating,
               distance: leg.distance.text,
               duration: leg.duration.text,
-            };
+            }
 
-            this.isCardExpanded = true;
-          });
+            this.isCardExpanded = true
+          })
         } else {
-          console.error("Error al calcular la ruta:", status);
-          alert("No se pudo calcular la ruta.");
+          console.error('Error al calcular la ruta:', status)
+          alert('No se pudo calcular la ruta.')
         }
-      });
+      })
     },
   },
-};
+}
 </script>
 
 <style scoped>
@@ -360,7 +381,7 @@ export default {
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
   z-index: -1;
 }
 
@@ -545,7 +566,7 @@ export default {
     width: 36px;
     height: 36px;
   }
-  
+
   .toggle-icon {
     font-size: 0.8rem;
   }

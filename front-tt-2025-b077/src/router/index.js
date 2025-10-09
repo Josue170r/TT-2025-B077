@@ -6,7 +6,6 @@ import tripsRoutes from '@/modules/trips/router/index'
 import userRoutes from '@/modules/user/router/index'
 import store from '@/store'
 
-
 let baseRoutes = [
   {
     path: '/',
@@ -15,19 +14,16 @@ let baseRoutes = [
   },
 ]
 
-const routes = baseRoutes.concat(
-  authRoutes, coreRoutes, tripsRoutes, userRoutes,
-)
+const routes = baseRoutes.concat(authRoutes, coreRoutes, tripsRoutes, userRoutes)
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
 })
-
 
 router.beforeEach((to, from, next) => {
   const isLogged = store.getters['auth/isLogged']
-  const isPublic = to.matched.some(r => r.meta?.rule === 'public')
+  const isPublic = to.matched.some((r) => r.meta?.rule === 'public')
 
   if (!isLogged && !isPublic) {
     return next({ name: 'authLogin' })

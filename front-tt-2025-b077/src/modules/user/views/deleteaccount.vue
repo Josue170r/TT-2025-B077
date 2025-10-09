@@ -1,71 +1,97 @@
 <template>
-  <div class="delete-account-container d-flex flex-column justify-content-center align-items-center text-center">
+  <div
+    class="delete-account-container d-flex flex-column justify-content-center align-items-center text-center"
+  >
     <!-- Logo -->
-    <div class="mb-5 fade-in-element" style="animation-delay: 0.2s;">
-      <img src="/logo-letras.png" alt="Logo Huellas por México" class="img-fluid" style="max-height: 100px;">
+    <div class="mb-5 fade-in-element" style="animation-delay: 0.2s">
+      <img
+        src="/logo-letras.png"
+        alt="Logo Huellas por México"
+        class="img-fluid"
+        style="max-height: 100px"
+      />
     </div>
 
     <!-- Card principal -->
-    <div class="main-content-card fade-in-element" style="animation-delay: 0.4s;">
+    <div class="main-content-card fade-in-element" style="animation-delay: 0.4s">
       <!-- Título principal -->
-      <h1 class="mb-4 main-title fade-in-element" style="animation-delay: 0.6s;">
+      <h1 class="mb-4 main-title fade-in-element" style="animation-delay: 0.6s">
         ¿Estás seguro que quieres eliminar tu cuenta?
       </h1>
 
       <!-- Carita triste -->
-      <div class="emoji-wrapper mb-4 fade-in-element" style="animation-delay: 0.8s;">
+      <div class="emoji-wrapper mb-4 fade-in-element" style="animation-delay: 0.8s">
         <span class="sad-emoji">😢</span>
       </div>
 
       <!-- Descripción -->
-      <p class="description-text mb-5 fade-in-element" style="animation-delay: 1s;">
+      <p class="description-text mb-5 fade-in-element" style="animation-delay: 1s">
         Lamentamos mucho que te quieras ir, juntos podemos seguir dejando
         <strong class="brand-highlight">Huellas por México</strong>
       </p>
 
       <!-- Botones -->
-      <div class="d-flex flex-column flex-md-row justify-content-center gap-3 fade-in-element" style="animation-delay: 1.2s;">
-        <button class="btn btn-delete-custom px-4 py-3" @click="showModal">
-            Eliminar cuenta
-        </button>
-        <button class="btn btn-cancel-custom px-4 py-3" @click="cancelDelete">
-          Cancelar
-        </button>
+      <div
+        class="d-flex flex-column flex-md-row justify-content-center gap-3 fade-in-element"
+        style="animation-delay: 1.2s"
+      >
+        <button class="btn btn-delete-custom px-4 py-3" @click="showModal">Eliminar cuenta</button>
+        <button class="btn btn-cancel-custom px-4 py-3" @click="cancelDelete">Cancelar</button>
       </div>
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" ref="deleteModal">
+    <div
+      class="modal fade"
+      id="deleteModal"
+      tabindex="-1"
+      aria-labelledby="deleteModalLabel"
+      aria-hidden="true"
+      ref="deleteModal"
+    >
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-custom">
           <div class="modal-header border-0 pb-2">
             <div class="w-100 text-center">
               <div class="warning-icon mb-3">⚠️</div>
-              <h5 class="modal-title text-danger fw-bold mb-0" id="deleteModalLabel">Confirmar eliminación</h5>
+              <h5 class="modal-title text-danger fw-bold mb-0" id="deleteModalLabel">
+                Confirmar eliminación
+              </h5>
             </div>
-            <button type="button" class="btn-close position-absolute" style="top: 1rem; right: 1rem;" @click="closeModal"></button>
+            <button
+              type="button"
+              class="btn-close position-absolute"
+              style="top: 1rem; right: 1rem"
+              @click="closeModal"
+            ></button>
           </div>
           <div class="modal-body text-center py-4">
             <p class="fs-6 mb-3 confirmation-message">
-              Escribe <strong class="text-danger">"Eliminar"</strong> para proceder con la eliminación de la cuenta en
+              Escribe <strong class="text-danger">"Eliminar"</strong> para proceder con la
+              eliminación de la cuenta en
               <strong class="text-primary-custom">Huellas por México</strong>
             </p>
             <div class="input-wrapper position-relative mb-3">
-              <input 
-                type="text" 
-                class="form-control text-center input-confirmation" 
-                v-model="confirmationText" 
+              <input
+                type="text"
+                class="form-control text-center input-confirmation"
+                v-model="confirmationText"
                 placeholder="Escribe 'Eliminar' aquí"
-                :class="{ 'border-success': isDeleteEnabled, 'border-danger': confirmationText && !isDeleteEnabled }"
-              >
+                :class="{
+                  'border-success': isDeleteEnabled,
+                  'border-danger': confirmationText && !isDeleteEnabled,
+                }"
+              />
               <div class="input-status" v-if="confirmationText">
                 <span v-if="isDeleteEnabled" class="text-success">✓</span>
                 <span v-else class="text-danger">✗</span>
               </div>
             </div>
           </div>
-          <div class="modal-footer d-flex flex-column flex-md-row justify-content-center gap-3 border-0 py-3">
-            <button 
+          <div
+            class="modal-footer d-flex flex-column flex-md-row justify-content-center gap-3 border-0 py-3"
+          >
+            <button
               class="btn btn-danger-confirm px-4 py-2"
               :disabled="!isDeleteEnabled"
               @click="confirmDelete"
@@ -79,7 +105,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -92,50 +117,50 @@ export default {
     return {
       confirmationText: '',
       isDeleteEnabled: false,
-      modalInstance: null
+      modalInstance: null,
     }
   },
   watch: {
     confirmationText(newVal) {
-      this.isDeleteEnabled = newVal.trim().toLowerCase() === 'eliminar';
-    }
+      this.isDeleteEnabled = newVal.trim().toLowerCase() === 'eliminar'
+    },
   },
   mounted() {
-    this.modalInstance = new Modal(this.$refs.deleteModal);
+    this.modalInstance = new Modal(this.$refs.deleteModal)
   },
   methods: {
     showModal() {
-      this.confirmationText = '';
-      this.isDeleteEnabled = false;
-      this.modalInstance.show();
+      this.confirmationText = ''
+      this.isDeleteEnabled = false
+      this.modalInstance.show()
     },
     closeModal() {
-      this.confirmationText = '';
-      this.isDeleteEnabled = false;
-      this.modalInstance.hide();
+      this.confirmationText = ''
+      this.isDeleteEnabled = false
+      this.modalInstance.hide()
     },
     confirmDelete() {
       if (this.isDeleteEnabled) {
-        console.log('Cuenta eliminada definitivamente');
-        this.closeModal();
+        console.log('Cuenta eliminada definitivamente')
+        this.closeModal()
       }
     },
     cancelDelete() {
-    document.body.classList.add('fade-out');
-        setTimeout(() => {
-            if (this.$router) {
-            this.$router.push({ name: 'myaccount' });
-            }
-        }, 300);
-    }
-  }
+      document.body.classList.add('fade-out')
+      setTimeout(() => {
+        if (this.$router) {
+          this.$router.push({ name: 'myaccount' })
+        }
+      }, 300)
+    },
+  },
 }
 </script>
 
 <style scoped>
 /* Colores principales */
 .text-primary-custom {
-  color: #1B515E !important;
+  color: #1b515e !important;
 }
 
 /* Contenedor principal con fade */
@@ -201,7 +226,7 @@ export default {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 20px;
   padding: 3rem 2rem;
-  box-shadow: 
+  box-shadow:
     0 10px 30px rgba(27, 81, 94, 0.1),
     0 0 0 1px rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -218,13 +243,13 @@ export default {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #1B515E 0%, #ABCD9E 100%);
+  background: linear-gradient(90deg, #1b515e 0%, #abcd9e 100%);
   border-radius: 20px 20px 0 0;
 }
 
 /* Título principal */
 .main-title {
-  color: #1B515E;
+  color: #1b515e;
   font-weight: 700;
   font-size: 2rem;
   line-height: 1.3;
@@ -251,8 +276,8 @@ export default {
 }
 
 .brand-highlight {
-  color: #1B515E;
-  background: linear-gradient(135deg, #1B515E 0%, #ABCD9E 100%);
+  color: #1b515e;
+  background: linear-gradient(135deg, #1b515e 0%, #abcd9e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -268,7 +293,7 @@ export default {
 
 .btn-delete-custom {
   background: transparent;
-  color: #1B515E;
+  color: #1b515e;
   border: none;
   text-decoration: underline;
   font-size: 1.1rem;
@@ -285,14 +310,14 @@ export default {
 }
 
 .btn-cancel-custom {
-  background: linear-gradient(135deg, #ABCD9E 0%, #9bc18c 100%);
-  color: #1B515E;
-  border: 2px solid #ABCD9E;
+  background: linear-gradient(135deg, #abcd9e 0%, #9bc18c 100%);
+  color: #1b515e;
+  border: 2px solid #abcd9e;
 }
 
 .btn-cancel-custom:hover {
   background: linear-gradient(135deg, #9bc18c 0%, #8bb87a 100%);
-  color: #1B515E;
+  color: #1b515e;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(171, 205, 158, 0.3);
 }
@@ -301,7 +326,7 @@ export default {
 .modal-custom {
   border: none;
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   background: white;
 }
 
@@ -334,7 +359,7 @@ export default {
 }
 
 .input-confirmation:focus {
-  border-color: #1B515E;
+  border-color: #1b515e;
   box-shadow: 0 0 0 0.2rem rgba(27, 81, 94, 0.25);
 }
 
@@ -364,18 +389,19 @@ export default {
 }
 
 .btn-keep-traveling {
-  background: linear-gradient(135deg, #ABCD9E 0%, #9bc18c 100%);
-  color: #1B515E;
-  border: 2px solid #ABCD9E;
+  background: linear-gradient(135deg, #abcd9e 0%, #9bc18c 100%);
+  color: #1b515e;
+  border: 2px solid #abcd9e;
 }
 
 .btn-keep-traveling:hover {
   background: linear-gradient(135deg, #9bc18c 0%, #8bb87a 100%);
-  color: #1B515E;
+  color: #1b515e;
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -384,9 +410,16 @@ export default {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
 }
 
 /* Responsive */
@@ -395,15 +428,15 @@ export default {
     padding: 2rem 1.5rem;
     margin: 1rem;
   }
-  
+
   .main-title {
     font-size: 1.6rem;
   }
-  
+
   .sad-emoji {
     font-size: 3rem;
   }
-  
+
   .btn {
     min-width: 40%;
   }
@@ -413,12 +446,13 @@ export default {
   .delete-account-container {
     padding: 1rem;
   }
-  
+
   .main-content-card {
     padding: 2rem 1rem;
   }
-  
-  .modal-header, .modal-body {
+
+  .modal-header,
+  .modal-body {
     padding: 1.5rem;
   }
   .btn {

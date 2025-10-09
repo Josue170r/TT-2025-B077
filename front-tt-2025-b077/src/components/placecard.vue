@@ -24,20 +24,12 @@
       </v-carousel>
 
       <div v-else class="default-image-container">
-        <img
-          :src="defaultImage"
-          alt="Imagen por defecto"
-          class="default-image"
-        />
+        <img :src="defaultImage" alt="Imagen por defecto" class="default-image" />
       </div>
 
       <div class="favorite-btn" @click.stop="handleToggleFavorite">
         <i
-          :class="
-            isFavorite
-              ? 'mdi mdi-heart text-danger'
-              : 'mdi mdi-heart-outline text-white'
-          "
+          :class="isFavorite ? 'mdi mdi-heart text-danger' : 'mdi mdi-heart-outline text-white'"
         ></i>
       </div>
 
@@ -57,9 +49,7 @@
         <span v-if="placeTypeLabel" class="place-type">
           {{ placeTypeLabel }}
         </span>
-        <span v-if="reviewsCount > 0" class="reviews-count">
-          {{ reviewsCount }} reseñas
-        </span>
+        <span v-if="reviewsCount > 0" class="reviews-count"> {{ reviewsCount }} reseñas </span>
       </div>
     </v-card-text>
   </v-card>
@@ -71,16 +61,16 @@ export default {
   props: {
     place: {
       type: Object,
-      required: true
+      required: true,
     },
     isFavorite: {
       type: Boolean,
-      default: false
+      default: false,
     },
     logoUrl: {
       type: String,
-      default: '/logo-letras.png'
-    }
+      default: '/logo-letras.png',
+    },
   },
   emits: ['select-place', 'toggle-favorite'],
   computed: {
@@ -97,11 +87,21 @@ export default {
     },
     placeTypeLabel() {
       if (!this.place.placeTypes || this.place.placeTypes.length === 0) return null
-      return this.getPlaceTypeTranslation(this.place.placeTypes[0])
+
+      if (this.place.placeTypes.length === 1) {
+        return this.getPlaceTypeTranslation(this.place.placeTypes[0])
+      }
+
+      const filteredTypes = this.place.placeTypes.filter(
+        (type) => type !== 'point_of_interest' && type !== 'establishment',
+      )
+
+      const typesToShow = filteredTypes.length > 0 ? filteredTypes : this.place.placeTypes
+      return typesToShow.map((type) => this.getPlaceTypeTranslation(type)).join(', ')
     },
     reviewsCount() {
       return this.place.reviews?.length || 0
-    }
+    },
   },
   methods: {
     handlePlaceClick() {
@@ -126,10 +126,13 @@ export default {
         establishment: 'Establecimiento',
         point_of_interest: 'Punto de Interés',
         lodging: 'Hotel',
+        church: 'Iglesia',
+        university: 'Universidad',
+        store: 'Tienda',
       }
       return typeTranslations[type] || type.replace(/_/g, ' ')
-    }
-  }
+    },
+  },
 }
 </script>
 

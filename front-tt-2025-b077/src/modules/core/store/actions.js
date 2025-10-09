@@ -1,31 +1,30 @@
-import axios from "axios";
+import axios from 'axios'
 
 export async function fetchNearbyPlaces({ commit }, { latitude, longitude, types }) {
   commit(
-      'setLoading',
-      {
+    'setLoading',
+    {
       isLoading: true,
       msg: 'Buscando lugares cercanos',
-      },
-      { root: true }
+    },
+    { root: true },
   )
   return new Promise((resolve, reject) => {
-      axios
+    axios
       .post('/place/nearby-search', {
-          latitude,
-          longitude,
-          types
+        latitude,
+        longitude,
+        types,
       })
       .then((response) => {
         const data = response.data
-        commit('setPlaceIds', data.data)
-        resolve()
+        resolve(data.data)
       })
       .catch((error) => {
-          reject(error)
+        reject(error)
       })
       .finally(() => {
-          commit('setLoading', false, { root: true })
+        commit('setLoading', false, { root: true })
       })
   })
 }
@@ -37,13 +36,13 @@ export async function fetchPreferencePlaces({ commit }, { latitude, longitude })
       isLoading: true,
       msg: 'Cargando lugares según tus preferencias',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios
       .post('/place/nearby-preferences', {
         latitude,
-        longitude
+        longitude,
       })
       .then((response) => {
         const data = response.data
@@ -59,25 +58,23 @@ export async function fetchPreferencePlaces({ commit }, { latitude, longitude })
   })
 }
 
-export async function fetchPlacesByIds({ commit }, { place_ids, page = 0, size = 10}) {
+export async function fetchPlacesByIds({ commit }, { place_ids, page = 0, size = 10 }) {
   commit(
     'setLoading',
     {
       isLoading: true,
       msg: 'Cargando información de lugares',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios
       .post(`/place/allById?page=${page}&size=${size}`, {
-        place_ids
+        place_ids,
       })
       .then((response) => {
         const data = response.data
-        commit('setPlaces', data.content)
-        commit('setPagination', data)
-        resolve()
+        resolve(data)
       })
       .catch((error) => {
         reject(error)
@@ -95,7 +92,7 @@ export async function fetchPlaceDetails({ commit, state }) {
       isLoading: true,
       msg: 'Cargando detalles del lugar',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios
@@ -136,7 +133,7 @@ export async function submitPlaceReview({ commit }, { placeId, reviewData }) {
       isLoading: true,
       msg: 'Enviando reseña',
     },
-    { root: true }
+    { root: true },
   )
   return new Promise((resolve, reject) => {
     axios
@@ -160,8 +157,8 @@ export async function getPlaceWeather({ commit }, { lat, lng }) {
       .get('/weather/coordinates', {
         params: {
           lat,
-          lng
-        }
+          lng,
+        },
       })
       .then((response) => {
         resolve(response.data)
@@ -171,5 +168,3 @@ export async function getPlaceWeather({ commit }, { lat, lng }) {
       })
   })
 }
-
-

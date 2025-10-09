@@ -2,6 +2,9 @@ package com.tt._2025.b077.huellaspormexico.modules.hotels.repositories;
 
 import com.tt._2025.b077.huellaspormexico.modules.hotels.entities.CertificatedHotel;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -44,9 +47,23 @@ public class CertificatedHotelSpecification {
             if (certificationIds == null || certificationIds.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
-            return root.join("certifications").get("id").in(certificationIds);
+
+            assert query != null;
+            Subquery<Long> subquery = query.subquery(Long.class);
+            Root<CertificatedHotel> subRoot = subquery.from(CertificatedHotel.class);
+            Join<Object, Object> certJoin = subRoot.join("certifications");
+
+            subquery.select(subRoot.get("id"))
+                    .where(
+                            criteriaBuilder.and(
+                                    criteriaBuilder.equal(subRoot.get("id"), root.get("id")),
+                                    certJoin.get("id").in(certificationIds)
+                            )
+                    );
+            return criteriaBuilder.exists(subquery);
         };
     }
+
 
     public static Specification<CertificatedHotel> byCoordinates(Double latitude, Double longitude) {
         return (root, query, criteriaBuilder) -> {
