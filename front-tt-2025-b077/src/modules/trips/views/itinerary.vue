@@ -29,7 +29,7 @@
 
 <script>
 import BottomNavbar from "@/components/bottomnavbar.vue";
-import NavTopIItinerary from "@/components/NavTopIItinerary.vue";
+import NavTopIItinerary from "@/components/NavTopDescription.vue";
 // import axios from 'axios';
 
 export default {
