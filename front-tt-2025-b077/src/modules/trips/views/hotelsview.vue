@@ -3,7 +3,7 @@
   <div class="main-container">
     <div class="header-container">
       <SearchHotels
-        @search-hotels="handleSearch"
+        :user-location="userLocation"
         @place-selected="handlePlaceSelected"
         @navigate="handleNavigation"
       />
@@ -29,6 +29,13 @@
           <div v-if="filters.useLocation" class="filter-chip">
             <span>Cerca de mí</span>
             <button @click="removeLocation" class="chip-remove">
+              <i class="mdi mdi-close"></i>
+            </button>
+          </div>
+
+          <div v-if="textSearchMode" class="filter-chip text-search-chip">
+            <span>Búsqueda: {{ textSearchQuery }}</span>
+            <button @click="removeTextSearch" class="chip-remove">
               <i class="mdi mdi-close"></i>
             </button>
           </div>
@@ -115,9 +122,9 @@
 
       <main class="main-content">
         <div class="hotels-list">
-          <div 
-            v-for="hotel in hotels" 
-            :key="hotel.id" 
+          <div
+            v-for="hotel in hotels"
+            :key="hotel.id"
             class="hotel-card-wrapper"
             :class="{ 'hotel-selected': selectedHotel === hotel.place.id }"
           >
@@ -154,12 +161,15 @@
               @toggle-favorite="toggleFavorite"
             />
 
-            <button 
+            <button
               @click="selectHotel(hotel)"
               class="btn-select-hotel"
-              :class="{ 'selected': selectedHotel === hotel.place.id }"
+              :class="{ selected: selectedHotel === hotel.place.id }"
             >
-              <i class="mdi" :class="selectedHotel === hotel.place.id ? 'mdi-check-circle' : 'mdi-plus-circle'"></i>
+              <i
+                class="mdi"
+                :class="selectedHotel === hotel.place.id ? 'mdi-check-circle' : 'mdi-plus-circle'"
+              ></i>
               {{ selectedHotel === hotel.place.id ? 'Hotel Seleccionado' : 'Seleccionar Hotel' }}
             </button>
           </div>
@@ -186,7 +196,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapMutations } from 'vuex'
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 import NavButtom from '@/components/NavButtom.vue'
 import PlaceCard from '@/components/placecard.vue'
 import SearchHotels from '@/components/SearchHotels.vue'
@@ -219,19 +229,24 @@ export default {
       'filters',
       'newItinerary',
       'favoriteIds',
+      'textSearchMode',
+      'textSearchQuery',
     ]),
+    ...mapState('places', {
+      selectedPlaceDetails: 'selectedPlaceDetails',
+    }),
     selectedHotel() {
       return this.newItinerary.hotelPlaceId
     },
     selectedCertifications() {
       return this.certifications.filter((cert) => this.filters.certifications.includes(cert.id))
     },
-
     hasActiveFilters() {
       return (
         this.filters.certifications.length > 0 ||
         this.filters.settlement ||
-        this.filters.useLocation
+        this.filters.useLocation ||
+        this.textSearchMode
       )
     },
   },
@@ -243,10 +258,10 @@ export default {
 
       if (this.newItinerary.selectedState) {
         await this.fetchSettlements(this.newItinerary.selectedState)
-        
+
         await this.$nextTick()
         this.restoreFilters()
-        
+
         await this.loadHotels()
       }
     } catch (error) {
@@ -265,6 +280,7 @@ export default {
     ...mapActions('places', {
       fetchNearbyPlaces: 'fetchNearbyPlaces',
       fetchPlacesByIds: 'fetchPlacesByIds',
+      fetchPlaceDetails: 'fetchPlaceDetails',
     }),
     ...mapMutations('trips', {
       setFilterCertifications: 'setFilterCertifications',
@@ -277,6 +293,10 @@ export default {
       setHotelIds: 'setHotelIds',
       setPagination: 'setPagination',
       setSelectedHotel: 'setSelectedHotel',
+      setTextSearchMode: 'setTextSearchMode',
+      setTextSearchQuery: 'setTextSearchQuery',
+      setTextSearchPlaceId: 'setTextSearchPlaceId',
+      clearTextSearch: 'clearTextSearch',
     }),
     ...mapMutations('places', {
       setSelectedPlaceId: 'setSelectedPlaceId',
@@ -308,7 +328,7 @@ export default {
       if (this.filters.certifications && this.filters.certifications.length > 0) {
         this.tempCertifications = [...this.filters.certifications]
       }
-      
+
       if (this.filters.settlement) {
         this.locationType = 'settlement'
         this.tempSettlement = this.filters.settlement
@@ -323,12 +343,46 @@ export default {
       this.$router.push(route)
     },
 
-    handleSearch(query) {
-      console.log('Searching for:', query)
+    async handlePlaceSelected(place) {
+      try {
+        this.setTextSearchMode(true)
+        this.setTextSearchQuery(place.mainText)
+        this.setTextSearchPlaceId(place.placeId)
+        this.setSelectedPlaceId(place.placeId)
+
+        await this.fetchPlaceDetails()
+
+        const hotelFromSearch = {
+          id: place.placeId,
+          place: this.selectedPlaceDetails,
+          certifications: [],
+        }
+
+        this.setHotels([hotelFromSearch])
+        this.setPagination({
+          pageable: { pageNumber: 0, pageSize: 1 },
+          totalElements: 1,
+          totalPages: 1,
+          first: true,
+          last: true,
+          numberOfElements: 1,
+          empty: false,
+        })
+
+        this.isSustainable = false
+        this.tempCertifications = []
+        this.tempSettlement = null
+        this.locationType = 'none'
+      } catch (error) {
+        console.error('Error al cargar detalles del lugar:', error)
+        this.$alert.error('Error al cargar los detalles del hotel')
+      }
     },
 
-    handlePlaceSelected(place) {
-      console.log('Place selected:', place)
+    removeTextSearch() {
+      this.clearTextSearch()
+      this.isSustainable = true
+      this.reloadHotels()
     },
 
     async handleSustainableChange() {
@@ -372,7 +426,7 @@ export default {
 
     selectHotel(hotel) {
       const hotelId = hotel.place.id
-      
+
       if (this.selectedHotel === hotelId) {
         this.selectedHotel = null
         this.setSelectedHotel({ hotelPlaceId: null, isCertificatedHotel: false })
@@ -398,13 +452,13 @@ export default {
             page: page - 1,
             size: this.pagination.pageSize,
           })
-          
-          const hotels = response.content.map(place => ({
+
+          const hotels = response.content.map((place) => ({
             id: place.id,
             place: place,
             certifications: [],
           }))
-          
+
           this.setHotels(hotels)
           this.setPagination(response)
         }
@@ -491,6 +545,9 @@ export default {
     },
 
     clearAllFilters() {
+      if (this.textSearchMode) {
+        this.removeTextSearch()
+      }
       this.clearFilters()
       this.tempCertifications = []
       this.tempSettlement = null
@@ -510,13 +567,13 @@ export default {
             page: 0,
             size: 10,
           })
-          
-          const hotels = response.content.map(place => ({
+
+          const hotels = response.content.map((place) => ({
             id: place.id,
             place: place,
             certifications: [],
           }))
-          
+
           this.setHotels(hotels)
           this.setPagination(response)
         }
@@ -538,12 +595,12 @@ export default {
           this.fetchPlacesByIds({
             place_ids: this.hotelIds,
           }).then((response) => {
-            const hotels = response.content.map(place => ({
+            const hotels = response.content.map((place) => ({
               id: place.id,
               place: place,
               certifications: [],
             }))
-            
+
             this.setHotels(hotels)
             this.setPagination(response)
           })
@@ -627,6 +684,12 @@ export default {
   font-weight: 500;
 }
 
+.text-search-chip {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #2196f3;
+}
+
 .chip-remove {
   background: none;
   border: none;
@@ -667,7 +730,7 @@ export default {
   gap: 20px;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 15px;
+  padding: 0px 20px 15px 15px;
   margin-top: 70px;
 }
 
@@ -740,7 +803,9 @@ export default {
   flex-direction: column;
   gap: 0;
   position: relative;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .hotel-card-wrapper.hotel-selected {
