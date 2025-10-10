@@ -96,4 +96,21 @@ export default {
       longitude: null,
     }
   },
+  setTextSearchMode(state, isActive) {
+    state.textSearchMode = isActive
+  },
+
+  setTextSearchQuery(state, query) {
+    state.textSearchQuery = query
+  },
+
+  setTextSearchPlaceId(state, placeId) {
+    state.textSearchPlaceId = placeId
+  },
+
+  clearTextSearch(state) {
+    state.textSearchMode = false
+    state.textSearchQuery = ''
+    state.textSearchPlaceId = null
+  },
 }
