@@ -53,7 +53,7 @@ export default {
     Hamburgermenu
   },
   props: {
-    // NOTA: Estos son datos de ejemplo. En producción, estos valores se obtendrán de la API del backend
+    // NOTA: Estos son datos de ejemplo
     travelTitle: {
       type: String,
       default: 'TITULO DE VIAJE' // Ejemplo: Se obtendrá de la API como response.data.title
