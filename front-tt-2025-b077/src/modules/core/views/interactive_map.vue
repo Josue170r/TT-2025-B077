@@ -228,16 +228,20 @@ export default {
           return
         }
 
-        const existingScript = document.querySelector("script[src*='maps.googleapis.com']")
-        if (existingScript) existingScript.remove()
-        //Llamar a la API
-        const script = document.createElement('script')
-        ;(script.src = ''), (script.async = true)
-        script.defer = true
-        script.onload = resolve
-        script.onerror = reject
-        document.head.appendChild(script)
-      })
+        const existingScript = document.querySelector(
+          "script[src*='maps.googleapis.com']"
+        );
+        if (existingScript) existingScript.remove();
+
+        const script = document.createElement("script");
+        script.src =
+          "https://maps.googleapis.com/maps/api/js?key={API_KEY}&libraries=places";
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
     },
 
     getCurrentLocation() {

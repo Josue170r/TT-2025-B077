@@ -1,9 +1,6 @@
 package com.tt._2025.b077.huellaspormexico.modules.places.services.impl;
 
-import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearByPreferencesRequest;
-import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
-import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameRequest;
-import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameResponse;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceReview;
 import com.tt._2025.b077.huellaspormexico.modules.places.enums.FetchMode;
@@ -94,6 +91,11 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public List<SearchByNameResponse> searchPlacesByName(SearchByNameRequest request) {
         return placeApiService.searchPlacesByName(request);
+    }
+
+    @Override
+    public List<SearchByNameResponse> searchPlacesByText(TextSearchRequest request) {
+        return placeApiService.searchPlacesByText(request);
     }
 
     private List<Long> getLongs(NearBySearchRequest dto) {

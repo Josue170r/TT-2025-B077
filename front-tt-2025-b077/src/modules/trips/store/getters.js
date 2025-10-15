@@ -77,3 +77,15 @@ export function activeFiltersCount(state) {
   if (state.filters.useLocation) count++
   return count
 }
+
+export function textSearchMode(state) {
+  return state.textSearchMode
+}
+
+export function textSearchQuery(state) {
+  return state.textSearchQuery
+}
+
+export function textSearchPlaceId(state) {
+  return state.textSearchPlaceId
+}

@@ -30,5 +30,8 @@ export default function () {
       latitude: null,
       longitude: null,
     },
+    textSearchMode: false,
+    textSearchQuery: '',
+    textSearchPlaceId: null,
   }
 }

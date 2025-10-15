@@ -1,11 +1,11 @@
 package com.tt._2025.b077.huellaspormexico.modules.places.services.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.NearBySearchRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.dto.SearchByNameResponse;
+import com.tt._2025.b077.huellaspormexico.modules.places.dto.TextSearchRequest;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceImage;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.PlaceReview;
@@ -16,10 +16,6 @@ import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceType
 import com.tt._2025.b077.huellaspormexico.modules.places.services.PlaceApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -78,6 +74,72 @@ public class PlaceApiServiceImpl implements PlaceApiService {
     @Override
     public List<String> fetchNearBySearchPlaces(NearBySearchRequest request) {
         return fetchNearBySearchPlacesGoogle(request);
+    }
+
+    @Override
+    public List<SearchByNameResponse> searchPlacesByText(TextSearchRequest request) {
+        List<SearchByNameResponse> results = new ArrayList<>();
+
+        try {
+            UriComponentsBuilder builder = UriComponentsBuilder
+                    .fromUriString(googleBaseUrl + "/textsearch/json")
+                    .queryParam("query", request.getQuery())
+                    .queryParam("language", request.getLanguage())
+                    .queryParam("region", request.getRegion())
+                    .queryParam("key", googleApiKey);
+
+            if (request.getLocation() != null && request.getRadius() != null) {
+                builder.queryParam("location", request.getLocation());
+                builder.queryParam("radius", request.getRadius());
+            }
+
+            if (request.getType() != null && !request.getType().isEmpty()) {
+                builder.queryParam("type", request.getType());
+            }
+
+            if (request.getOpenNow() != null && request.getOpenNow()) {
+                builder.queryParam("opennow", true);
+            }
+
+            String urlString = builder.toUriString();
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(urlString))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> httpResponse = httpClient.send(httpRequest,
+                    HttpResponse.BodyHandlers.ofString());
+
+            JsonNode rootNode = objectMapper.readTree(httpResponse.body());
+            String status = rootNode.get("status").asText();
+
+            if (!"OK".equals(status)) {
+                if ("ZERO_RESULTS".equals(status)) {
+                    log.info("No results found for query");
+                    return results;
+                }
+                throw new RuntimeException("Error en Google Places API: " + status);
+            }
+
+            JsonNode resultsNode = rootNode.get("results");
+            if (resultsNode != null && resultsNode.isArray()) {
+                for (JsonNode resultNode : resultsNode) {
+                    SearchByNameResponse place = mapTextSearchToResponse(resultNode);
+                    if (place != null) {
+                        results.add(place);
+                    }
+                }
+            }
+
+        } catch (java.io.IOException | InterruptedException e) {
+            log.error("Error de conexión: {}", e.getMessage(), e);
+            throw new PlaceNotFoundException("Error de conexión al buscar lugares por texto");
+        } catch (Exception e) {
+            log.error("Error general buscando lugares por texto: {}", e.getMessage(), e);
+            throw new PlaceNotFoundException("Error al buscar lugares por texto");
+        }
+        return results;
     }
 
     @Override
@@ -478,6 +540,50 @@ public class PlaceApiServiceImpl implements PlaceApiService {
             return null;
         }
     }
+
+    private SearchByNameResponse mapTextSearchToResponse(JsonNode node) {
+        try {
+            String placeId = getTextValue(node, "place_id");
+
+            if (placeId == null) {
+                return null;
+            }
+
+            String name = getTextValue(node, "name");
+            String address = getTextValue(node, "formatted_address");
+
+            String description = "";
+            if (name != null && address != null) {
+                description = name + ", " + address;
+            } else if (name != null) {
+                description = name;
+            } else if (address != null) {
+                description = address;
+            }
+
+            SearchByNameResponse response = SearchByNameResponse.builder()
+                    .placeId(placeId)
+                    .description(description)
+                    .mainText(name)
+                    .secondaryText(address)
+                    .build();
+
+            JsonNode types = node.get("types");
+            if (types != null && types.isArray()) {
+                List<String> typesList = new ArrayList<>();
+                for (JsonNode type : types) {
+                    typesList.add(type.asText());
+                }
+                response.setTypes(typesList);
+            }
+
+            return response;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     private double calculateSimilarity(String s1, String s2) {
         if (s1 == null || s2 == null) return 0.0;
