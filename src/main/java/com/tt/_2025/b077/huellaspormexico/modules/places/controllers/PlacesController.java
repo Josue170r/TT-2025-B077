@@ -60,6 +60,14 @@ public class PlacesController {
                 .body(ApiResponse.of(HttpStatus.OK, null, suggestions));
     }
 
+    @RequestMapping(path = "/search-by-text", method = RequestMethod.POST)
+    public ResponseEntity<ApiResponse<?>> getSearchByText(@Valid @RequestBody TextSearchRequest request) {
+        List<SearchByNameResponse> places = placeService.searchPlacesByText(request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, places));
+    }
+
     @RequestMapping(path = "/allById", method = RequestMethod.POST)
     public Page<Place> getAllPlaces(
             @RequestBody PlaceIdsRequest placeIds,

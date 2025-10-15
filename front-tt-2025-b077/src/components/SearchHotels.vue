@@ -12,7 +12,7 @@
       <div class="search-container">
         <div
           class="search-wrapper"
-          :class="{ focused: isFocused, 'has-value': query, loading: isLoading }"
+          :class="{ focused: isFocused, 'has-value': query }"
         >
           <input
             type="text"
@@ -26,8 +26,7 @@
             ref="searchInput"
           />
           <div class="search-icon-wrapper" @click="performSearch">
-            <i v-if="!isLoading" class="fa-solid fa-bed search-icon"></i>
-            <div v-else class="loading-spinner"></div>
+            <i class="fa-solid fa-bed search-icon"></i>
           </div>
           <div class="search-effects">
             <div class="search-glow"></div>
@@ -57,6 +56,7 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 import hamburgermenu from '@/components/hamburgermenu.vue'
 
 export default {
@@ -64,17 +64,27 @@ export default {
   components: {
     hamburgermenu,
   },
+  props: {
+    userLocation: {
+      type: Object,
+      required: true,
+      default: () => ({ lat: 19.4326, lng: -99.1332 }),
+    },
+  },
   data() {
     return {
       query: '',
       isFocused: false,
-      isLoading: false,
       suggestions: [],
       selectedIndex: -1,
       showSuggestions: false,
+      searchTimeout: null,
     }
   },
   methods: {
+    ...mapActions('trips', {
+      searchHotelsByText: 'searchHotelsByText',
+    }),
     handleNavigation(route) {
       this.$emit('navigate', route)
     },
@@ -89,26 +99,37 @@ export default {
       }, 150)
     },
     handleInput() {
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout)
+      }
+
       if (this.query.length > 2) {
-        this.isLoading = true
-        setTimeout(() => {
-          this.suggestions = [
-            { placeId: 1, mainText: 'Hotel Palace', secondaryText: 'Centro Histórico' },
-            { placeId: 2, mainText: 'Suites Reforma', secondaryText: 'Colonia Juárez' },
-          ]
-          this.isLoading = false
-          this.showSuggestions = true
+        this.searchTimeout = setTimeout(() => {
+          this.performSearch()
         }, 500)
       } else {
         this.suggestions = []
         this.showSuggestions = false
-        this.isLoading = false
       }
     },
-    performSearch() {
-      if (this.query) {
-        console.log('Buscando hoteles:', this.query)
-        this.$emit('search-hotels', this.query)
+    async performSearch() {
+      if (!this.query || this.query.length < 3) {
+        return
+      }
+
+      try {
+        const results = await this.searchHotelsByText({
+          query: this.query,
+          latitude: this.userLocation.lat,
+          longitude: this.userLocation.lng,
+        })
+        
+        this.suggestions = results
+        this.showSuggestions = true
+      } catch (error) {
+        console.error('Error buscando hoteles:', error)
+        this.$alert.error('Error al buscar hoteles')
+        this.suggestions = []
       }
     },
     selectSuggestion(suggestion) {
@@ -116,7 +137,7 @@ export default {
       this.showSuggestions = false
       this.isFocused = false
       this.$emit('place-selected', suggestion)
-      this.performSearch()
+      this.query = ''
     },
   },
 }
@@ -274,21 +295,6 @@ export default {
   opacity: 1;
 }
 
-.loading-spinner {
-  width: 1.2rem;
-  height: 1.2rem;
-  border: 2px solid rgba(53, 170, 6, 0.2);
-  border-top-color: #b0d4a1;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .suggestions-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -301,6 +307,8 @@ export default {
   margin-top: 0;
   overflow: hidden;
   border: 1px solid #e0e0e0;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .suggestion-item {
@@ -364,7 +372,6 @@ export default {
   }
 }
 
-/* Tablets */
 @media (max-width: 768px) {
   .navbar-header {
     padding: 10px 15px 6px;
@@ -401,7 +408,6 @@ export default {
   }
 }
 
-/* Mobile */
 @media (max-width: 576px) {
   .navbar-header {
     padding: 8px 12px 5px;
@@ -478,7 +484,6 @@ export default {
   }
 }
 
-/* Mobile pequeño */
 @media (max-width: 375px) {
   .navbar-title {
     font-size: 1.1rem;
