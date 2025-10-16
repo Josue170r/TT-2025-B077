@@ -11,7 +11,7 @@ public class UpdatePlaceDTO {
     @NotNull(message = "El nuevo lugar es obligatorio")
     private Long newPlaceId;
 
-    private Long postalCodeId;
+    private String postalCode;
 
     @NotNull(message = "La hora de llegada es obligatoria")
     private LocalTime arrivalTime;
