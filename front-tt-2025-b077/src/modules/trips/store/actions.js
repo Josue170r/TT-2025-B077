@@ -137,3 +137,35 @@ export async function fetchHotels({ commit, state }, { page = 0, size = 10 }) {
       })
   })
 }
+
+export async function searchHotelsByText({ commit }, { query, latitude, longitude }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Buscando hoteles',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .post('/place/search-by-text', {
+        query: query,
+        location: `${latitude},${longitude}`,
+        radius: 3000,
+        type: 'lodging',
+        language: 'es',
+        region: 'mx',
+      })
+      .then((response) => {
+        const data = response.data.data
+        resolve(data)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
