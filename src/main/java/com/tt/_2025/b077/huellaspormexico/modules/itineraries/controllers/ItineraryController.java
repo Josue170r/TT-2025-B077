@@ -1,11 +1,8 @@
 package com.tt._2025.b077.huellaspormexico.modules.itineraries.controllers;
 
 import com.tt._2025.b077.huellaspormexico.models.ApiResponse;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.dto.CreateItineraryDTO;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.dto.UpdatePlaceDTO;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.dto.UpdateVisitOrderDTO;
+import com.tt._2025.b077.huellaspormexico.modules.itineraries.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.Itinerary;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryDay;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryPlace;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.services.ItineraryService;
 import jakarta.validation.Valid;
@@ -47,9 +44,9 @@ public class ItineraryController {
     }
 
     @RequestMapping(path = "/user", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<List<Itinerary>>> getUserItineraries(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<ItinerarySummaryDTO>>> getUserItineraries(Authentication authentication) {
         String username = authentication.getName();
-        List<Itinerary> itineraries = itineraryService.getUserItineraries(username);
+        List<ItinerarySummaryDTO> itineraries = itineraryService.getUserItineraries(username);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, null, itineraries));
@@ -79,6 +76,20 @@ public class ItineraryController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Lugar actualizado exitosamente", null));
     }
+
+    @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/{placeId}/time", method = RequestMethod.PUT)
+    public ResponseEntity<ApiResponse<ItineraryPlace>> updatePlaceTime(
+            @PathVariable Long itineraryId,
+            @PathVariable Long dayId,
+            @PathVariable Long placeId,
+            @Valid @RequestBody UpdatePlaceTimeDTO dto) {
+
+        ItineraryPlace updatedPlace = itineraryService.updatePlaceTime(itineraryId, dayId, placeId, dto);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Horario actualizado exitosamente", updatedPlace));
+    }
+
 
     @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<ApiResponse<Void>> deleteItinerary(@PathVariable Long id) {
