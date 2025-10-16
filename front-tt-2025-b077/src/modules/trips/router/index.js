@@ -3,6 +3,7 @@ import Itinerary from '../views/itinerary.vue'
 import Mytrips from '../views/mytrips.vue'
 import Newtrip from '../views/newtrip.vue'
 import Hotels from '../../trips/views/hotelsview.vue'
+import Description_itinerary from '../views/description_itinerary.vue'
 
 export default [
   {
@@ -50,5 +51,14 @@ export default [
       rule: 'auth',
     },
     component: Hotels,
+  },
+  {
+    path: '/place/description_itinerary',
+    name: 'description-itinerary',
+    meta: {
+      title: 'Descripción de itinerario',
+      rule: 'auth',
+    },
+    component: Description_itinerary,
   },
 ]
