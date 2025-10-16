@@ -34,6 +34,14 @@ public class PlacesController {
                 .body(ApiResponse.of(HttpStatus.OK, null, place));
     }
 
+    @RequestMapping(path = "/{placeId}", method = RequestMethod.GET)
+    public ResponseEntity<ApiResponse<?>> getPlaceById(@PathVariable String placeId) {
+        Place place = placeService.getPlaceDetails(placeId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, place));
+    }
+
     @RequestMapping(path = "/nearby-search", method = RequestMethod.POST)
     public ResponseEntity<ApiResponse<List<Long>>> getNearBySearchPlacesIds(@Valid @RequestBody NearBySearchRequest request) {
         List<Long> response = placeService.getNearBySearchPlaces(request);
