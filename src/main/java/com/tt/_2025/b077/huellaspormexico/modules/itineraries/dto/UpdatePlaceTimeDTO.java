@@ -6,12 +6,7 @@ import lombok.Data;
 import java.time.LocalTime;
 
 @Data
-public class UpdatePlaceDTO {
-
-    @NotNull(message = "El nuevo lugar es obligatorio")
-    private Long newPlaceId;
-
-    private String postalCode;
+public class UpdatePlaceTimeDTO {
 
     @NotNull(message = "La hora de llegada es obligatoria")
     private LocalTime arrivalTime;

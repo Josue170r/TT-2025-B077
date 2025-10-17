@@ -9,11 +9,7 @@
       >
         <hamburgermenu />
         <div class="input-container flex-grow-1 mx-3">
-          <Inputexplore
-            :api-key="googleApiKey"
-            @place-selected="handlePlaceSelected"
-            @search-error="handleSearchError"
-          />
+          <Inputexplore @search-error="handleSearchError" />
         </div>
         <div class="d-flex flex-column align-items-center map-section">
           <i class="fa-solid fa-location-dot map-icon"></i>
@@ -135,7 +131,7 @@ export default {
       setSelectedPlaceId: 'setSelectedPlaceId',
       setPlaceIds: 'setPlaceIds',
       setPlaces: 'setPlaces',
-      setPagination: 'setPagination'
+      setPagination: 'setPagination',
     }),
     async getUserLocation() {
       try {
@@ -270,12 +266,6 @@ export default {
     async handleFilterChange(filter) {
       this.currentFilter = filter
       await this.refreshPlaces()
-    },
-
-    handlePlaceSelected(data) {
-      if (data.place?.geometry?.location) {
-        console.log(data)
-      }
     },
 
     handleSearchError(error) {

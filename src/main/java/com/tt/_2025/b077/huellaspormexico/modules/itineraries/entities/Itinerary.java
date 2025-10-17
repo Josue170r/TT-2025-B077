@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
@@ -24,7 +25,7 @@ public class Itinerary extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     @JsonIgnore
     @ToString.Exclude
@@ -33,11 +34,14 @@ public class Itinerary extends BaseModel {
     @Column(name = "trip_title", nullable = false, length = 200)
     private String tripTitle;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "average_sustainable_index", precision = 5, scale = 2)
+    private BigDecimal averageSustainableIndex;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hotel_place_id", nullable = false)
     private Place hotelPlace;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "certificated_hotel_id")
     private CertificatedHotel certificatedHotel;
 

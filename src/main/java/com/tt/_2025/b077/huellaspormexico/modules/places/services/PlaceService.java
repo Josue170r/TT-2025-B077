@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface PlaceService {
     Place getPlaceDetails(String place_id);
+    Place getPlaceById(Long id);
     List<Long> getNearBySearchPlaces (NearBySearchRequest request);
     List<Long> getNearByPreferences(String username, NearByPreferencesRequest request);
     Page<Place> getAllByIdList(List<Long> ids, Pageable pageable);
