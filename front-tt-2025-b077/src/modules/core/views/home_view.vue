@@ -78,6 +78,7 @@
 
 <script>
 import { mapActions, mapGetters, mapMutations } from 'vuex'
+import { getErrorDetails } from '@/utils/utils'
 import BottomNavbar from '@/components/bottomnavbar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
 import topnavbar from '@/components/topnavbar.vue'
@@ -273,11 +274,22 @@ export default {
     },
 
     async toggleFavorite(place) {
-      try {
-        await this.toggleFavoritePlace(place.id)
-      } catch (error) {
-        console.error('Error al cambiar favorito:', error)
-      }
+      this.toggleFavoritePlace(place.id)
+        .then(() => {
+          const isFav = this.isFavorite(place.id)
+          this.$alert.success({
+            title: isFav ? 'Agregado a favoritos' : 'Eliminado de favoritos',
+            text: isFav
+              ? 'El lugar ha sido agregado a tus favoritos'
+              : 'El lugar ha sido eliminado de tus favoritos',
+          })
+        })
+        .catch((error) => {
+          this.$alert.error({
+            title: 'Error al actualizar favoritos',
+            text: getErrorDetails(error),
+          })
+        })
     },
 
     isFavorite(placeId) {
