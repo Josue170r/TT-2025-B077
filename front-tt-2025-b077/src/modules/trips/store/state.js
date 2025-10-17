@@ -13,6 +13,9 @@ export default function () {
       hotelPlaceId: null,
       isCertificatedHotel: false,
     },
+    userItineraries: [],
+    currentItinerary: null,
+    currentItineraryId: null,
     pagination: {
       pageNumber: 0,
       pageSize: 10,

@@ -51,7 +51,7 @@ public class ItineraryPlace extends BaseModel {
     private void validate() {
         if (leavingTime != null && leavingTime.isBefore(arrivalTime)) {
             throw new IllegalStateException(
-                    "leaving_time debe ser después de arrival_time"
+                    "Leaving_time debe ser después de arrival_time"
             );
         }
     }

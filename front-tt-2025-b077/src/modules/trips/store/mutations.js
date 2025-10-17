@@ -96,6 +96,7 @@ export default {
       longitude: null,
     }
   },
+
   setTextSearchMode(state, isActive) {
     state.textSearchMode = isActive
   },
@@ -112,5 +113,53 @@ export default {
     state.textSearchMode = false
     state.textSearchQuery = ''
     state.textSearchPlaceId = null
+  },
+
+  setUserItineraries(state, itineraries) {
+    state.userItineraries = itineraries
+  },
+
+  setCurrentItinerary(state, itinerary) {
+    state.currentItinerary = itinerary
+  },
+
+  setCurrentItineraryId(state, itineraryId) {
+    state.currentItineraryId = itineraryId
+  },
+
+  updateItineraryDay(state, { dayId, updatedDay }) {
+    if (state.currentItinerary) {
+      const dayIndex = state.currentItinerary.itineraryDays.findIndex(d => d.id === dayId)
+      if (dayIndex !== -1) {
+        state.currentItinerary.itineraryDays[dayIndex] = updatedDay
+      }
+    }
+  },
+
+  updateItineraryPlace(state, { dayId, placeId, updatedPlace }) {
+    if (state.currentItinerary) {
+      const day = state.currentItinerary.itineraryDays.find(d => d.id === dayId)
+      if (day) {
+        const placeIndex = day.places.findIndex(p => p.id === placeId)
+        if (placeIndex !== -1) {
+          day.places[placeIndex] = updatedPlace
+        }
+      }
+    }
+  },
+
+  clearCurrentItinerary(state) {
+    state.currentItinerary = null
+  },
+
+  clearNewItinerary(state) {
+    state.newItinerary = {
+      tripTitle: '',
+      selectedState: '',
+      startDate: '',
+      endDate: '',
+      hotelPlaceId: null,
+      isCertificatedHotel: false,
+    }
   },
 }

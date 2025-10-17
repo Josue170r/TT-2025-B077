@@ -89,3 +89,23 @@ export function textSearchQuery(state) {
 export function textSearchPlaceId(state) {
   return state.textSearchPlaceId
 }
+
+export function userItineraries(state) {
+  return state.userItineraries
+}
+
+export function currentItinerary(state) {
+  return state.currentItinerary
+}
+
+export function currentItineraryId(state) {
+  return state.currentItineraryId
+}
+
+export function itineraryDays(state) {
+  return state.currentItinerary?.itineraryDays || []
+}
+
+export function totalItineraries(state) {
+  return state.userItineraries.length
+}
