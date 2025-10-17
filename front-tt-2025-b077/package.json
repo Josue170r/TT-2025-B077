@@ -21,6 +21,7 @@
     "vue": "^3.5.17",
     "vue-axios": "^3.5.2",
     "vue-router": "^4.5.1",
+    "vuedraggable": "^4.1.0",
     "vuetify": "^3.9.0-beta.1",
     "vuex": "^4.0.2",
     "vuex-persist": "^3.1.3"

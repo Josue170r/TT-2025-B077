@@ -169,3 +169,160 @@ export async function searchHotelsByText({ commit }, { query, latitude, longitud
       })
   })
 }
+
+export async function fetchUserItineraries({ commit }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Cargando itinerarios',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/itineraries/user')
+      .then((response) => {
+        const itineraries = response.data.data
+        commit('setUserItineraries', itineraries)
+        resolve(itineraries)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function fetchItineraryById({ commit }, itineraryId) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Cargando itinerario',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/itineraries/${itineraryId}`)
+      .then((response) => {
+        const itinerary = response.data.data
+        commit('setCurrentItinerary', itinerary)
+        resolve(itinerary)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function updateVisitOrder({ commit }, { itineraryId, dayId, placeIds }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Actualizando orden',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .put(`/itineraries/${itineraryId}/days/${dayId}/order`, { placeIds })
+      .then((response) => {
+        const updatedDay = response.data
+        commit('updateItineraryDay', { dayId, updatedDay })
+        resolve(updatedDay)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function updatePlace({ commit }, { itineraryId, dayId, placeId, placeData }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Actualizando lugar',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .put(`/itineraries/${itineraryId}/days/${dayId}/places/${placeId}`, placeData)
+      .then((response) => {
+        const updatedPlace = response.data
+        commit('updateItineraryPlace', { dayId, placeId, updatedPlace })
+        resolve(updatedPlace)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function updatePlaceTime({ commit }, { itineraryId, dayId, placeId, arrivalTime, leavingTime }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Actualizando horario',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .put(`/itineraries/${itineraryId}/days/${dayId}/places/${placeId}/time`, {
+        arrivalTime,
+        leavingTime,
+      })
+      .then((response) => {
+        const updatedPlace = response.data
+        commit('updateItineraryPlace', { dayId, placeId, updatedPlace })
+        resolve(updatedPlace)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function deleteItinerary({ commit }, itineraryId) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Eliminando itinerario',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(`/itineraries/${itineraryId}`)
+      .then((response) => {
+        resolve(response.data)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}

@@ -29,9 +29,9 @@
       </li>
       <li class="nav-item">
         <router-link
-          :to="{ name: 'my-trips' }"
+          :to="{ name: 'itinerary' }"
           class="nav-link"
-          :class="{ active: isActive('my-trips') }"
+          :class="{ active: isActive('itinerary') }"
         >
           <i class="fa-regular fa-map icon icon-large"></i>
           <span>Mis viajes</span>

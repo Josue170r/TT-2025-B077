@@ -210,7 +210,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                 .orElseThrow(() -> new ItineraryDayNotFound(
                         "Día no encontrado en este itinerario"));
 
-        List<ItineraryPlace> places = itineraryPlaceRepository.findByItineraryDayId(dayId);
+        List<ItineraryPlace> places = itineraryPlaceRepository.findByItineraryDayIdOrderByVisitOrder(dayId);
 
         if (places.size() != dto.getPlaceIds().size()) {
             throw new RuntimeException(
