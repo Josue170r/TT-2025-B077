@@ -1,6 +1,5 @@
 import Favorites from '../views/favorites.vue'
-import Itinerary from '../views/itinerary.vue'
-import Mytrips from '../views/mytrips.vue'
+import MyItineraries from '../views/my_itineraries.vue'
 import Newtrip from '../views/newtrip.vue'
 import Hotels from '../../trips/views/hotelsview.vue'
 import Description_itinerary from '../views/description_itinerary.vue'
@@ -22,17 +21,7 @@ export default [
       title: 'Mis itinerarios',
       rule: 'auth',
     },
-    component: Itinerary,
-  },
-
-  {
-    path: '/trips/my-trips',
-    name: 'my-trips',
-    meta: {
-      title: 'Mis viajes',
-      rule: 'auth',
-    },
-    component: Mytrips,
+    component: MyItineraries,
   },
   {
     path: '/trips/newtrip',
