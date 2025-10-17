@@ -11,7 +11,7 @@ public class ItineraryPlaceDTO {
     @NotNull(message = "El lugar es obligatorio")
     private Long placeId;
 
-    private Long postalCodeId;
+    private String postalCode;
 
     private Integer visitOrder;
 
