@@ -9,11 +9,7 @@
       >
         <hamburgermenu />
         <div class="input-container flex-grow-1 mx-3">
-          <Inputexplore
-            :api-key="googleApiKey"
-            @place-selected="handlePlaceSelected"
-            @search-error="handleSearchError"
-          />
+          <Inputexplore @search-error="handleSearchError" />
         </div>
         <div class="d-flex flex-column align-items-center map-section">
           <i class="fa-solid fa-location-dot map-icon"></i>
@@ -82,6 +78,7 @@
 
 <script>
 import { mapActions, mapGetters, mapMutations } from 'vuex'
+import { getErrorDetails } from '@/utils/utils'
 import BottomNavbar from '@/components/bottomnavbar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
 import topnavbar from '@/components/topnavbar.vue'
@@ -135,7 +132,7 @@ export default {
       setSelectedPlaceId: 'setSelectedPlaceId',
       setPlaceIds: 'setPlaceIds',
       setPlaces: 'setPlaces',
-      setPagination: 'setPagination'
+      setPagination: 'setPagination',
     }),
     async getUserLocation() {
       try {
@@ -272,22 +269,27 @@ export default {
       await this.refreshPlaces()
     },
 
-    handlePlaceSelected(data) {
-      if (data.place?.geometry?.location) {
-        console.log(data)
-      }
-    },
-
     handleSearchError(error) {
       console.error('Error en búsqueda:', error)
     },
 
     async toggleFavorite(place) {
-      try {
-        await this.toggleFavoritePlace(place.id)
-      } catch (error) {
-        console.error('Error al cambiar favorito:', error)
-      }
+      this.toggleFavoritePlace(place.id)
+        .then(() => {
+          const isFav = this.isFavorite(place.id)
+          this.$alert.success({
+            title: isFav ? 'Agregado a favoritos' : 'Eliminado de favoritos',
+            text: isFav
+              ? 'El lugar ha sido agregado a tus favoritos'
+              : 'El lugar ha sido eliminado de tus favoritos',
+          })
+        })
+        .catch((error) => {
+          this.$alert.error({
+            title: 'Error al actualizar favoritos',
+            text: getErrorDetails(error),
+          })
+        })
     },
 
     isFavorite(placeId) {

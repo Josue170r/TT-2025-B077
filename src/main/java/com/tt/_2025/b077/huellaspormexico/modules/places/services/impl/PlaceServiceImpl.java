@@ -61,6 +61,12 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
+    public Place getPlaceById(Long id) {
+        return placeRepository.findById(id)
+                .orElseThrow(() -> new PlaceNotFoundException("No se pudo obtener el lugar"));
+    }
+
+    @Override
     public List<Long> getNearBySearchPlaces(NearBySearchRequest request) {
         return getLongs(request);
     }

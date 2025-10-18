@@ -7,34 +7,38 @@
           <Hamburgermenu />
         </div>
 
-        <!-- Información del viaje -->
         <div class="travel-info flex-grow-1 d-flex flex-column">
-          <!-- Título y cantidad de lugares -->
           <div class="d-flex align-items-center justify-content-between mb-1">
             <h1 class="travel-title mb-0">
-              [ {{ travelTitle }} ]
-              <span class="places-count">{{ placesCount }}</span>
+              {{ travelTitle || 'Título del viaje' }}
+              <span class="places-count">{{ placesCount || '[0 lugares]' }}</span>
             </h1>
-            <!-- Íconos de editar y semáforo ambiental -->
             <div class="d-flex align-items-center gap-2 flex-shrink-0">
               <button class="btn-icon edit-btn" @click="editTravel" title="Editar viaje">
                 <i class="fa-solid fa-pen"></i>
               </button>
-              <div class="environmental-indicator" :class="impactClass" :title="`Impacto ambiental: ${environmentalScore}`">
+              <div 
+                class="environmental-indicator" 
+                :class="impactClass" 
+                :title="`Impacto ambiental: ${formattedScore}`"
+              >
                 <i class="fa-solid fa-leaf"></i>
               </div>
             </div>
           </div>
 
-          <!-- Estado y fechas -->
           <div class="travel-details d-flex align-items-center gap-2 flex-wrap">
-            <span class="detail-item">{{ travelState }}</span>
+            <span class="detail-item">{{ travelState || 'Estado' }}</span>
             <span class="separator">·</span>
-            <span class="detail-item">{{ dateRange }}</span>
+            <span class="detail-item">{{ dateRange || 'Rango de fechas' }}</span>
           </div>
 
-          <!-- Leyenda de impacto ambiental -->
-          <a href="#" class="environmental-link" :class="impactClass" @click.prevent="showEnvironmentalInfo">
+          <a 
+            href="#" 
+            class="environmental-link" 
+            :class="impactClass" 
+            @click.prevent="showEnvironmentalInfo"
+          >
             <i class="fa-solid fa-leaf leaf-icon"></i>
             {{ environmentalMessage }}
           </a>
@@ -53,72 +57,56 @@ export default {
     Hamburgermenu
   },
   props: {
-    // NOTA: Estos son datos de ejemplo
     travelTitle: {
       type: String,
-      default: 'TITULO DE VIAJE' // Ejemplo: Se obtendrá de la API como response.data.title
+      default: 'Título del viaje'
     },
     placesCount: {
       type: String,
-      default: '[# DE LUGARES]' // Ejemplo: Se obtendrá de la API como response.data.places_count o calculado
+      default: '[0 lugares]'
     },
     travelState: {
       type: String,
-      default: '[ESTADO A VIAJAR]' // Ejemplo: Se obtendrá de la API como response.data.destination_state
+      default: 'Estado'
     },
     dateRange: {
       type: String,
-      default: '[RANGO DE FECHA]' // Ejemplo: Se obtendrá de la API como response.data.start_date + ' - ' + response.data.end_date
+      default: 'Rango de fechas'
     },
     environmentalScore: {
       type: Number,
-      default: 0.8, // Ejemplo: Se obtendrá de la API como response.data.sustainability_index
+      default: 0,
       validator: (value) => value >= 0 && value <= 1
     }
   },
-  // CONEXIÓN CON BACKEND (Descomentar cuando se implemente)
-  // mounted() {
-  //   this.fetchTravelData();
-  // },
-  // methods: {
-  //   async fetchTravelData() {
-  //     try {
-  //       const response = await fetch(` -- --  API -- `);
-  //       const data = await response.json();
-  //       
-  //       this.travelData = {
-  //         title: data.title,
-  //         placesCount: `[${data.places.length} lugares]`,
-  //         state: data.destination_state,
-  //         dateRange: `${this.formatDate(data.start_date)} - ${this.formatDate(data.end_date)}`,
-  //         sustainabilityIndex: data.sustainability_index
-  //       };
-  //     } catch (error) {
-  //       console.error('Error al obtener datos del viaje:', error);
-  //     }
-  //   },
-  //   formatDate(dateString) {
-  //     // Formato de fecha personalizado
-  //     const date = new Date(dateString);
-  //     return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
-  //   }
-  // },
   computed: {
+    validScore() {
+      // Asegura que el score sea válido
+      const score = parseFloat(this.environmentalScore);
+      if (isNaN(score)) return 0;
+      if (score < 0) return 0;
+      if (score > 1) return 1;
+      return score;
+    },
+
+    formattedScore() {
+      return (this.validScore * 100).toFixed(0) + '%';
+    },
+
     impactClass() {
-      // Calcula la clase CSS basada en el índice de sostenibilidad
-      if (this.environmentalScore >= 0.7) return 'low-impact';
-      if (this.environmentalScore >= 0.4) return 'medium-impact';
+      if (this.validScore >= 0.7) return 'low-impact';
+      if (this.validScore >= 0.4) return 'medium-impact';
       return 'high-impact';
     },
+
     environmentalMessage() {
-      // Genera el mensaje dinámico según el índice de sostenibilidad
-      const score = this.environmentalScore.toFixed(1);
-      if (this.environmentalScore >= 0.7) {
-        return `Este viaje tiene un bajo impacto medioambiental, con una calificación de sostenibilidad de ${score} puntos`;
-      } else if (this.environmentalScore >= 0.4) {
-        return `Este viaje tiene un impacto medioambiental moderado, con una calificación de sostenibilidad de ${score} puntos`;
+      const score = this.formattedScore;
+      if (this.validScore >= 0.7) {
+        return `Este viaje tiene un bajo impacto medioambiental, con una calificación de sostenibilidad de ${score}`;
+      } else if (this.validScore >= 0.4) {
+        return `Este viaje tiene un impacto medioambiental moderado, con una calificación de sostenibilidad de ${score}`;
       } else {
-        return `Este viaje tiene un alto impacto medioambiental, con una calificación de sostenibilidad de ${score} puntos`;
+        return `Este viaje tiene un alto impacto medioambiental, con una calificación de sostenibilidad de ${score}`;
       }
     }
   },
@@ -127,7 +115,7 @@ export default {
       this.$emit('edit-travel');
     },
     showEnvironmentalInfo() {
-      this.$emit('show-environmental-info', this.environmentalScore);
+      this.$emit('show-environmental-info', this.validScore);
     }
   }
 };
@@ -154,12 +142,10 @@ export default {
   min-width: 40px;
 }
 
-/* Información del viaje */
 .travel-info {
   min-width: 0;
 }
 
-/* Título */
 .travel-title {
   font-size: 1.1rem;
   font-weight: bold;
@@ -177,7 +163,6 @@ export default {
   margin-left: 0.25rem;
 }
 
-/* Detalles (estado y fechas) */
 .travel-details {
   font-size: 0.85rem;
   color: #666;
@@ -192,7 +177,6 @@ export default {
   color: #999;
 }
 
-/* Botones de iconos */
 .btn-icon {
   background: transparent;
   border: none;
@@ -215,7 +199,6 @@ export default {
   background-color: #f0f0f0;
 }
 
-/* Semáforo de impacto ambiental */
 .environmental-indicator {
   width: 32px;
   height: 32px;
@@ -247,7 +230,6 @@ export default {
   box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
 }
 
-/* Leyenda de impacto ambiental */
 .environmental-link {
   display: flex;
   align-items: center;
@@ -273,7 +255,6 @@ export default {
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* Colores y sombras según impacto */
 .environmental-link.low-impact {
   box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
 }
@@ -298,7 +279,6 @@ export default {
   color: #f44336;
 }
 
-/* Animación de parpadeo/pulso */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -310,7 +290,6 @@ export default {
   }
 }
 
-/* Responsive - Tablets pequeñas y móviles */
 @media (max-width: 576px) {
   .travel-title {
     font-size: 0.95rem;
@@ -344,7 +323,6 @@ export default {
   }
 }
 
-/* Responsive - Móviles medianos */
 @media (max-width: 400px) {
   .navbar-content {
     padding: 0;
@@ -390,7 +368,6 @@ export default {
   }
 }
 
-/* Responsive - Móviles muy pequeños */
 @media (max-width: 350px) {
   .travel-title {
     font-size: 0.75rem;
@@ -421,7 +398,6 @@ export default {
   }
 }
 
-/* Pantallas grandes */
 @media (min-width: 768px) {
   .travel-title {
     font-size: 1.2rem;
