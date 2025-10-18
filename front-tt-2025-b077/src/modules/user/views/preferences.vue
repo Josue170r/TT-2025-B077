@@ -58,6 +58,7 @@ export default {
   data() {
     return {
       show: false,
+      // DATOS DE EJEMPLO - REEMPLAZAR CON API
       categorias: [
         { name: 'Museos', img: '/public/museos.webp' },
         { name: 'Parques', img: '/images/parques.webp' },
@@ -74,14 +75,30 @@ export default {
         { name: 'Centros Comerciales', img: '/images/centros.webp' },
         { name: 'Balnearios', img: '/images/balnearios.webp' },
         { name: 'Eventos Culturales', img: '/images/eventos.webp' },
-      ],
+      ],      
       selectedCategorias: [],
     }
   },
   mounted() {
     this.show = true
+    // this.cargarCategorias()
   },
   methods: {
+    /*
+    async cargarCategorias() {
+      try {
+        const response = await axios.get('/api/categorias')
+        this.categorias = response.data.map(cat => ({
+          id: cat.id,
+          name: cat.nombre,
+          img: cat.imagen_url
+        }))
+      } catch (error) {
+        console.error('Error al cargar categorías:', error)
+      }
+    },
+    */
+    
     toggleCategoria(index) {
       const i = this.selectedCategorias.indexOf(index)
       if (i !== -1) {
@@ -90,20 +107,28 @@ export default {
         this.selectedCategorias.push(index)
       }
     },
+    
     confirmarSeleccion() {
       this.show = false
 
       setTimeout(() => {
         console.log('IDs seleccionadas:', this.selectedCategorias)
 
-        axiospost('/api/categorias/seleccionadas', {
+        //PREFERENCIAS
+        /*
+        axios.post('[API]'], {
           categorias: this.selectedCategorias,
+          // user_id: this.$store.state.user.id
         })
           .then((res) => {
-            console.log('Respuesta backend:', res.data)
-            // this.$router.push("/poner el end point correcto");
+            console.log('Preferencias guardadas:', res.data)
+            // this.$router.push("home");
           })
-          .catch((err) => console.error(err))
+          .catch((err) => {
+            console.error('Error al guardar preferencias:', err)
+            //notificación al usuario
+          })
+        */
       }, 500)
     },
   },
