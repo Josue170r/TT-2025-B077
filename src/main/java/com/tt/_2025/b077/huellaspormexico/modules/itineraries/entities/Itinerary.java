@@ -10,7 +10,9 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
 
 @EqualsAndHashCode(callSuper = false)
 @SuperBuilder
@@ -34,9 +36,6 @@ public class Itinerary extends BaseModel {
     @Column(name = "trip_title", nullable = false, length = 200)
     private String tripTitle;
 
-    @Column(name = "average_sustainable_index", precision = 5, scale = 2)
-    private BigDecimal averageSustainableIndex;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hotel_place_id", nullable = false)
     private Place hotelPlace;
@@ -51,5 +50,33 @@ public class Itinerary extends BaseModel {
     @Transient
     public boolean isCertificatedHotel() {
         return certificatedHotel != null;
+    }
+
+    public BigDecimal getAverageSustainableIndex() {
+        if (itineraryDays == null || itineraryDays.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        List<BigDecimal> allIndexes = itineraryDays.stream()
+                .flatMap(day -> day.getPlaces().stream())
+                .map(itineraryPlace -> itineraryPlace
+                        .getPostalCode()
+                        .getSettlement()
+                        .getSustainabilityIndex())
+                .filter(Objects::nonNull)
+                .toList();
+
+        if (allIndexes.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal sum = allIndexes.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return sum.divide(
+                BigDecimal.valueOf(allIndexes.size()),
+                2,
+                RoundingMode.HALF_UP
+        );
     }
 }
