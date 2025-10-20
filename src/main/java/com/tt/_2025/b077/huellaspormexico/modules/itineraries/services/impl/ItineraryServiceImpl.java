@@ -69,7 +69,6 @@ public class ItineraryServiceImpl implements ItineraryService {
                 .orElseThrow(() -> new PlaceNotFoundException("Hotel no encontrado"));
 
         Itinerary itinerary = Itinerary.builder()
-                .averageSustainableIndex(dto.getAverageSustainableIndex())
                 .tripTitle(dto.getTripTitle())
                 .hotelPlace(hotelPlace)
                 .user(user)
