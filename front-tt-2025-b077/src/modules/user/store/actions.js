@@ -77,3 +77,67 @@ export async function changePassword({ commit }, data) {
       })
   })
 }
+
+export async function fetchCategoryPlaces({ commit }, data) {
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/catalogs/category-places', data)
+      .then((response) => {
+        resolve(response)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function fetchUserPreferences({ commit }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Cargando preferencias',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/preferences')
+      .then((response) => {
+        resolve(response)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function saveUserPreferences({ commit }, data) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Guardando preferencias',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .post('/preferences', data)
+      .then((response) => {
+        resolve(response)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}

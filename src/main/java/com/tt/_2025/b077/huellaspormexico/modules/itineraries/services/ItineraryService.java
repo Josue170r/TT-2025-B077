@@ -12,6 +12,8 @@ public interface ItineraryService {
     List<ItinerarySummaryDTO> getUserItineraries(String username);
     ItineraryPlace updatePlaceTime(Long itineraryId, Long dayId, Long placeId, UpdatePlaceTimeDTO dto);
     void updateVisitOrder(Long itineraryId, Long dayId, UpdateVisitOrderDTO dto);
+    void setPlaceVisited(Long itineraryId, Long dayId, Long placeId);
     void updatePlace(Long itineraryId, Long dayId, Long placeId, UpdatePlaceDTO dto);
+    void deletePlaceByDayId(Long itineraryId, Long dayId, Long placeId);
     void deleteItinerary(Long id);
 }

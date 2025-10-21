@@ -1,42 +1,52 @@
 <template>
+  <div class="fixed-header mb-5">
+    <div class="header-content">
+      <hamburgermenu @navigate="handleNavigation" />
+      <div class="header-title">
+        <p class="mb-1">Escoge tus preferencias de viaje</p>
+      </div>
+      <div class="header-spacer"></div>
+    </div>
+  </div>
+
   <transition name="fade">
-    <div v-if="show" class="container my-5">
+    <div v-if="show" class="container">
       <div class="header">
-        <h2 class="title text-center fw-bold">Escoge tus preferencias de viaje</h2>
         <h6 class="sub-text text-center mb-4">
           Se recomendarán lugares de acuerdo a tus preferencias
         </h6>
+        <p class="text-center text-muted small">Puedes seleccionar hasta 4 categorías</p>
         <hr />
       </div>
 
-      <div class="categorias-wrapper">
+      <div class="categories-wrapper">
         <div class="row g-3">
-          <div
-            v-for="(categoria, index) in categorias"
-            :key="index"
-            class="col-6 col-md-4 col-lg-3"
-          >
+          <div v-for="category in categories" :key="category.id" class="col-6 col-md-4 col-lg-3">
             <div
-              class="categoria-card d-flex flex-column justify-content-center align-items-center"
-              :class="{ selected: selectedCategorias.includes(index) }"
-              @click="toggleCategoria(index)"
+              class="category-card d-flex flex-column justify-content-center align-items-center"
+              :class="{
+                selected: selectedCategoryIds.includes(category.id),
+                disabled:
+                  !selectedCategoryIds.includes(category.id) && selectedCategoryIds.length >= 4,
+              }"
+              @click="toggleCategory(category.id)"
               role="button"
               tabindex="0"
-              @keydown.enter.prevent="toggleCategoria(index)"
-              @keydown.space.prevent="toggleCategoria(index)"
-              :style="{ backgroundImage: `url(${categoria.img})` }"
+              @keydown.enter.prevent="toggleCategory(category.id)"
+              @keydown.space.prevent="toggleCategory(category.id)"
+              :style="{ backgroundImage: `url(${category.picture})` }"
               loading="lazy"
             >
-              <span class="categoria-text">
-                <strong>{{ categoria.name.split(' ')[0] }}</strong>
-                <span v-if="categoria.name.split(' ').length > 1">
+              <span class="category-text">
+                <strong>{{ category.category.split(' ')[0] }}</strong>
+                <span v-if="category.category.split(' ').length > 1">
                   <br />
-                  {{ categoria.name.split(' ').slice(1).join(' ') }}
+                  {{ category.category.split(' ').slice(1).join(' ') }}
                 </span>
               </span>
-              <span v-if="selectedCategorias.includes(index)" class="selected-label"
-                >Seleccionada ✓</span
-              >
+              <span v-if="selectedCategoryIds.includes(category.id)" class="selected-label">
+                Seleccionada ✓
+              </span>
             </div>
           </div>
         </div>
@@ -44,92 +54,175 @@
 
       <div class="text-center mt-4">
         <hr class="mt-0" />
-        <button class="btn-confirmar" @click="confirmarSeleccion">Confirmar</button>
+        <p class="text-muted small mb-3">
+          {{ selectedCategoryIds.length }} de 4 categorías seleccionadas
+        </p>
+        <button
+          class="btn-confirm"
+          @click="confirmSelection"
+          :disabled="selectedCategoryIds.length === 0"
+        >
+          Confirmar
+        </button>
       </div>
     </div>
   </transition>
 </template>
 
 <script>
-// import axios from "axios";
+import { mapActions } from 'vuex/dist/vuex.cjs.js'
+import { getErrorDetails } from '@/utils/utils'
+import hamburgermenu from '@/components/hamburgermenu.vue'
 
 export default {
   name: 'UserPreferences',
+  components: {
+    hamburgermenu,
+  },
   data() {
     return {
       show: false,
-      categorias: [
-        { name: 'Museos', img: '/public/museos.webp' },
-        { name: 'Parques', img: '/images/parques.webp' },
-        { name: 'Restaurantes', img: '/images/restaurantes.webp' },
-        { name: 'Playas', img: '/images/playas.webp' },
-        { name: 'Zonas Arqueológicas', img: '/images/zonas.webp' },
-        { name: 'Montañas', img: '/images/montanas.webp' },
-        { name: 'Pueblos Mágicos', img: '/images/pueblos.webp' },
-        { name: 'Cenotes', img: '/images/cenotes.webp' },
-        { name: 'Lagunas', img: '/images/lagunas.webp' },
-        { name: 'Hoteles', img: '/images/hoteles.webp' },
-        { name: 'Bares', img: '/images/bares.webp' },
-        { name: 'Cafeterías', img: '/images/cafeterias.webp' },
-        { name: 'Centros Comerciales', img: '/images/centros.webp' },
-        { name: 'Balnearios', img: '/images/balnearios.webp' },
-        { name: 'Eventos Culturales', img: '/images/eventos.webp' },
-      ],
-      selectedCategorias: [],
+      categories: [],
+      selectedCategoryIds: [],
+      userPreferences: [],
     }
   },
   mounted() {
     this.show = true
+    this.initializePreferences()
   },
   methods: {
-    toggleCategoria(index) {
-      const i = this.selectedCategorias.indexOf(index)
-      if (i !== -1) {
-        this.selectedCategorias.splice(i, 1)
-      } else {
-        this.selectedCategorias.push(index)
+    ...mapActions('user', {
+      fetchCategoryPlaces: 'fetchCategoryPlaces',
+      fetchUserPreferences: 'fetchUserPreferences',
+      saveUserPreferences: 'saveUserPreferences',
+    }),
+
+    async initializePreferences() {
+      try {
+        await this.fetchCategories()
+        await this.loadUserPreferences()
+      } catch (error) {
+        console.error('Error initializing preferences:', error)
       }
     },
-    confirmarSeleccion() {
-      this.show = false
 
-      setTimeout(() => {
-        console.log('IDs seleccionadas:', this.selectedCategorias)
-
-        axiospost('/api/categorias/seleccionadas', {
-          categorias: this.selectedCategorias,
+    fetchCategories() {
+      return this.fetchCategoryPlaces()
+        .then((response) => {
+          this.categories = response.data.data || []
         })
-          .then((res) => {
-            console.log('Respuesta backend:', res.data)
-            // this.$router.push("/poner el end point correcto");
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
+    },
+
+    loadUserPreferences() {
+      return this.fetchUserPreferences()
+        .then((response) => {
+          this.userPreferences = response.data.data || []
+          this.selectedCategoryIds = this.userPreferences.map((pref) => pref.category.id)
+        })
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
+    },
+
+    toggleCategory(categoryId) {
+      const index = this.selectedCategoryIds.indexOf(categoryId)
+
+      if (index !== -1) {
+        this.selectedCategoryIds.splice(index, 1)
+      } else {
+        if (this.selectedCategoryIds.length < 4) {
+          this.selectedCategoryIds.push(categoryId)
+        } else {
+          this.$alert.error('Solo puedes seleccionar hasta 4 categorías')
+        }
+      }
+    },
+
+    confirmSelection() {
+      if (this.selectedCategoryIds.length === 0) {
+        this.$alert.error('Debes seleccionar al menos una categoría')
+        return
+      }
+
+      const preferencesData = {
+        categories: this.selectedCategoryIds.map((id) => ({ id })),
+      }
+
+      this.saveUserPreferences(preferencesData)
+        .then((response) => {
+          this.$alert.success({
+            title: 'Preferencias guardadas',
+            text: response.data.message,
           })
-          .catch((err) => console.error(err))
-      }, 500)
+
+          this.show = false
+          setTimeout(() => {
+            this.$router.push({ name: 'home' })
+          }, 500)
+        })
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
     },
   },
 }
 </script>
 
 <style scoped>
-.header {
-  position: sticky;
-  top: 0;
-  background-color: #ffffff;
-  z-index: 10;
-  padding-bottom: 0px;
+.container {
+  max-width: 1200px;
+  padding: 0 15px;
+  padding-top: 80px;
 }
 
-.categorias-wrapper {
-  max-height: clamp(300px, 63vh, 600px);
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(9, 128, 54, 0.1);
+  border-bottom: 1px solid #aae3aa;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  max-width: 100%;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+.header-title p {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #1b515e;
+}
+
+.header-spacer {
+  width: 0px;
+}
+
+.categories-wrapper {
+  max-height: 63vh;
   overflow-y: auto;
   padding-top: 10px;
 }
 
-.categorias-wrapper::-webkit-scrollbar {
+.categories-wrapper::-webkit-scrollbar {
   display: none;
 }
 
-.categoria-card {
+.category-card {
   position: relative;
   border: 2px solid #abcd9e;
   border-radius: 12px;
@@ -138,48 +231,63 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
   transition:
     transform 0.15s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    opacity 0.2s ease;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
-.categoria-text {
+.category-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.category-card.disabled:hover {
+  transform: none;
+  border-color: #abcd9e;
+}
+
+.category-text {
   position: absolute;
   bottom: 8px;
   left: 8px;
-  font-size: clamp(16px, 1vw, 20px);
+  font-size: 16px;
   font-weight: normal;
   color: #1b515e;
   line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
-.categoria-text strong {
+
+.category-text strong {
   font-weight: bold;
 }
 
-.categoria-card:not(.selected):hover {
+.category-card:not(.selected):not(.disabled):hover {
   transform: translateY(-4px);
   border-color: #1b515e;
   cursor: pointer;
 }
 
-.categoria-card.selected {
+.category-card.selected {
   border-color: #1b515e;
+  border-width: 3px;
 }
 
-.categoria-card.selected:hover {
+.category-card.selected:hover {
   border-color: #1b515e;
   transform: translateY(-4px);
 }
+
 .selected-label {
   position: absolute;
   top: 8px;
   right: 8px;
   background-color: #abcd9e;
   color: #1b515e;
-  padding: clamp(1px, 0.3vw, 3px) clamp(2px, 0.5vw, 6px);
+  padding: 3px 6px;
   border-radius: 6px;
-  font-size: clamp(0.5rem, 1vw, 0.75rem);
+  font-size: 0.7rem;
   font-weight: bold;
 }
 
@@ -191,16 +299,17 @@ hr {
 
 .title {
   color: #1b515e;
+  font-size: 1.5rem;
 }
 
 .sub-text {
   font-weight: 400;
-  font-size: 12px;
+  font-size: 14px;
   color: #1b515e;
   text-align: center;
 }
 
-.btn-confirmar {
+.btn-confirm {
   background-color: #1b515e;
   color: #ffffff;
   border: none;
@@ -211,18 +320,26 @@ hr {
   transition:
     background-color 0.2s ease,
     transform 0.15s ease;
+  width: auto;
+  min-width: 120px;
 }
 
-.btn-confirmar:hover {
+.btn-confirm:hover:not(:disabled) {
   background-color: #2a798d;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px #1b515e;
+}
+
+.btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

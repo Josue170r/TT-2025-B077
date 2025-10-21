@@ -17,6 +17,7 @@ const vuexLocal = new VuexPersistence({
       auth: state.auth,
       places: state.places,
       trips: state.trips,
+      user: state.user
     }
   },
 })

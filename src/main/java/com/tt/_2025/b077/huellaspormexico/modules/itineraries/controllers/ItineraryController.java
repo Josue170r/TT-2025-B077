@@ -77,6 +77,18 @@ public class ItineraryController {
                 .body(ApiResponse.of(HttpStatus.OK, "Lugar actualizado exitosamente", null));
     }
 
+    @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/{placeId}/visit", method = RequestMethod.PUT)
+    public ResponseEntity<ApiResponse<?>> setPlaceVisited(
+            @PathVariable Long itineraryId,
+            @PathVariable Long dayId,
+            @PathVariable Long placeId) {
+
+        itineraryService.setPlaceVisited(itineraryId, dayId, placeId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Se marcó el lugar como visitado"));
+    }
+
     @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/{placeId}/time", method = RequestMethod.PUT)
     public ResponseEntity<ApiResponse<ItineraryPlace>> updatePlaceTime(
             @PathVariable Long itineraryId,
@@ -90,12 +102,24 @@ public class ItineraryController {
                 .body(ApiResponse.of(HttpStatus.OK, "Horario actualizado exitosamente", updatedPlace));
     }
 
+    @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/{placeId}", method = RequestMethod.DELETE)
+    public ResponseEntity<ApiResponse<?>> deletePlaceByDayId(
+            @PathVariable Long itineraryId,
+            @PathVariable Long dayId,
+            @PathVariable Long placeId) {
+
+        itineraryService.deletePlaceByDayId(itineraryId, dayId, placeId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Lugar eliminado exitosamente"));
+    }
+
 
     @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<ApiResponse<Void>> deleteItinerary(@PathVariable Long id) {
         itineraryService.deleteItinerary(id);
         return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.of(HttpStatus.NO_CONTENT, "Itinerario eliminado exitosamente"));
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Itinerario eliminado exitosamente"));
     }
 }
