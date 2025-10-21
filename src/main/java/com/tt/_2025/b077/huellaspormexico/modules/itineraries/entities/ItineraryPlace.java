@@ -40,6 +40,10 @@ public class ItineraryPlace extends BaseModel {
     @Column(name = "leaving_time")
     private LocalTime leavingTime;
 
+    @Column(name = "is_visited")
+    @Builder.Default
+    private Boolean isVisited = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "itinerary_day_id")
     @JsonIgnore
