@@ -24,13 +24,72 @@
       <div class="main-spacer"></div>
 
       <div class="itinerary-content container py-4">
-        <div v-for="(day, dayIndex) in sortedItineraryDays" :key="day.id" class="day-section mb-5">
+        <!-- Sección del Hotel (mismo diseño que los días) -->
+        <div v-if="currentItinerary.hotelPlace" class="day-section mb-5">
           <div class="day-header bg-white">
+            <h2 class="day-title mb-2">
+              <i class="fa-solid fa-hotel me-2"></i>
+              Hotel
+            </h2>
+            <p class="day-date text-muted mb-0">
+              {{ currentItinerary.hotelPlace.name }}
+              <span
+                v-if="currentItinerary.certificatedHotel && currentItinerary.certificatedHotel.certifications && currentItinerary.certificatedHotel.certifications.length > 0"
+                class="cert-count"
+              >
+                • {{ currentItinerary.certificatedHotel.certifications.length }} certificación<span v-if="currentItinerary.certificatedHotel.certifications.length > 1">es</span>
+              </span>
+            </p>
+          </div>
+
+          <div class="places-grid">
+            <div class="draggable-item">
+              <div class="place-card-wrapper">
+                <PlaceCard
+                  :place="currentItinerary.hotelPlace"
+                  :is-favorite="isFavorite(currentItinerary.hotelPlace.id)"
+                  :logo-url="getPlaceImage(currentItinerary.hotelPlace)"
+                  @select-place="selectPlace"
+                  @toggle-favorite="toggleFavorite"
+                />
+              </div>
+
+              <!-- Mostrar certificaciones si existen -->
+              <div
+                v-if="currentItinerary.certificatedHotel && currentItinerary.certificatedHotel.certifications && currentItinerary.certificatedHotel.certifications.length > 0"
+                class="certifications-info"
+              >
+                <div class="cert-title">
+                  <i class="mdi mdi-leaf"></i>
+                  <span>Certificaciones sostenibles</span>
+                </div>
+                <div class="cert-links">
+                  <a
+                    v-for="cert in currentItinerary.certificatedHotel.certifications"
+                    :key="cert.id"
+                    :href="cert.institutionWebsite"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="cert-badge"
+                  >
+                    <i class="mdi mdi-certificate"></i>
+                    <span>{{ cert.certification }}</span>
+                    <i class="mdi mdi-open-in-new"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Días del itinerario -->
+        <div v-for="(day, dayIndex) in sortedItineraryDays" :key="day.id" class="day-section mb-5">
+          <div class="day-header">
             <h2 class="day-title mb-2">
               <i class="fa-solid fa-calendar-day me-2"></i>
               Día {{ dayIndex + 1 }}
             </h2>
-            <p class="day-date text-muted mb-0">
+            <p class="day-date mb-0">
               {{ formatDate(day.itineraryDate) }} • {{ day.places?.length || 0 }} lugares
             </p>
           </div>
@@ -50,6 +109,12 @@
                     <div class="drag-handle">
                       <i class="fa-solid fa-grip-vertical"></i>
                     </div>
+                  </div>
+
+                  <!-- Badge de visitado -->
+                  <div v-if="itineraryPlace.isVisited" class="visited-badge">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Visitado</span>
                   </div>
 
                   <div class="place-card-wrapper">
@@ -73,19 +138,52 @@
                     </div>
                     <div class="place-actions">
                       <button
-                        class="btn-icon"
-                        @click="openTimeModal(day.id, itineraryPlace)"
-                        title="Cambiar horario"
+                        class="btn-icon btn-menu"
+                        @click="toggleActionsMenu(itineraryPlace.id)"
+                        title="Acciones"
                       >
-                        <i class="fa-regular fa-clock"></i>
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
                       </button>
-                      <button
-                        class="btn-icon"
-                        @click="openChangePlaceModal(day.id, itineraryPlace)"
-                        title="Cambiar lugar"
-                      >
-                        <i class="fa-solid fa-exchange-alt"></i>
-                      </button>
+                      
+                      <!-- Menú desplegable de acciones -->
+                      <div v-if="activeMenuId === itineraryPlace.id" class="actions-menu">
+                        <button
+                          class="menu-item"
+                          @click="openTimeModal(day.id, itineraryPlace); closeActionsMenu()"
+                        >
+                          <i class="fa-regular fa-clock"></i>
+                          <span>Cambiar horario</span>
+                        </button>
+                        <button
+                          class="menu-item"
+                          @click="openChangePlaceModal(day.id, itineraryPlace); closeActionsMenu()"
+                        >
+                          <i class="fa-solid fa-exchange-alt"></i>
+                          <span>Cambiar lugar</span>
+                        </button>
+                        <button
+                          class="menu-item"
+                          @click="openDirections(itineraryPlace.place); closeActionsMenu()"
+                        >
+                          <i class="fa-solid fa-directions"></i>
+                          <span>Cómo llegar</span>
+                        </button>
+                        <button
+                          v-if="!itineraryPlace.isVisited"
+                          class="menu-item"
+                          @click="markAsVisited(day.id, itineraryPlace); closeActionsMenu()"
+                        >
+                          <i class="fa-solid fa-check"></i>
+                          <span>Marcar como visitado</span>
+                        </button>
+                        <button
+                          class="menu-item menu-item-danger"
+                          @click="confirmDeletePlace(day.id, itineraryPlace); closeActionsMenu()"
+                        >
+                          <i class="fa-solid fa-trash"></i>
+                          <span>Eliminar</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -153,6 +251,7 @@ export default {
         arrivalTime: '',
         leavingTime: '',
       },
+      activeMenuId: null,
     }
   },
 
@@ -194,6 +293,8 @@ export default {
       updateVisitOrder: 'updateVisitOrder',
       updatePlaceTime: 'updatePlaceTime',
       toggleFavoritePlace: 'toggleFavoritePlace',
+      setPlaceVisited: 'setPlaceVisited',
+      deletePlaceFromDay: 'deletePlaceFromDay',
     }),
     ...mapMutations('places', {
       setSelectedPlaceId: 'setSelectedPlaceId',
@@ -310,6 +411,78 @@ export default {
       // TODO: Implementar modal para cambiar lugar
     },
 
+    openDirections(place) {
+      let mapsUrl = ''
+      
+      if (place.googleMapsUrl) {
+        mapsUrl = place.googleMapsUrl
+      } else if (place.lat && place.lng) {
+        mapsUrl = `https://www.google.com/maps?q=${place.lat},${place.lng}`
+      } else {
+        this.$alert.warning({
+          title: 'Ubicación no disponible',
+          text: 'No se pudo obtener la ubicación de este lugar',
+        })
+        return
+      }
+
+      window.open(mapsUrl, '_blank')
+    },
+
+    async markAsVisited(dayId, itineraryPlace) {
+      this.setPlaceVisited({
+        itineraryId: this.currentItinerary.id,
+        dayId: dayId,
+        placeId: itineraryPlace.id,
+      })
+        .then((response) => {
+          this.$alert.success({
+            title: 'Lugar visitado',
+            text: response.message,
+          })
+          this.loadItinerary(this.currentItinerary.id)
+        })
+        .catch((error) => {
+          this.$alert.error({
+            title: 'Error al marcar como visitado',
+            text: getErrorDetails(error),
+          })
+        })
+    },
+
+    confirmDeletePlace(dayId, itineraryPlace) {
+      this.$alert.confirm({
+        title: '¿Eliminar lugar?',
+        text: `¿Estás seguro de que deseas eliminar "${itineraryPlace.place.name}" de este día?`,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        onConfirm: () => {
+          this.deletePlace(dayId, itineraryPlace.id)
+        },
+      })
+    },
+
+    async deletePlace(dayId, placeId) {
+      this.deletePlaceFromDay({
+        itineraryId: this.currentItinerary.id,
+        dayId: dayId,
+        placeId: placeId,
+      })
+        .then((response) => {
+          this.$alert.success({
+            title: 'Lugar eliminado',
+            text: response.message,
+          })
+          this.loadItinerary(this.currentItinerary.id)
+        })
+        .catch((error) => {
+          this.$alert.error({
+            title: 'Error al eliminar el lugar',
+            text: getErrorDetails(error),
+          })
+        })
+    },
+
     formatDate(dateString) {
       if (!dateString) return ''
       const date = new Date(dateString)
@@ -328,27 +501,43 @@ export default {
 
       if (sortedDays.length === 0) return ''
 
-      const start = new Date(sortedDays[0].itineraryDate)
-      const end = new Date(sortedDays[sortedDays.length - 1].itineraryDate)
+      const firstDate = new Date(sortedDays[0].itineraryDate)
+      const lastDate = new Date(sortedDays[sortedDays.length - 1].itineraryDate)
 
       const options = { day: 'numeric', month: 'short' }
-      return `${start.toLocaleDateString('es-MX', options)} - ${end.toLocaleDateString('es-MX', { ...options, year: 'numeric' })}`
+      const firstDateStr = firstDate.toLocaleDateString('es-MX', options)
+      const lastDateStr = lastDate.toLocaleDateString('es-MX', options)
+
+      return `${firstDateStr} - ${lastDateStr}`
     },
 
     getStateName() {
-      return 'Estado'
+      if (!this.currentItinerary?.certificatedHotel?.settlement?.state?.state) {
+        return ''
+      }
+      return this.currentItinerary.certificatedHotel.settlement.state.state
     },
 
     handleEdit() {
       console.log('Editar viaje')
+      // TODO: Implementar funcionalidad de edición
     },
 
-    handleEnvironmentalInfo(score) {
-      console.log('Información ambiental:', score)
+    handleEnvironmentalInfo() {
+      console.log('Mostrar información ambiental')
+      // TODO: Implementar modal de información ambiental
     },
 
     goBack() {
-      this.$router.push({ name: 'itinerary' })
+      this.$router.go(-1)
+    },
+
+    toggleActionsMenu(placeId) {
+      this.activeMenuId = this.activeMenuId === placeId ? null : placeId
+    },
+
+    closeActionsMenu() {
+      this.activeMenuId = null
     },
   },
 }
@@ -401,7 +590,7 @@ export default {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
-  overflow: visible; /* Cambiado para evitar cortes */
+  overflow: visible;
   margin-bottom: 3rem !important;
 }
 
@@ -428,6 +617,11 @@ export default {
 .day-date {
   font-size: 0.95rem;
   padding-left: 2.2rem;
+}
+
+.cert-count {
+  color: #28a745;
+  font-weight: 500;
 }
 
 .places-grid {
@@ -458,6 +652,11 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+  background: #f8f9fa;
 }
 
 .drag-handle-wrapper {
@@ -491,6 +690,22 @@ export default {
   transform: scale(0.95);
 }
 
+.visited-badge {
+  position: absolute;
+  top: -12px;
+  left: 10px;
+  z-index: 10;
+  background: #28a745;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
 .place-card-wrapper {
   width: 100%;
 }
@@ -520,6 +735,7 @@ export default {
 .place-actions {
   display: flex;
   gap: 0.5rem;
+  position: relative; /* añadido del primero para anclar el menú */
 }
 
 .btn-icon {
@@ -538,6 +754,118 @@ export default {
   border-color: #1b515e;
 }
 
+.btn-menu {
+  min-width: 40px;
+}
+
+.actions-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: white;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: #f8f9fa;
+}
+
+.menu-item i {
+  width: 20px;
+  text-align: center;
+  color: #1b515e;
+}
+
+.menu-item-danger {
+  color: #dc3545;
+}
+
+.menu-item-danger i {
+  color: #dc3545;
+}
+
+.menu-item-danger:hover {
+  background: #fff5f5;
+}
+
+.certifications-info {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: #f0f8f5;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+}
+
+.cert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #28a745;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.cert-title i {
+  font-size: 1.1rem;
+}
+
+.cert-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid #28a745;
+  border-radius: 20px;
+  color: #28a745;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+
+.cert-badge:hover {
+  background: #28a745;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.cert-badge i:first-child {
+  font-size: 1rem;
+}
+
+.cert-badge i:last-child {
+  font-size: 0.75rem;
+}
+
+/* Modal / formularios (del segundo) */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -739,6 +1067,33 @@ export default {
     width: 90%;
     margin: 1rem;
   }
+
+  /* Ajustes móviles de elementos añadidos del primero */
+  .visited-badge {
+    top: -8px;
+    left: 5px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+
+  .actions-menu {
+    right: 0;
+    left: auto;
+    min-width: 180px;
+  }
+
+  .certifications-info {
+    padding: 0.75rem;
+  }
+
+  .cert-title {
+    font-size: 0.9rem;
+  }
+
+  .cert-badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -799,6 +1154,36 @@ export default {
   .btn-icon {
     padding: 0.35rem 0.5rem;
     font-size: 0.85rem;
+  }
+
+  /* Ajustes móviles de elementos añadidos del primero */
+  .actions-menu {
+    min-width: 160px;
+    font-size: 0.85rem;
+  }
+
+  .menu-item {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .visited-badge {
+    top: -6px;
+    left: 3px;
+    padding: 3px 6px;
+    font-size: 0.75rem;
+  }
+
+  .certifications-info {
+    padding: 0.5rem;
+  }
+
+  .cert-title {
+    font-size: 0.85rem;
+  }
+
+  .cert-badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
   }
 }
 
