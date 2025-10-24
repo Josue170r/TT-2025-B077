@@ -2,35 +2,26 @@
   <nav class="travel-navbar-container">
     <div class="navbar-content">
       <div class="d-flex align-items-center w-100 px-2 px-sm-3 py-2">
-        <!-- Menú Hamburguesa -->
         <div class="menu-wrapper flex-shrink-0 me-3">
           <Hamburgermenu />
         </div>
 
         <div class="travel-info flex-grow-1 d-flex flex-column">
           <div class="d-flex align-items-center justify-content-between mb-1">
-            <h1 class="travel-title mb-0">
-              {{ travelTitle || 'Título del viaje' }}
-              <span class="places-count">{{ placesCount || '[0 lugares]' }}</span>
-            </h1>
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-              <button class="btn-icon edit-btn" @click="editTravel" title="Editar viaje">
-                <i class="fa-solid fa-pen"></i>
-              </button>
-              <div 
-                class="environmental-indicator" 
-                :class="impactClass" 
-                :title="`Impacto ambiental: ${formattedScore}`"
-              >
-                <i class="fa-solid fa-leaf"></i>
-              </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap flex-grow-1 min-width-0">
+              <h1 class="travel-title mb-0">
+                {{ travelTitle || 'Título del viaje' }}
+                <span class="places-count">{{ placesCount || '[0 lugares]' }}</span>
+              </h1>
+              <span class="date-badge mx-3">{{ dateRange || 'Rango de fechas' }}</span>
             </div>
-          </div>
-
-          <div class="travel-details d-flex align-items-center gap-2 flex-wrap">
-            <span class="detail-item">{{ travelState || 'Estado' }}</span>
-            <span class="separator">·</span>
-            <span class="detail-item">{{ dateRange || 'Rango de fechas' }}</span>
+            <div 
+              class="environmental-indicator" 
+              :class="impactClass" 
+              :title="`Impacto ambiental: ${formattedScore}`"
+            >
+              <i class="fa-solid fa-leaf"></i>
+            </div>
           </div>
 
           <a 
@@ -81,7 +72,6 @@ export default {
   },
   computed: {
     validScore() {
-      // Asegura que el score sea válido
       const score = parseFloat(this.environmentalScore);
       if (isNaN(score)) return 0;
       if (score < 0) return 0;
@@ -102,18 +92,15 @@ export default {
     environmentalMessage() {
       const score = this.formattedScore;
       if (this.validScore >= 0.7) {
-        return `Este viaje tiene un bajo impacto medioambiental, con una calificación de sostenibilidad de ${score}`;
+        return `Viaje con bajo impacto ambiental, sostenibilidad de ${score}`;
       } else if (this.validScore >= 0.4) {
-        return `Este viaje tiene un impacto medioambiental moderado, con una calificación de sostenibilidad de ${score}`;
+        return `Viaje con impacto ambiental moderado, sostenibilidad de ${score}`;
       } else {
-        return `Este viaje tiene un alto impacto medioambiental, con una calificación de sostenibilidad de ${score}`;
+        return `Viaje con alto impacto ambiental, sostenibilidad de ${score}`;
       }
     }
   },
   methods: {
-    editTravel() {
-      this.$emit('edit-travel');
-    },
     showEnvironmentalInfo() {
       this.$emit('show-environmental-info', this.validScore);
     }
@@ -163,40 +150,15 @@ export default {
   margin-left: 0.25rem;
 }
 
-.travel-details {
-  font-size: 0.85rem;
-  color: #666;
-  line-height: 1.2;
-}
-
-.detail-item {
-  white-space: nowrap;
-}
-
-.separator {
-  color: #999;
-}
-
-.btn-icon {
-  background: transparent;
-  border: none;
-  padding: 0.4rem;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-}
-
-.edit-btn {
-  color: #1b515e;
-}
-
-.edit-btn:hover {
+.date-badge {
   background-color: #f0f0f0;
+  color: #666;
+  padding: 0.35rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .environmental-indicator {
@@ -208,6 +170,7 @@ export default {
   justify-content: center;
   transition: all 0.3s;
   animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 .environmental-indicator i {
@@ -237,7 +200,7 @@ export default {
   font-size: 0.8rem;
   color: #666;
   text-decoration: none;
-  margin-top: 0.5rem;
+  margin-top: 0.3rem;
   transition: all 0.2s;
   line-height: 1.3;
   padding: 0.4rem 0.6rem;
@@ -295,17 +258,9 @@ export default {
     font-size: 0.95rem;
   }
 
-  .travel-details {
-    font-size: 0.75rem;
-  }
-
-  .environmental-indicator {
-    width: 28px;
-    height: 28px;
-  }
-
-  .environmental-indicator i {
-    font-size: 0.9rem;
+  .date-badge {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.75rem;
   }
 
   .environmental-link {
@@ -316,10 +271,13 @@ export default {
     font-size: 0.85rem;
   }
 
-  .btn-icon {
+  .environmental-indicator {
     width: 28px;
     height: 28px;
-    padding: 0.3rem;
+  }
+
+  .environmental-indicator i {
+    font-size: 0.9rem;
   }
 }
 
@@ -336,8 +294,17 @@ export default {
     font-size: 0.85rem;
   }
 
-  .travel-details {
+  .date-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.65rem;
+  }
+
+  .environmental-link {
     font-size: 0.7rem;
+  }
+
+  .environmental-link .leaf-icon {
+    font-size: 0.8rem;
   }
 
   .menu-wrapper {
@@ -353,19 +320,6 @@ export default {
   .environmental-indicator i {
     font-size: 0.85rem;
   }
-
-  .environmental-link {
-    font-size: 0.7rem;
-  }
-
-  .environmental-link .leaf-icon {
-    font-size: 0.8rem;
-  }
-
-  .btn-icon {
-    width: 26px;
-    height: 26px;
-  }
 }
 
 @media (max-width: 350px) {
@@ -377,16 +331,9 @@ export default {
     font-size: 0.75rem;
   }
 
-  .travel-details {
-    font-size: 0.65rem;
-  }
-
-  .separator {
-    display: none;
-  }
-
-  .detail-item {
-    font-size: 0.65rem;
+  .date-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
   }
 
   .environmental-link {
@@ -403,8 +350,17 @@ export default {
     font-size: 1.2rem;
   }
 
-  .travel-details {
-    font-size: 0.9rem;
+  .date-badge {
+    font-size: 0.95rem;
+    padding: 0.4rem 1rem;
+  }
+
+  .environmental-link {
+    font-size: 0.85rem;
+  }
+
+  .environmental-link .leaf-icon {
+    font-size: 0.95rem;
   }
 
   .environmental-indicator {
@@ -415,19 +371,16 @@ export default {
   .environmental-indicator i {
     font-size: 1.1rem;
   }
-
-  .environmental-link {
-    font-size: 0.85rem;
-  }
-
-  .environmental-link .leaf-icon {
-    font-size: 0.95rem;
-  }
 }
 
 @media (min-width: 1200px) {
   .travel-title {
     font-size: 1.3rem;
+  }
+
+  .date-badge {
+    font-size: 1rem;
+    padding: 0.45rem 1.1rem;
   }
 
   .environmental-link {

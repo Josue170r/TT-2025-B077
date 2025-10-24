@@ -1,3 +1,11 @@
+export function places(state) {
+  return state.places
+}
+
+export function placesIds(state) {
+  return state.placeIds
+}
+
 export function favoriteIds(state) {
   return state.favoriteIds
 }

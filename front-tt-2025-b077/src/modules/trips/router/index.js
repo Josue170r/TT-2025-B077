@@ -3,6 +3,7 @@ import MyItineraries from '../views/my_itineraries.vue'
 import Newtrip from '../views/newtrip.vue'
 import Hotels from '../../trips/views/hotelsview.vue'
 import Description_itinerary from '../views/description_itinerary.vue'
+import ChangePlace from '../views/change_place.vue'
 
 export default [
   {
@@ -49,5 +50,14 @@ export default [
       rule: 'auth',
     },
     component: Description_itinerary,
+  },
+  {
+    path: '/trips/change-place',
+    name: 'change-place',
+    meta: {
+      title: 'Cambiar lugar',
+      rule: 'auth',
+    },
+    component: ChangePlace,
   },
 ]

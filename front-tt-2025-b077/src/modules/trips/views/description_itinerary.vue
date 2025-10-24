@@ -17,14 +17,10 @@
         :travelState="getStateName()"
         :dateRange="formatDateRange()"
         :environmentalScore="currentItinerary.averageSustainableIndex || 0"
-        @edit-travel="handleEdit"
-        @show-environmental-info="handleEnvironmentalInfo"
       />
 
-      <div class="main-spacer"></div>
 
       <div class="itinerary-content container py-4">
-        <!-- Sección del Hotel (mismo diseño que los días) -->
         <div v-if="currentItinerary.hotelPlace" class="day-section mb-5">
           <div class="day-header bg-white">
             <h2 class="day-title mb-2">
@@ -48,13 +44,12 @@
                 <PlaceCard
                   :place="currentItinerary.hotelPlace"
                   :is-favorite="isFavorite(currentItinerary.hotelPlace.id)"
-                  :logo-url="getPlaceImage(currentItinerary.hotelPlace)"
+                  :logo-url="getDefaultImage()"
                   @select-place="selectPlace"
                   @toggle-favorite="toggleFavorite"
                 />
               </div>
 
-              <!-- Mostrar certificaciones si existen -->
               <div
                 v-if="currentItinerary.certificatedHotel && currentItinerary.certificatedHotel.certifications && currentItinerary.certificatedHotel.certifications.length > 0"
                 class="certifications-info"
@@ -82,7 +77,6 @@
           </div>
         </div>
 
-        <!-- Días del itinerario -->
         <div v-for="(day, dayIndex) in sortedItineraryDays" :key="day.id" class="day-section mb-5">
           <div class="day-header">
             <h2 class="day-title mb-2">
@@ -111,7 +105,6 @@
                     </div>
                   </div>
 
-                  <!-- Badge de visitado -->
                   <div v-if="itineraryPlace.isVisited" class="visited-badge">
                     <i class="fa-solid fa-check-circle"></i>
                     <span>Visitado</span>
@@ -122,7 +115,7 @@
                       v-if="itineraryPlace.place"
                       :place="itineraryPlace.place"
                       :is-favorite="isFavorite(itineraryPlace.place.id)"
-                      :logo-url="getPlaceImage(itineraryPlace.place)"
+                      :logo-url="getDefaultImage()"
                       @select-place="selectPlace"
                       @toggle-favorite="toggleFavorite"
                     />
@@ -145,7 +138,6 @@
                         <i class="fa-solid fa-ellipsis-vertical"></i>
                       </button>
                       
-                      <!-- Menú desplegable de acciones -->
                       <div v-if="activeMenuId === itineraryPlace.id" class="actions-menu">
                         <button
                           class="menu-item"
@@ -338,10 +330,7 @@ export default {
         })
     },
 
-    getPlaceImage(place) {
-      if (place?.images && place.images.length > 0) {
-        return place.images[0]
-      }
+    getDefaultImage() {
       return 'https://www.turismomexico.es/wp-content/uploads/2015/07/chichen_itza.jpg'
     },
 
@@ -407,8 +396,20 @@ export default {
     },
 
     openChangePlaceModal(dayId, itineraryPlace) {
-      console.log('Abrir modal para cambiar lugar:', dayId, itineraryPlace)
-      // TODO: Implementar modal para cambiar lugar
+      this.$router.push({
+        name: 'change-place',
+        query: {
+          itineraryId: this.currentItineraryId,
+          dayId: dayId,
+          itineraryPlaceId: itineraryPlace.id,
+          latitude: itineraryPlace.place.lat,
+          longitude: itineraryPlace.place.lng,
+          placeName: itineraryPlace.place.name,
+          placeAddress: itineraryPlace.place.formattedAddress,
+          arrivalTime: itineraryPlace.arrivalTime,
+          leavingTime: itineraryPlace.leavingTime,
+        },
+      })
     },
 
     openDirections(place) {
@@ -419,7 +420,7 @@ export default {
       } else if (place.lat && place.lng) {
         mapsUrl = `https://www.google.com/maps?q=${place.lat},${place.lng}`
       } else {
-        this.$alert.warning({
+        this.$alert.error({
           title: 'Ubicación no disponible',
           text: 'No se pudo obtener la ubicación de este lugar',
         })
@@ -516,16 +517,6 @@ export default {
         return ''
       }
       return this.currentItinerary.certificatedHotel.settlement.state.state
-    },
-
-    handleEdit() {
-      console.log('Editar viaje')
-      // TODO: Implementar funcionalidad de edición
-    },
-
-    handleEnvironmentalInfo() {
-      console.log('Mostrar información ambiental')
-      // TODO: Implementar modal de información ambiental
     },
 
     goBack() {
@@ -661,7 +652,7 @@ export default {
 
 .drag-handle-wrapper {
   position: absolute;
-  top: -10px;
+  top: -15px;
   right: -18px;
   z-index: 10;
   height: 0;
@@ -692,8 +683,8 @@ export default {
 
 .visited-badge {
   position: absolute;
-  top: -12px;
-  left: 10px;
+  top: -20px;
+  left: 5px;
   z-index: 10;
   background: #28a745;
   color: white;
@@ -994,21 +985,26 @@ export default {
   .itinerary-container {
     padding-top: 100px;
     overflow-x: hidden;
+    width: 100%;
   }
 
   .itinerary-content {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   .day-section {
     margin-bottom: 2rem !important;
     overflow: visible;
+    max-width: 100%;
   }
 
   .day-header {
     padding: 1rem 1.25rem;
     border-radius: 8px 8px 0 0;
+    max-width: 100%;
   }
 
   .day-title {
@@ -1026,11 +1022,17 @@ export default {
     padding-right: 0.75rem;
     padding-left: 0.75rem;
     overflow: visible;
+    max-width: 100%;
+  }
+
+  .drag-area {
+    max-width: 100%;
+    overflow: visible;
   }
 
   .drag-handle-wrapper {
-    top: -8px;
-    right: 5px;
+    top: -10px;
+    right: 6px;
   }
 
   .drag-handle {
@@ -1041,16 +1043,22 @@ export default {
   .draggable-item {
     width: 100%;
     max-width: 100%;
+    overflow: visible;
+    box-sizing: border-box;
   }
 
   .place-card-wrapper {
     width: 100%;
+    max-width: 100%;
     overflow: visible;
+    box-sizing: border-box;
   }
 
   .time-info {
     padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .time-display {
@@ -1068,7 +1076,6 @@ export default {
     margin: 1rem;
   }
 
-  /* Ajustes móviles de elementos añadidos del primero */
   .visited-badge {
     top: -8px;
     left: 5px;
@@ -1084,6 +1091,8 @@ export default {
 
   .certifications-info {
     padding: 0.75rem;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .cert-title {
@@ -1093,21 +1102,25 @@ export default {
   .cert-badge {
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
+    word-wrap: break-word;
   }
 }
 
 @media (max-width: 576px) {
   .itinerary-content {
     padding: 0.5rem !important;
+    max-width: 100%;
   }
 
   .day-section {
     margin-bottom: 1.5rem !important;
+    max-width: 100%;
   }
 
   .day-header {
     padding: 0.75rem 1rem;
     border-radius: 6px 6px 0 0;
+    max-width: 100%;
   }
 
   .day-title {
@@ -1125,22 +1138,36 @@ export default {
     padding-left: 0.5rem;
     gap: 0.75rem;
     border-radius: 0 0 6px 6px;
+    max-width: 100%;
+  }
+
+  .drag-area {
+    max-width: 100%;
   }
 
   .drag-handle-wrapper {
-    right: 3px;
-    top: -6px;
+    right: -10px;
+    top: -10px;
   }
 
   .drag-handle {
-    padding: 4px 6px;
+    padding: 5px 8px;
     font-size: 0.85rem;
+  }
+
+  .draggable-item {
+    max-width: 100%;
+  }
+
+  .place-card-wrapper {
+    max-width: 100%;
   }
 
   .time-info {
     padding: 0.5rem;
     flex-wrap: wrap;
     gap: 0.5rem;
+    max-width: 100%;
   }
 
   .time-display {
@@ -1156,7 +1183,6 @@ export default {
     font-size: 0.85rem;
   }
 
-  /* Ajustes móviles de elementos añadidos del primero */
   .actions-menu {
     min-width: 160px;
     font-size: 0.85rem;
@@ -1175,6 +1201,7 @@ export default {
 
   .certifications-info {
     padding: 0.5rem;
+    max-width: 100%;
   }
 
   .cert-title {
@@ -1184,6 +1211,10 @@ export default {
   .cert-badge {
     font-size: 0.75rem;
     padding: 0.35rem 0.5rem;
+  }
+
+  .cert-links {
+    flex-wrap: wrap;
   }
 }
 
@@ -1203,6 +1234,8 @@ export default {
   .time-info {
     transform: translateZ(0);
     backface-visibility: hidden;
+    max-width: 100%;
+    overflow: visible;
   }
 }
 </style>

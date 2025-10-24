@@ -142,6 +142,8 @@ export default {
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .place-card-vertical:hover {
@@ -215,6 +217,8 @@ export default {
 
 .place-info-vertical {
   padding: 1rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .place-name {
@@ -222,12 +226,20 @@ export default {
   font-weight: 600;
   color: #333;
   line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .place-address {
   font-size: 0.85rem;
   color: #666;
   line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .place-details {
@@ -245,6 +257,8 @@ export default {
   padding: 2px 8px;
   border-radius: 12px;
   text-transform: capitalize;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .reviews-count {

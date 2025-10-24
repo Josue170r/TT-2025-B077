@@ -57,6 +57,14 @@ export default {
     state.hotelIds = hotelIds
   },
 
+  setPlaces(state, places) {
+    state.places = places
+  },
+  
+  setPlaceIds(state, ids) {
+    state.placeIds = ids
+  },
+
   setPagination(state, paginationData) {
     state.pagination = {
       pageNumber: paginationData.pageable.pageNumber,
