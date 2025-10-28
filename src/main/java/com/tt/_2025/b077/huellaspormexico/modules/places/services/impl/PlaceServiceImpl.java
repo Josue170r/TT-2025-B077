@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.*;
@@ -38,6 +39,7 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
+    @Transactional
     public Place getPlaceDetails(String placeId) {
         Optional<Place> existingOpt = placeRepository.findByPlaceId(placeId);
         try {
@@ -61,10 +63,12 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
+    @Transactional
     public Place getPlaceById(Long id) {
         return placeRepository.findById(id)
-                .orElseThrow(() -> new PlaceNotFoundException("No se pudo obtener el lugar"));
+                .orElseThrow(() -> new PlaceNotFoundException("No existe el lugar con id " + id));
     }
+
 
     @Override
     public List<Long> getNearBySearchPlaces(NearBySearchRequest request) {
@@ -90,16 +94,19 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Place> getAllByIdList(List<Long> ids, Pageable pageable) {
         return placeRepository.findByIdIn(ids, pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SearchByNameResponse> searchPlacesByName(SearchByNameRequest request) {
         return placeApiService.searchPlacesByName(request);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SearchByNameResponse> searchPlacesByText(TextSearchRequest request) {
         return placeApiService.searchPlacesByText(request);
     }
