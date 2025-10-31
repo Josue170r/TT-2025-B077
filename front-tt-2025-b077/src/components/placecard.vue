@@ -129,6 +129,7 @@ export default {
         church: 'Iglesia',
         university: 'Universidad',
         store: 'Tienda',
+        library: "Biblioteca",
       }
       return typeTranslations[type] || type.replace(/_/g, ' ')
     },
