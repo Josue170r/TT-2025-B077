@@ -308,6 +308,57 @@ public class ItineraryServiceImpl implements ItineraryService {
     }
 
     @Override
+    public List<ItineraryDaysResponseDto> getItineraryDays(Long itineraryId) {
+        List<ItineraryDay> days = itineraryDayRepository.findByItineraryId(itineraryId);
+
+        if (days.isEmpty()) {
+            throw new ItineraryDayNotFound("Este itinerario no tiene ningún día");
+        }
+
+        return days.stream()
+                .map(day -> new ItineraryDaysResponseDto(day.getId(), day.getItineraryDate()))
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void addPlaceToDay(Long itineraryId, Long dayId, AddNewPlaceDTO dto) {
+        ItineraryDay day = itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
+                .orElseThrow(() -> new ItineraryNotFound("Día no encontrado en este itinerario"));
+
+        Place newPlace = placeRepository.findById(dto.getNewPlaceId())
+                .orElseThrow(() -> new PlaceNotFoundException("Nuevo lugar no encontrado"));
+
+        List<ItineraryPlace> placesByDay = itineraryPlaceRepository.findByItineraryDayId(dayId);
+        if (placesByDay.size() >= 6) {
+            throw new RuntimeException("El límite de lugares por día es 6");
+        }
+
+        int nextVisitOrder = 1;
+        if (!placesByDay.isEmpty()) {
+            ItineraryPlace lastPlace = itineraryPlaceRepository.findFirstByItineraryDayIdOrderByVisitOrderDesc(dayId);
+            if (lastPlace != null) {
+                nextVisitOrder = lastPlace.getVisitOrder() + 1;
+            }
+        }
+
+        PostalCodeCatalog postalCode = dto.getPostalCode() != null
+                ? postalCodeRepository.findByPostalCode(dto.getPostalCode()).orElse(null)
+                : null;
+
+        ItineraryPlace newItineraryPlace = ItineraryPlace.builder()
+                .place(newPlace)
+                .itineraryDay(day)
+                .postalCode(postalCode)
+                .arrivalTime(dto.getArrivalTime())
+                .leavingTime(dto.getLeavingTime())
+                .visitOrder(nextVisitOrder)
+                .build();
+
+        itineraryPlaceRepository.save(newItineraryPlace);
+    }
+
+    @Override
     public void deletePlaceByDayId(Long itineraryId, Long dayId, Long placeId) {
         itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
                 .orElseThrow(() -> new ItineraryNotFound(
