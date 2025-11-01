@@ -16,7 +16,10 @@
       </button>
       <div class="header-content">
         <h1 class="page-title">Cambiar lugar</h1>
-        <p class="page-subtitle">Selecciona un nuevo lugar para tu itinerario</p>
+        <br />
+        <div>
+          <h2 class="page-subtitle">Selecciona un nuevo lugar para tu itinerario</h2>
+        </div>
       </div>
     </div>
 
@@ -89,12 +92,22 @@
 
           <div class="form-group">
             <label>Hora de llegada <span class="required">*</span></label>
-            <input type="time" v-model="newPlaceData.arrivalTime" class="form-control" required />
+            <div class="time-input-wrapper">
+              <span class="time-display-value">{{ newPlaceData.arrivalTime || '--:--' }}</span>
+              <button type="button" class="time-input-btn" @click="openTimePickerModal('arrival')">
+                <i class="fa-regular fa-clock"></i>
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
             <label>Hora de salida</label>
-            <input type="time" v-model="newPlaceData.leavingTime" class="form-control" />
+            <div class="time-input-wrapper">
+              <span class="time-display-value">{{ newPlaceData.leavingTime || '--:--' }}</span>
+              <button type="button" class="time-input-btn" @click="openTimePickerModal('leaving')">
+                <i class="fa-regular fa-clock"></i>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -111,6 +124,27 @@
         </div>
       </div>
     </div>
+
+    <v-dialog v-model="showTimePickerModal" max-width="400px">
+      <v-card>
+        <v-card-title class="modal-title">
+          <i class="fa-regular fa-clock me-2"></i>
+          Seleccionar {{ timePickerType === 'arrival' ? 'hora de llegada' : 'hora de salida' }}
+        </v-card-title>
+
+        <v-card-text class="modal-body-vuetify">
+          <v-time-picker
+            v-model="tempTime"
+          ></v-time-picker>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="closeTimePickerModal">Cancelar</v-btn>
+          <v-btn color="#1b515e" dark @click="confirmTimeSelection">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -135,11 +169,14 @@ export default {
       itineraryPlaceId: null,
       currentPage: 1,
       showConfirmModal: false,
+      showTimePickerModal: false,
       selectedNewPlace: null,
       newPlaceData: {
         arrivalTime: '',
         leavingTime: '',
       },
+      tempTime: '',
+      timePickerType: null,
       loading: false,
     }
   },
@@ -194,10 +231,10 @@ export default {
     }),
     ...mapMutations('trips', ['setPlaces', 'setPagination', 'setPlaceIds']),
 
-    async loadSuggestedPlaces(latitude, longitude) {
+    loadSuggestedPlaces(latitude, longitude) {
       this.loading = true
 
-      await this.fetchPreferencePlaces({
+      this.fetchPreferencePlaces({
         latitude: latitude,
         longitude: longitude,
       }).then((response) => {
@@ -212,19 +249,18 @@ export default {
       })
     },
 
-    async handlePageChange(page) {
-      try {
-        const response = await this.fetchPlacesByIds({
-          place_ids: this.placesIds,
-          page: page - 1,
-          size: this.pagination.pageSize,
-        })
+    handlePageChange(page) {
+      this.fetchPlacesByIds({
+        place_ids: this.placesIds,
+        page: page - 1,
+        size: this.pagination.pageSize,
+      }).then((response) => {
         this.setPlaces(response.content)
         this.setPagination(response)
         window.scrollTo({ top: 0, behavior: 'smooth' })
-      } catch (error) {
+      }).catch((error) => {
         console.error('Error al cambiar página:', error)
-      }
+      })
     },
 
     isFavorite(placeId) {
@@ -240,7 +276,7 @@ export default {
       this.$router.push({ name: 'site_description' })
     },
 
-    async toggleFavorite(place) {
+    toggleFavorite(place) {
       this.toggleFavoritePlace(place.id)
         .then(() => {
           const isFav = this.isFavorite(place.id)
@@ -267,6 +303,28 @@ export default {
     closeConfirmModal() {
       this.showConfirmModal = false
       this.selectedNewPlace = null
+      this.closeTimePickerModal()
+    },
+
+    openTimePickerModal(type) {
+      this.timePickerType = type
+      this.tempTime = type === 'arrival' ? this.newPlaceData.arrivalTime : this.newPlaceData.leavingTime
+      this.showTimePickerModal = true
+    },
+
+    closeTimePickerModal() {
+      this.showTimePickerModal = false
+      this.tempTime = ''
+      this.timePickerType = null
+    },
+
+    confirmTimeSelection() {
+      if (this.timePickerType === 'arrival') {
+        this.newPlaceData.arrivalTime = this.tempTime
+      } else if (this.timePickerType === 'leaving') {
+        this.newPlaceData.leavingTime = this.tempTime
+      }
+      this.closeTimePickerModal()
     },
 
     extractPostalCode(address) {
@@ -274,7 +332,7 @@ export default {
       return match ? match[1] : null
     },
 
-    async confirmChangePlace() {
+    confirmChangePlace() {
       if (!this.newPlaceData.arrivalTime) {
         this.$alert.error('La hora de llegada es obligatoria')
         return
@@ -288,16 +346,21 @@ export default {
           arrivalTime: this.newPlaceData.arrivalTime,
           leavingTime: this.newPlaceData.leavingTime || null,
         }
-        const response = await this.updatePlace({
+        this.updatePlace({
           itineraryId: this.itineraryId,
           dayId: this.dayId,
           placeId: this.itineraryPlaceId,
           placeData: placeData,
-        })
-        this.$alert.success({
-          title: 'Lugar actualizado',
-          text: response.message,
-          nextRoute: 'description-itinerary',
+        }).then((response) => {
+          this.$alert.success({
+            title: 'Lugar actualizado',
+            text: response.message,
+          })
+          setTimeout(() => {
+            this.$router.push({ name: 'description-itinerary' })
+          }, 1000)
+        }).catch((error) => {
+          this.$alert.error(getErrorDetails(error))
         })
       } catch (error) {
         this.$alert.error(getErrorDetails(error))
@@ -323,9 +386,8 @@ export default {
 }
 
 .header-content {
-  display: flex;
   align-items: center;
-  padding: 1rem;
+  padding: 0.5rem;
   max-width: 100%;
 }
 
@@ -360,7 +422,8 @@ export default {
 
 .header-section {
   background: white;
-  padding: 1.5rem;
+  margin-top: 0.5rem;
+  padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
@@ -478,7 +541,6 @@ export default {
   flex-direction: column;
   gap: 0.75rem;
   min-width: 0;
-  overflow: hidden;
 }
 
 .btn-select-place {
@@ -583,6 +645,19 @@ export default {
   padding: 1.5rem;
 }
 
+.modal-body-vuetify {
+  padding: 1rem 1.5rem !important;
+}
+
+.modal-title {
+  color: #1b515e !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  padding: 1rem 1.5rem !important;
+  display: flex;
+  align-items: center;
+}
+
 .new-place-preview {
   background: #f8f9fa;
   padding: 1rem;
@@ -633,18 +708,35 @@ export default {
   color: #dc3545;
 }
 
-.form-control {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
+.time-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
   border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-  box-sizing: border-box;
+  border: 1px solid #ddd;
 }
 
-.form-control:focus {
-  outline: none;
+.time-display-value {
+  flex: 1;
+  font-size: 1rem;
+  color: #333;
+}
+
+.time-input-btn {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #1b515e;
+}
+
+.time-input-btn:hover {
+  background: #1b515e;
+  color: white;
   border-color: #1b515e;
 }
 
