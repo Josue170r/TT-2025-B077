@@ -9,31 +9,28 @@
     </div>
   </div>
 
-  <div class="change-place-container">
+  <div class="add-place-container">
     <div class="header-section">
       <button class="btn-back" @click="goBack">
         <i class="fa-solid fa-arrow-left"></i>
       </button>
       <div class="header-content">
-        <h1 class="page-title">Cambiar lugar</h1>
-        <br />
-        <div>
-          <h2 class="page-subtitle">Selecciona un nuevo lugar para tu itinerario</h2>
-        </div>
+        <h1 class="page-title mb-2">Agregar nuevo lugar</h1>
+        <p class="page-subtitle">Selecciona un lugar para tu itinerario</p>
       </div>
     </div>
 
     <div class="main-spacer"></div>
 
     <div class="content-wrapper container py-4">
-      <div v-if="currentPlaceInfo" class="current-place-info mb-4">
+      <div v-if="hotelInfo" class="current-place-info mb-4">
         <h3 class="section-title">
-          <i class="fa-solid fa-exchange-alt me-2"></i>
-          Reemplazando
+          <i class="fa-solid fa-map-pin me-2"></i>
+          Búsqueda alrededor de
         </h3>
         <div class="current-place-card">
-          <div class="place-name">{{ currentPlaceInfo.name }}</div>
-          <div class="place-address">{{ currentPlaceInfo.address }}</div>
+          <div class="place-name">{{ hotelInfo.name }}</div>
+          <div class="place-address">{{ hotelInfo.address }}</div>
         </div>
       </div>
 
@@ -54,7 +51,7 @@
             />
             <button class="btn-select-place" @click="openConfirmModal(place)">
               <i class="fa-solid fa-check me-2"></i>
-              Seleccionar este lugar
+              Agregar este lugar
             </button>
           </div>
         </div>
@@ -74,10 +71,11 @@
       </div>
     </div>
 
+    <!-- MODAL PRINCIPAL DE CONFIRMACIÓN -->
     <div v-if="showConfirmModal" class="modal-overlay" @click="closeConfirmModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>Confirmar cambio de lugar</h3>
+          <h3>Confirmar agregar lugar</h3>
           <button class="modal-close" @click="closeConfirmModal">
             <i class="fa-solid fa-times"></i>
           </button>
@@ -115,16 +113,17 @@
           <button class="btn btn-secondary" @click="closeConfirmModal">Cancelar</button>
           <button
             class="btn btn-primary"
-            @click="confirmChangePlace"
+            @click="confirmAddPlace"
             :disabled="!newPlaceData.arrivalTime"
           >
-            <i class="fa-solid fa-check me-2"></i>
-            Confirmar cambio
+            <i class="fa-solid fa-plus me-2"></i>
+            Agregar lugar
           </button>
         </div>
       </div>
     </div>
 
+    <!-- MODAL PARA SELECCIONAR HORA -->
     <v-dialog v-model="showTimePickerModal" max-width="400px">
       <v-card>
         <v-card-title class="modal-title">
@@ -155,7 +154,7 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
 import { getErrorDetails } from '@/utils/utils'
 
 export default {
-  name: 'ChangePlace',
+  name: 'AddPlace',
   components: {
     Hamburgermenu,
     PlaceCard,
@@ -163,10 +162,9 @@ export default {
 
   data() {
     return {
-      currentPlaceInfo: null,
+      hotelInfo: null,
       itineraryId: null,
       dayId: null,
-      itineraryPlaceId: null,
       currentPage: 1,
       showConfirmModal: false,
       showTimePickerModal: false,
@@ -186,19 +184,9 @@ export default {
   },
 
   mounted() {
-    const {
-      itineraryId,
-      dayId,
-      itineraryPlaceId,
-      latitude,
-      longitude,
-      placeName,
-      placeAddress,
-      arrivalTime,
-      leavingTime,
-    } = this.$route.query
+    const { itineraryId, dayId, latitude, longitude, hotelName, hotelAddress } = this.$route.query
 
-    if (!itineraryId || !dayId || !itineraryPlaceId || !latitude || !longitude) {
+    if (!itineraryId || !dayId || !latitude || !longitude) {
       this.$alert.error('Faltan parámetros')
       this.goBack()
       return
@@ -206,13 +194,10 @@ export default {
 
     this.itineraryId = itineraryId
     this.dayId = dayId
-    this.itineraryPlaceId = itineraryPlaceId
-    this.currentPlaceInfo = {
-      name: placeName || 'Lugar actual',
-      address: placeAddress || '',
+    this.hotelInfo = {
+      name: hotelName || 'Hotel',
+      address: hotelAddress || '',
     }
-    this.newPlaceData.arrivalTime = arrivalTime || ''
-    this.newPlaceData.leavingTime = leavingTime || ''
 
     this.loadSuggestedPlaces(parseFloat(latitude), parseFloat(longitude))
   },
@@ -224,7 +209,7 @@ export default {
     }),
     ...mapActions('trips', {
       toggleFavoritePlace: 'toggleFavoritePlace',
-      updatePlace: 'updatePlace',
+      addPlaceToDay: 'addPlaceToDay',
     }),
     ...mapMutations('places', {
       setSelectedPlaceId: 'setSelectedPlaceId',
@@ -332,7 +317,7 @@ export default {
       return match ? match[1] : null
     },
 
-    confirmChangePlace() {
+    confirmAddPlace() {
       if (!this.newPlaceData.arrivalTime) {
         this.$alert.error('La hora de llegada es obligatoria')
         return
@@ -346,24 +331,31 @@ export default {
           arrivalTime: this.newPlaceData.arrivalTime,
           leavingTime: this.newPlaceData.leavingTime || null,
         }
-        this.updatePlace({
+
+        this.addPlaceToDay({
           itineraryId: this.itineraryId,
           dayId: this.dayId,
-          placeId: this.itineraryPlaceId,
           placeData: placeData,
         }).then((response) => {
           this.$alert.success({
-            title: 'Lugar actualizado',
+            title: 'Lugar agregado',
             text: response.message,
           })
+
           setTimeout(() => {
             this.$router.push({ name: 'description-itinerary' })
           }, 1000)
         }).catch((error) => {
-          this.$alert.error(getErrorDetails(error))
+          this.$alert.error({
+            title: 'Error al agregar el lugar',
+            text: getErrorDetails(error),
+          })
         })
       } catch (error) {
-        this.$alert.error(getErrorDetails(error))
+        this.$alert.error({
+          title: 'Error al agregar el lugar',
+          text: getErrorDetails(error),
+        })
       }
     },
 
@@ -406,7 +398,7 @@ export default {
   width: 0px;
 }
 
-.change-place-container {
+.add-place-container {
   min-height: 100vh;
   background: #f8f9fa;
   padding-top: 70px;
@@ -501,7 +493,7 @@ export default {
   background: #f8f9fa;
   padding: 1rem;
   border-radius: 8px;
-  border-left: 4px solid #1b515e;
+  border-left: 4px solid #4caf50;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -659,18 +651,18 @@ export default {
 }
 
 .new-place-preview {
-  background: #f8f9fa;
+  background: #f0f8f5;
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
-  border-left: 4px solid #28a745;
+  border-left: 4px solid #4caf50;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 .new-place-preview h4 {
   margin: 0 0 0.5rem 0;
-  color: #28a745;
+  color: #4caf50;
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
