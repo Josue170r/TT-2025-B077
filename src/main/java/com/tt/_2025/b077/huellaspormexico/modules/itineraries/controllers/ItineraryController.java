@@ -52,6 +52,14 @@ public class ItineraryController {
                 .body(ApiResponse.of(HttpStatus.OK, null, itineraries));
     }
 
+    @RequestMapping(path = "/{id}/days", method = RequestMethod.GET)
+    public ResponseEntity<ApiResponse<List<ItineraryDaysResponseDto>>> getItineraryDays(@PathVariable Long id) {
+        List<ItineraryDaysResponseDto> days = itineraryService.getItineraryDays(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, days));
+    }
+
     @RequestMapping(path = "/{itineraryId}/days/{dayId}/order", method = RequestMethod.PUT)
     public ResponseEntity<ApiResponse<?>> updateVisitOrder(
             @PathVariable Long itineraryId,
@@ -75,6 +83,18 @@ public class ItineraryController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, "Lugar actualizado exitosamente", null));
+    }
+
+    @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/add", method = RequestMethod.PUT)
+    public ResponseEntity<ApiResponse<ItineraryPlace>> addItineraryPlace(
+            @PathVariable Long itineraryId,
+            @PathVariable Long dayId,
+            @Valid @RequestBody AddNewPlaceDTO dto) {
+
+        itineraryService.addPlaceToDay(itineraryId, dayId, dto);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, "Se agregó el lugar al itinerario", null));
     }
 
     @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/{placeId}/visit", method = RequestMethod.PUT)

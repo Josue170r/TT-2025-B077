@@ -4,6 +4,7 @@ import Newtrip from '../views/newtrip.vue'
 import Hotels from '../../trips/views/hotelsview.vue'
 import Description_itinerary from '../views/description_itinerary.vue'
 import ChangePlace from '../views/change_place.vue'
+import AddPlace from '../views/add-place.vue'
 
 export default [
   {
@@ -59,5 +60,14 @@ export default [
       rule: 'auth',
     },
     component: ChangePlace,
+  },
+  {
+    path: '/trips/add-place',
+    name: 'add-place',
+    meta: {
+      title: 'Nuevo lugar',
+      rule: 'auth',
+    },
+    component: AddPlace,
   },
 ]

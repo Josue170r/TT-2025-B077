@@ -19,7 +19,6 @@
         :environmentalScore="currentItinerary.averageSustainableIndex || 0"
       />
 
-
       <div class="itinerary-content container py-4">
         <div v-if="currentItinerary.hotelPlace" class="day-section mb-5">
           <div class="day-header bg-white">
@@ -30,10 +29,17 @@
             <p class="day-date text-muted mb-0">
               {{ currentItinerary.hotelPlace.name }}
               <span
-                v-if="currentItinerary.certificatedHotel && currentItinerary.certificatedHotel.certifications && currentItinerary.certificatedHotel.certifications.length > 0"
+                v-if="
+                  currentItinerary.certificatedHotel &&
+                  currentItinerary.certificatedHotel.certifications &&
+                  currentItinerary.certificatedHotel.certifications.length > 0
+                "
                 class="cert-count"
               >
-                • {{ currentItinerary.certificatedHotel.certifications.length }} certificación<span v-if="currentItinerary.certificatedHotel.certifications.length > 1">es</span>
+                • {{ currentItinerary.certificatedHotel.certifications.length }} certificación<span
+                  v-if="currentItinerary.certificatedHotel.certifications.length > 1"
+                  >es</span
+                >
               </span>
             </p>
           </div>
@@ -51,7 +57,11 @@
               </div>
 
               <div
-                v-if="currentItinerary.certificatedHotel && currentItinerary.certificatedHotel.certifications && currentItinerary.certificatedHotel.certifications.length > 0"
+                v-if="
+                  currentItinerary.certificatedHotel &&
+                  currentItinerary.certificatedHotel.certifications &&
+                  currentItinerary.certificatedHotel.certifications.length > 0
+                "
                 class="certifications-info"
               >
                 <div class="cert-title">
@@ -130,57 +140,73 @@
                       >
                     </div>
                     <div class="place-actions">
-                      <button
-                        class="btn-icon btn-menu"
-                        @click="toggleActionsMenu(itineraryPlace.id)"
-                        title="Acciones"
+                      <v-menu
+                        offset-y
+                        transition="slide-y-transition"
                       >
-                        <i class="fa-solid fa-ellipsis-vertical"></i>
-                      </button>
-                      
-                      <div v-if="activeMenuId === itineraryPlace.id" class="actions-menu">
-                        <button
-                          class="menu-item"
-                          @click="openTimeModal(day.id, itineraryPlace); closeActionsMenu()"
-                        >
-                          <i class="fa-regular fa-clock"></i>
-                          <span>Cambiar horario</span>
-                        </button>
-                        <button
-                          class="menu-item"
-                          @click="openChangePlaceModal(day.id, itineraryPlace); closeActionsMenu()"
-                        >
-                          <i class="fa-solid fa-exchange-alt"></i>
-                          <span>Cambiar lugar</span>
-                        </button>
-                        <button
-                          class="menu-item"
-                          @click="openDirections(itineraryPlace.place); closeActionsMenu()"
-                        >
-                          <i class="fa-solid fa-directions"></i>
-                          <span>Cómo llegar</span>
-                        </button>
-                        <button
-                          v-if="!itineraryPlace.isVisited"
-                          class="menu-item"
-                          @click="markAsVisited(day.id, itineraryPlace); closeActionsMenu()"
-                        >
-                          <i class="fa-solid fa-check"></i>
-                          <span>Marcar como visitado</span>
-                        </button>
-                        <button
-                          class="menu-item menu-item-danger"
-                          @click="confirmDeletePlace(day.id, itineraryPlace); closeActionsMenu()"
-                        >
-                          <i class="fa-solid fa-trash"></i>
-                          <span>Eliminar</span>
-                        </button>
-                      </div>
+                        <template v-slot:activator="{ props }">
+                          <button class="btn-icon btn-menu" v-bind="props">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                          </button>
+                        </template>
+
+                        <v-list class="actions-menu-list">
+                          <v-list-item @click="openTimeModal(day.id, itineraryPlace)">
+                            <template v-slot:prepend>
+                              <i class="fa-regular fa-clock menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Cambiar horario</v-list-item-title>
+                          </v-list-item>
+
+                          <v-list-item @click="openChangePlaceModal(day.id, itineraryPlace)">
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-exchange-alt menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Cambiar lugar</v-list-item-title>
+                          </v-list-item>
+
+                          <v-list-item @click="openDirections(itineraryPlace.place)">
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-directions menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Cómo llegar</v-list-item-title>
+                          </v-list-item>
+
+                          <v-list-item
+                            v-if="!itineraryPlace.isVisited"
+                            @click="markAsVisited(day.id, itineraryPlace)"
+                          >
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-check menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Marcar como visitado</v-list-item-title>
+                          </v-list-item>
+
+                          <v-divider class="my-2"></v-divider>
+
+                          <v-list-item
+                            @click="showDeleteDialog(day.id, itineraryPlace)"
+                            class="delete-item"
+                          >
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-trash menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Eliminar</v-list-item-title>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
                     </div>
                   </div>
                 </div>
               </template>
             </draggable>
+
+            <div v-if="(day.places?.length || 0) < 6" class="add-place-card" @click="openAddPlaceModal(day.id)">
+              <div class="add-place-content">
+                <i class="fa-solid fa-plus"></i>
+                <span>Agregar lugar</span>
+              </div>
+            </div>
           </div>
           <div v-else class="empty-day">
             <p>No hay lugares asignados para este día</p>
@@ -189,33 +215,99 @@
       </div>
     </template>
 
-    <div v-if="showTimeModal" class="modal-overlay" @click="closeTimeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>Modificar horario</h3>
-          <button class="modal-close" @click="closeTimeModal">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
+    <v-dialog v-model="showTimeModal" max-width="400px">
+      <v-card>
+        <v-card-title class="modal-title">
+          <i class="fa-regular fa-clock me-2"></i>
+          Modificar horario
+        </v-card-title>
 
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Hora de llegada</label>
-            <input type="time" v-model="editingTime.arrivalTime" class="form-control" />
+        <v-card-text class="modal-body">
+          <div class="time-input-section">
+            <label class="time-label">Hora de llegada</label>
+            <div class="time-input-wrapper">
+              <span class="time-display-value">{{ editingTime.arrivalTime || '--:--' }}</span>
+              <button
+                class="time-input-btn"
+                @click="openTimePickerModal('arrival')"
+              >
+                <i class="fa-regular fa-clock"></i>
+              </button>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>Hora de salida</label>
-            <input type="time" v-model="editingTime.leavingTime" class="form-control" />
-          </div>
-        </div>
+          <v-divider class="my-4"></v-divider>
 
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeTimeModal">Cancelar</button>
-          <button class="btn btn-primary" @click="saveTimeChanges">Guardar</button>
-        </div>
-      </div>
-    </div>
+          <div class="time-input-section">
+            <label class="time-label">Hora de salida</label>
+            <div class="time-input-wrapper">
+              <span class="time-display-value">{{ editingTime.leavingTime || '--:--' }}</span>
+              <button
+                class="time-input-btn"
+                @click="openTimePickerModal('leaving')"
+              >
+                <i class="fa-regular fa-clock"></i>
+              </button>
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="closeTimeModal">Cancelar</v-btn>
+          <v-btn color="#1b515e" dark @click="saveTimeChanges">Guardar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showTimePickerModal" max-width="400px">
+      <v-card>
+        <v-card-title class="modal-title">
+          <i class="fa-regular fa-clock me-2"></i>
+          Seleccionar {{ timePickerType === 'arrival' ? 'hora de llegada' : 'hora de salida' }}
+        </v-card-title>
+
+        <v-card-text class="modal-body">
+          <v-time-picker
+            v-model="tempTime"
+          ></v-time-picker>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="closeTimePickerModal">Cancelar</v-btn>
+          <v-btn color="#1b515e" dark @click="confirmTimeSelection">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showDeleteConfirmDialog" max-width="400px">
+      <v-card>
+        <v-card-title class="modal-title error-title">
+          <i class="fa-solid fa-exclamation-circle me-2"></i>
+          ¿Eliminar lugar?
+        </v-card-title>
+
+        <v-card-text class="modal-body">
+          <p class="mb-0">
+            ¿Estás seguro de que deseas eliminar "<strong>{{ placeToDelete?.place?.name }}</strong
+            >" de este día?
+          </p>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="showDeleteConfirmDialog = false">Cancelar</v-btn>
+          <v-btn
+            color="error"
+            dark
+            @click="deletePlace(pendingDeleteData.dayId, pendingDeleteData.placeId)"
+          >
+            Eliminar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -237,13 +329,21 @@ export default {
   data() {
     return {
       showTimeModal: false,
+      showDeleteConfirmDialog: false,
+      showTimePickerModal: false,
+      timePickerType: null,
+      tempTime: '',
       editingTime: {
         dayId: null,
         placeId: null,
         arrivalTime: '',
         leavingTime: '',
       },
-      activeMenuId: null,
+      placeToDelete: null,
+      pendingDeleteData: {
+        dayId: null,
+        placeId: null,
+      },
     }
   },
 
@@ -291,6 +391,7 @@ export default {
     ...mapMutations('places', {
       setSelectedPlaceId: 'setSelectedPlaceId',
     }),
+
     async loadItinerary(id) {
       this.fetchItineraryById(id)
         .then(() => {})
@@ -369,6 +470,30 @@ export default {
 
     closeTimeModal() {
       this.showTimeModal = false
+      this.showTimePickerModal = false
+      this.tempTime = ''
+      this.timePickerType = null
+    },
+
+    openTimePickerModal(type) {
+      this.timePickerType = type
+      this.tempTime = type === 'arrival' ? this.editingTime.arrivalTime : this.editingTime.leavingTime
+      this.showTimePickerModal = true
+    },
+
+    closeTimePickerModal() {
+      this.showTimePickerModal = false
+      this.tempTime = ''
+      this.timePickerType = null
+    },
+
+    confirmTimeSelection() {
+      if (this.timePickerType === 'arrival') {
+        this.editingTime.arrivalTime = this.tempTime
+      } else if (this.timePickerType === 'leaving') {
+        this.editingTime.leavingTime = this.tempTime
+      }
+      this.closeTimePickerModal()
     },
 
     async saveTimeChanges() {
@@ -384,7 +509,7 @@ export default {
             title: 'Horario actualizado',
             text: response.message,
           })
-          this.showTimeModal = false
+          this.closeTimeModal()
           this.loadItinerary(this.currentItinerary.id)
         })
         .catch((error) => {
@@ -412,9 +537,23 @@ export default {
       })
     },
 
+    openAddPlaceModal(dayId) {
+      this.$router.push({
+        name: 'add-place',
+        query: {
+          itineraryId: this.currentItineraryId,
+          dayId: dayId,
+          latitude: this.currentItinerary.hotelPlace.lat,
+          longitude: this.currentItinerary.hotelPlace.lng,
+          hotelName: this.currentItinerary.hotelPlace.name,
+          hotelAddress: this.currentItinerary.hotelPlace.formattedAddress,
+        },
+      })
+    },
+
     openDirections(place) {
       let mapsUrl = ''
-      
+
       if (place.googleMapsUrl) {
         mapsUrl = place.googleMapsUrl
       } else if (place.lat && place.lng) {
@@ -451,16 +590,13 @@ export default {
         })
     },
 
-    confirmDeletePlace(dayId, itineraryPlace) {
-      this.$alert.confirm({
-        title: '¿Eliminar lugar?',
-        text: `¿Estás seguro de que deseas eliminar "${itineraryPlace.place.name}" de este día?`,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        onConfirm: () => {
-          this.deletePlace(dayId, itineraryPlace.id)
-        },
-      })
+    showDeleteDialog(dayId, itineraryPlace) {
+      this.placeToDelete = itineraryPlace
+      this.pendingDeleteData = {
+        dayId: dayId,
+        placeId: itineraryPlace.id,
+      }
+      this.showDeleteConfirmDialog = true
     },
 
     async deletePlace(dayId, placeId) {
@@ -474,6 +610,7 @@ export default {
             title: 'Lugar eliminado',
             text: response.message,
           })
+          this.showDeleteConfirmDialog = false
           this.loadItinerary(this.currentItinerary.id)
         })
         .catch((error) => {
@@ -522,14 +659,6 @@ export default {
     goBack() {
       this.$router.go(-1)
     },
-
-    toggleActionsMenu(placeId) {
-      this.activeMenuId = this.activeMenuId === placeId ? null : placeId
-    },
-
-    closeActionsMenu() {
-      this.activeMenuId = null
-    },
   },
 }
 </script>
@@ -565,10 +694,6 @@ export default {
 .error-container p {
   color: #666;
   margin-bottom: 1.5rem;
-}
-
-.main-spacer {
-  height: 20px;
 }
 
 .itinerary-content {
@@ -617,7 +742,7 @@ export default {
 
 .places-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   padding: 2rem;
   background: white;
@@ -643,11 +768,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.sortable-ghost {
-  opacity: 0.4;
-  background: #f8f9fa;
+  min-width: 0;
 }
 
 .drag-handle-wrapper {
@@ -699,6 +820,7 @@ export default {
 
 .place-card-wrapper {
   width: 100%;
+  min-width: 0;
 }
 
 .time-info {
@@ -708,7 +830,7 @@ export default {
   background: #f8f9fa;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
 }
 
 .time-display {
@@ -726,7 +848,8 @@ export default {
 .place-actions {
   display: flex;
   gap: 0.5rem;
-  position: relative; /* añadido del primero para anclar el menú */
+  position: relative;
+  z-index: 20;
 }
 
 .btn-icon {
@@ -749,54 +872,139 @@ export default {
   min-width: 40px;
 }
 
-.actions-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 0.5rem);
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 100;
-  min-width: 200px;
-  overflow: hidden;
-}
-
-.menu-item {
+.add-place-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: none;
-  background: white;
-  color: #333;
-  font-size: 0.9rem;
+  justify-content: center;
+  min-height: 200px;
+  max-height: 300px;
+  border: 2px dashed #4caf50;
+  border-radius: 12px;
+  background: rgba(76, 175, 80, 0.05);
   cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
+  transition: all 0.3s;
 }
 
-.menu-item:hover {
-  background: #f8f9fa;
+.add-place-card:hover {
+  border-color: #1b515e;
+  background: rgba(27, 81, 94, 0.08);
+  transform: translateY(-2px);
 }
 
-.menu-item i {
-  width: 20px;
-  text-align: center;
+.add-place-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: #4caf50;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.add-place-card:hover .add-place-content {
   color: #1b515e;
 }
 
-.menu-item-danger {
-  color: #dc3545;
+.add-place-content i {
+  font-size: 2.5rem;
 }
 
-.menu-item-danger i {
-  color: #dc3545;
+.actions-menu-list {
+  min-width: 280px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
 }
 
-.menu-item-danger:hover {
-  background: #fff5f5;
+.actions-menu-list .v-list-item {
+  padding: 0.75rem 1rem !important;
+  height: auto !important;
+  min-height: 48px !important;
+}
+
+.actions-menu-list .v-list-item-title {
+  font-size: 0.95rem !important;
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+.actions-menu-list .menu-icon {
+  width: 24px;
+  text-align: center;
+  color: #1b515e;
+  margin-right: 0.75rem;
+}
+
+.actions-menu-list .delete-item {
+  color: #dc3545 !important;
+}
+
+.actions-menu-list .delete-item .menu-icon {
+  color: #dc3545 !important;
+}
+
+.actions-menu-list .v-list-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+.modal-title {
+  color: #1b515e !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  padding: 1rem 1.5rem !important;
+  display: flex;
+  align-items: center;
+}
+
+.modal-title.error-title {
+  color: #dc3545 !important;
+}
+
+.modal-body {
+  padding: 1rem 1.5rem !important;
+}
+
+.time-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.time-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1b515e;
+}
+
+.time-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.time-display-value {
+  flex: 1;
+  font-size: 1rem;
+  color: #333;
+}
+
+.time-input-btn {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #1b515e;
+}
+
+.time-input-btn:hover {
+  background: #1b515e;
+  color: white;
+  border-color: #1b515e;
 }
 
 .certifications-info {
@@ -856,100 +1064,6 @@ export default {
   font-size: 0.75rem;
 }
 
-/* Modal / formularios (del segundo) */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  min-width: 350px;
-  max-width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #1b515e;
-  font-size: 1.25rem;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #999;
-  cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s;
-}
-
-.modal-close:hover {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #555;
-  font-weight: 500;
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #1b515e;
-}
-
-.modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
 .btn {
   padding: 0.5rem 1.25rem;
   border: none;
@@ -979,6 +1093,12 @@ export default {
 
 .btn-primary:hover {
   background: #0e2325;
+}
+
+@media (max-width: 1024px) {
+  .places-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
@@ -1016,7 +1136,7 @@ export default {
   }
 
   .places-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 2rem;
     padding: 1rem;
     padding-right: 0.75rem;
@@ -1070,23 +1190,11 @@ export default {
     font-size: 0.9rem;
   }
 
-  .modal-content {
-    min-width: unset;
-    width: 90%;
-    margin: 1rem;
-  }
-
   .visited-badge {
     top: -8px;
     left: 5px;
     padding: 4px 8px;
     font-size: 0.8rem;
-  }
-
-  .actions-menu {
-    right: 0;
-    left: auto;
-    min-width: 180px;
   }
 
   .certifications-info {
@@ -1103,6 +1211,18 @@ export default {
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
     word-wrap: break-word;
+  }
+
+  .actions-menu-list {
+    min-width: 240px !important;
+  }
+
+  .add-place-card {
+    min-height: 160px;
+  }
+
+  .add-place-content i {
+    font-size: 2rem;
   }
 }
 
@@ -1133,6 +1253,7 @@ export default {
   }
 
   .places-grid {
+    grid-template-columns: 1fr;
     padding: 0.75rem;
     padding-right: 0.5rem;
     padding-left: 0.5rem;
@@ -1183,15 +1304,6 @@ export default {
     font-size: 0.85rem;
   }
 
-  .actions-menu {
-    min-width: 160px;
-    font-size: 0.85rem;
-  }
-
-  .menu-item {
-    padding: 0.6rem 0.75rem;
-  }
-
   .visited-badge {
     top: -6px;
     left: 3px;
@@ -1216,11 +1328,21 @@ export default {
   .cert-links {
     flex-wrap: wrap;
   }
-}
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .places-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .actions-menu-list {
+    min-width: 200px !important;
+  }
+
+  .add-place-card {
+    min-height: 140px;
+  }
+
+  .add-place-content i {
+    font-size: 1.75rem;
+  }
+
+  .add-place-content {
+    font-size: 0.9rem;
   }
 }
 
