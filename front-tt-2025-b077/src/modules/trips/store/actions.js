@@ -274,6 +274,30 @@ export async function updatePlace({ commit }, { itineraryId, dayId, placeId, pla
   })
 }
 
+export async function addPlaceToDay({ commit }, { itineraryId, dayId, placeData }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Agregando lugar',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .put(`/itineraries/${itineraryId}/days/${dayId}/places/add`, placeData)
+      .then((response) => {
+        resolve(response.data)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
 export async function updatePlaceTime(
   { commit },
   { itineraryId, dayId, placeId, arrivalTime, leavingTime },
