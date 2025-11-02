@@ -8,5 +8,7 @@ import java.util.Optional;
 
 public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlace, Long> {
     List<ItineraryPlace> findByItineraryDayIdOrderByVisitOrder(Long itineraryDayId);
+    List<ItineraryPlace> findByItineraryDayId(Long itineraryDayId);
+    ItineraryPlace findFirstByItineraryDayIdOrderByVisitOrderDesc(Long itineraryDayId);
     Optional<ItineraryPlace> findByIdAndItineraryDayId(Long placeId, Long dayId);
 }

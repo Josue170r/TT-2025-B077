@@ -46,8 +46,7 @@ export async function fetchPreferencePlaces({ commit }, { latitude, longitude })
       })
       .then((response) => {
         const data = response.data
-        commit('setPlaceIds', data.data)
-        resolve()
+        resolve(data.data)
       })
       .catch((error) => {
         reject(error)

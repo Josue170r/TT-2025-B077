@@ -35,8 +35,8 @@ public class PlacesController {
     }
 
     @RequestMapping(path = "/{placeId}", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<?>> getPlaceById(@PathVariable String placeId) {
-        Place place = placeService.getPlaceDetails(placeId);
+    public ResponseEntity<ApiResponse<?>> getPlaceById(@PathVariable Long placeId) {
+        Place place = placeService.getPlaceById(placeId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, null, place));

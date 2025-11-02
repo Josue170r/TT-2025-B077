@@ -1,42 +1,52 @@
 <template>
+  <div class="fixed-header mb-5">
+    <div class="header-content">
+      <hamburgermenu @navigate="handleNavigation" />
+      <div class="header-title">
+        <p class="mb-1">Escoge tus preferencias de viaje</p>
+      </div>
+      <div class="header-spacer"></div>
+    </div>
+  </div>
+
   <transition name="fade">
-    <div v-if="show" class="container my-5">
+    <div v-if="show" class="container">
       <div class="header">
-        <h2 class="title text-center fw-bold">Escoge tus preferencias de viaje</h2>
         <h6 class="sub-text text-center mb-4">
           Se recomendarán lugares de acuerdo a tus preferencias
         </h6>
+        <p class="text-center text-muted small">Puedes seleccionar hasta 4 categorías</p>
         <hr />
       </div>
 
-      <div class="categorias-wrapper">
+      <div class="categories-wrapper">
         <div class="row g-3">
-          <div
-            v-for="(categoria, index) in categorias"
-            :key="index"
-            class="col-6 col-md-4 col-lg-3"
-          >
+          <div v-for="category in categories" :key="category.id" class="col-6 col-md-4 col-lg-3">
             <div
-              class="categoria-card d-flex flex-column justify-content-center align-items-center"
-              :class="{ selected: selectedCategorias.includes(index) }"
-              @click="toggleCategoria(index)"
+              class="category-card d-flex flex-column justify-content-center align-items-center"
+              :class="{
+                selected: selectedCategoryIds.includes(category.id),
+                disabled:
+                  !selectedCategoryIds.includes(category.id) && selectedCategoryIds.length >= 4,
+              }"
+              @click="toggleCategory(category.id)"
               role="button"
               tabindex="0"
-              @keydown.enter.prevent="toggleCategoria(index)"
-              @keydown.space.prevent="toggleCategoria(index)"
-              :style="{ backgroundImage: `url(${categoria.img})` }"
+              @keydown.enter.prevent="toggleCategory(category.id)"
+              @keydown.space.prevent="toggleCategory(category.id)"
+              :style="{ backgroundImage: `url(${category.picture})` }"
               loading="lazy"
             >
-              <span class="categoria-text">
-                <strong>{{ categoria.name.split(' ')[0] }}</strong>
-                <span v-if="categoria.name.split(' ').length > 1">
+              <span class="category-text">
+                <strong>{{ category.category.split(' ')[0] }}</strong>
+                <span v-if="category.category.split(' ').length > 1">
                   <br />
-                  {{ categoria.name.split(' ').slice(1).join(' ') }}
+                  {{ category.category.split(' ').slice(1).join(' ') }}
                 </span>
               </span>
-              <span v-if="selectedCategorias.includes(index)" class="selected-label"
-                >Seleccionada ✓</span
-              >
+              <span v-if="selectedCategoryIds.includes(category.id)" class="selected-label">
+                Seleccionada ✓
+              </span>
             </div>
           </div>
         </div>
@@ -44,123 +54,175 @@
 
       <div class="text-center mt-4">
         <hr class="mt-0" />
-        <button class="btn-confirmar" @click="confirmarSeleccion">Confirmar</button>
+        <p class="text-muted small mb-3">
+          {{ selectedCategoryIds.length }} de 4 categorías seleccionadas
+        </p>
+        <button
+          class="btn-confirm"
+          @click="confirmSelection"
+          :disabled="selectedCategoryIds.length === 0"
+        >
+          Confirmar
+        </button>
       </div>
     </div>
   </transition>
 </template>
 
 <script>
-// import axios from "axios";
+import { mapActions } from 'vuex/dist/vuex.cjs.js'
+import { getErrorDetails } from '@/utils/utils'
+import hamburgermenu from '@/components/hamburgermenu.vue'
 
 export default {
   name: 'UserPreferences',
+  components: {
+    hamburgermenu,
+  },
   data() {
     return {
       show: false,
-      // DATOS DE EJEMPLO - REEMPLAZAR CON API
-      categorias: [
-        { name: 'Museos', img: '/public/museos.webp' },
-        { name: 'Parques', img: '/images/parques.webp' },
-        { name: 'Restaurantes', img: '/images/restaurantes.webp' },
-        { name: 'Playas', img: '/images/playas.webp' },
-        { name: 'Zonas Arqueológicas', img: '/images/zonas.webp' },
-        { name: 'Montañas', img: '/images/montanas.webp' },
-        { name: 'Pueblos Mágicos', img: '/images/pueblos.webp' },
-        { name: 'Cenotes', img: '/images/cenotes.webp' },
-        { name: 'Lagunas', img: '/images/lagunas.webp' },
-        { name: 'Hoteles', img: '/images/hoteles.webp' },
-        { name: 'Bares', img: '/images/bares.webp' },
-        { name: 'Cafeterías', img: '/images/cafeterias.webp' },
-        { name: 'Centros Comerciales', img: '/images/centros.webp' },
-        { name: 'Balnearios', img: '/images/balnearios.webp' },
-        { name: 'Eventos Culturales', img: '/images/eventos.webp' },
-      ],      
-      selectedCategorias: [],
+      categories: [],
+      selectedCategoryIds: [],
+      userPreferences: [],
     }
   },
   mounted() {
     this.show = true
-    // this.cargarCategorias()
+    this.initializePreferences()
   },
   methods: {
-    /*
-    async cargarCategorias() {
+    ...mapActions('user', {
+      fetchCategoryPlaces: 'fetchCategoryPlaces',
+      fetchUserPreferences: 'fetchUserPreferences',
+      saveUserPreferences: 'saveUserPreferences',
+    }),
+
+    async initializePreferences() {
       try {
-        const response = await axios.get('/api/categorias')
-        this.categorias = response.data.map(cat => ({
-          id: cat.id,
-          name: cat.nombre,
-          img: cat.imagen_url
-        }))
+        await this.fetchCategories()
+        await this.loadUserPreferences()
       } catch (error) {
-        console.error('Error al cargar categorías:', error)
+        console.error('Error initializing preferences:', error)
       }
     },
-    */
-    
-    toggleCategoria(index) {
-      const i = this.selectedCategorias.indexOf(index)
-      if (i !== -1) {
-        this.selectedCategorias.splice(i, 1)
-      } else {
-        this.selectedCategorias.push(index)
-      }
-    },
-    
-    confirmarSeleccion() {
-      this.show = false
 
-      setTimeout(() => {
-        console.log('IDs seleccionadas:', this.selectedCategorias)
-
-        //PREFERENCIAS
-        /*
-        axios.post('[API]'], {
-          categorias: this.selectedCategorias,
-          // user_id: this.$store.state.user.id
+    fetchCategories() {
+      return this.fetchCategoryPlaces()
+        .then((response) => {
+          this.categories = response.data.data || []
         })
-          .then((res) => {
-            console.log('Preferencias guardadas:', res.data)
-            // this.$router.push("home");
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
+    },
+
+    loadUserPreferences() {
+      return this.fetchUserPreferences()
+        .then((response) => {
+          this.userPreferences = response.data.data || []
+          this.selectedCategoryIds = this.userPreferences.map((pref) => pref.category.id)
+        })
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
+    },
+
+    toggleCategory(categoryId) {
+      const index = this.selectedCategoryIds.indexOf(categoryId)
+
+      if (index !== -1) {
+        this.selectedCategoryIds.splice(index, 1)
+      } else {
+        if (this.selectedCategoryIds.length < 4) {
+          this.selectedCategoryIds.push(categoryId)
+        } else {
+          this.$alert.error('Solo puedes seleccionar hasta 4 categorías')
+        }
+      }
+    },
+
+    confirmSelection() {
+      if (this.selectedCategoryIds.length === 0) {
+        this.$alert.error('Debes seleccionar al menos una categoría')
+        return
+      }
+
+      const preferencesData = {
+        categories: this.selectedCategoryIds.map((id) => ({ id })),
+      }
+
+      this.saveUserPreferences(preferencesData)
+        .then((response) => {
+          this.$alert.success({
+            title: 'Preferencias guardadas',
+            text: response.data.message,
           })
-          .catch((err) => {
-            console.error('Error al guardar preferencias:', err)
-            //notificación al usuario
-          })
-        */
-      }, 500)
+
+          this.show = false
+          setTimeout(() => {
+            this.$router.push({ name: 'home' })
+          }, 500)
+        })
+        .catch((error) => {
+          this.$alert.error(getErrorDetails(error))
+        })
     },
   },
 }
 </script>
 
 <style scoped>
-/* Estilos base */
 .container {
   max-width: 1200px;
   padding: 0 15px;
+  padding-top: 80px;
 }
 
-.header {
-  position: sticky;
+.fixed-header {
+  position: fixed;
   top: 0;
-  background-color: #ffffff;
-  z-index: 10;
-  padding-bottom: 0px;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(9, 128, 54, 0.1);
+  border-bottom: 1px solid #aae3aa;
 }
 
-.categorias-wrapper {
+.header-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  max-width: 100%;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+.header-title p {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #1b515e;
+}
+
+.header-spacer {
+  width: 0px;
+}
+
+.categories-wrapper {
   max-height: 63vh;
   overflow-y: auto;
   padding-top: 10px;
 }
 
-.categorias-wrapper::-webkit-scrollbar {
+.categories-wrapper::-webkit-scrollbar {
   display: none;
 }
 
-.categoria-card {
+.category-card {
   position: relative;
   border: 2px solid #abcd9e;
   border-radius: 12px;
@@ -169,13 +231,24 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
   transition:
     transform 0.15s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    opacity 0.2s ease;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
-.categoria-text {
+.category-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.category-card.disabled:hover {
+  transform: none;
+  border-color: #abcd9e;
+}
+
+.category-text {
   position: absolute;
   bottom: 8px;
   left: 8px;
@@ -183,23 +256,25 @@ export default {
   font-weight: normal;
   color: #1b515e;
   line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-.categoria-text strong {
+.category-text strong {
   font-weight: bold;
 }
 
-.categoria-card:not(.selected):hover {
+.category-card:not(.selected):not(.disabled):hover {
   transform: translateY(-4px);
   border-color: #1b515e;
   cursor: pointer;
 }
 
-.categoria-card.selected {
+.category-card.selected {
   border-color: #1b515e;
+  border-width: 3px;
 }
 
-.categoria-card.selected:hover {
+.category-card.selected:hover {
   border-color: #1b515e;
   transform: translateY(-4px);
 }
@@ -229,12 +304,12 @@ hr {
 
 .sub-text {
   font-weight: 400;
-  font-size: 12px;
+  font-size: 14px;
   color: #1b515e;
   text-align: center;
 }
 
-.btn-confirmar {
+.btn-confirm {
   background-color: #1b515e;
   color: #ffffff;
   border: none;
@@ -249,10 +324,15 @@ hr {
   min-width: 120px;
 }
 
-.btn-confirmar:hover {
+.btn-confirm:hover:not(:disabled) {
   background-color: #2a798d;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px #1b515e;
+}
+
+.btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .fade-enter-active,
@@ -263,256 +343,5 @@ hr {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-@media (max-width: 359px) {
-  .container {
-    padding: 0 10px;
-  }
-
-  .title {
-    font-size: 1.1rem;
-  }
-
-  .sub-text {
-    font-size: 10px;
-  }
-
-  .categoria-card {
-    height: 80px;
-    border-radius: 8px;
-  }
-
-  .categoria-text {
-    font-size: 12px;
-    bottom: 6px;
-    left: 6px;
-  }
-
-  .selected-label {
-    font-size: 0.55rem;
-    padding: 2px 4px;
-    top: 6px;
-    right: 6px;
-  }
-
-  .categorias-wrapper {
-    max-height: 55vh;
-  }
-
-  .btn-confirmar {
-    font-size: 0.9rem;
-    padding: 8px 16px;
-    width: 100%;
-  }
-}
-
-@media (min-width: 360px) and (max-width: 575px) {
-  .title {
-    font-size: 1.3rem;
-  }
-
-  .sub-text {
-    font-size: 11px;
-  }
-
-  .categoria-card {
-    height: 90px;
-    border-radius: 10px;
-  }
-
-  .categoria-text {
-    font-size: 14px;
-    bottom: 7px;
-    left: 7px;
-  }
-
-  .selected-label {
-    font-size: 0.6rem;
-    padding: 2px 5px;
-  }
-
-  .categorias-wrapper {
-    max-height: 58vh;
-  }
-
-  .btn-confirmar {
-    width: 100%;
-    padding: 10px 18px;
-  }
-}
-
-@media (min-width: 576px) and (max-width: 767px) {
-  .title {
-    font-size: 1.4rem;
-  }
-
-  .sub-text {
-    font-size: 12px;
-  }
-
-  .categoria-card {
-    height: 95px;
-  }
-
-  .categoria-text {
-    font-size: 15px;
-  }
-
-  .categorias-wrapper {
-    max-height: 60vh;
-  }
-
-  .btn-confirmar {
-    width: 80%;
-    max-width: 300px;
-  }
-}
-
-/* Tablets (768px - 991px) */
-@media (min-width: 768px) and (max-width: 991px) {
-  .title {
-    font-size: 1.6rem;
-  }
-
-  .sub-text {
-    font-size: 13px;
-  }
-
-  .categoria-card {
-    height: 100px;
-  }
-
-  .categoria-text {
-    font-size: 16px;
-  }
-
-  .selected-label {
-    font-size: 0.7rem;
-  }
-
-  .categorias-wrapper {
-    max-height: 62vh;
-  }
-
-  .btn-confirmar {
-    width: auto;
-    min-width: 200px;
-  }
-}
-
-/* Laptops y tablets*/
-@media (min-width: 992px) and (max-width: 1199px) {
-  .title {
-    font-size: 1.7rem;
-  }
-
-  .sub-text {
-    font-size: 13px;
-  }
-
-  .categoria-card {
-    height: 110px;
-  }
-
-  .categoria-text {
-    font-size: 17px;
-  }
-
-  .categorias-wrapper {
-    max-height: 63vh;
-  }
-}
-
-/* Pantallas grandes */
-@media (min-width: 1200px) and (max-width: 1399px) {
-  .title {
-    font-size: 1.8rem;
-  }
-
-  .sub-text {
-    font-size: 14px;
-  }
-
-  .categoria-card {
-    height: 120px;
-  }
-
-  .categoria-text {
-    font-size: 18px;
-  }
-
-  .categorias-wrapper {
-    max-height: 65vh;
-  }
-}
-
-/* Pantallas extra grandes*/
-@media (min-width: 1400px) {
-  .title {
-    font-size: 2rem;
-  }
-
-  .sub-text {
-    font-size: 15px;
-  }
-
-  .categoria-card {
-    height: 130px;
-  }
-
-  .categoria-text {
-    font-size: 20px;
-  }
-
-  .selected-label {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-  }
-
-  .categorias-wrapper {
-    max-height: 65vh;
-  }
-
-  .btn-confirmar {
-    font-size: 1.1rem;
-    padding: 12px 24px;
-    min-width: 180px;
-  }
-}
-
-/*pantallas muy anchas */
-@media (min-width: 1600px) {
-  .container {
-    max-width: 1400px;
-  }
-
-  .categoria-card {
-    height: 140px;
-  }
-
-  .categoria-text {
-    font-size: 22px;
-  }
-}
-
-/* orientación horizontal */
-@media (max-height: 500px) and (orientation: landscape) {
-  .categorias-wrapper {
-    max-height: 45vh;
-  }
-
-  .categoria-card {
-    height: 80px;
-  }
-
-  .title {
-    font-size: 1.2rem;
-  }
-
-  .btn-confirmar {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-  }
 }
 </style>

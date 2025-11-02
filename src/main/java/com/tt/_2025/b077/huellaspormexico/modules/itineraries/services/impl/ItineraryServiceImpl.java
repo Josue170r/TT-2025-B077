@@ -12,6 +12,7 @@ import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.Itinerary
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.ItineraryDayNotFound;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.ItineraryNotFound;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.ItineraryPlaceNotFound;
+import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.PlaceVisited;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.repositories.ItineraryDayRepository;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.repositories.ItineraryPlaceRepository;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.repositories.ItineraryRepository;
@@ -69,7 +70,6 @@ public class ItineraryServiceImpl implements ItineraryService {
                 .orElseThrow(() -> new PlaceNotFoundException("Hotel no encontrado"));
 
         Itinerary itinerary = Itinerary.builder()
-                .averageSustainableIndex(dto.getAverageSustainableIndex())
                 .tripTitle(dto.getTripTitle())
                 .hotelPlace(hotelPlace)
                 .user(user)
@@ -243,6 +243,24 @@ public class ItineraryServiceImpl implements ItineraryService {
     }
 
     @Override
+    public void setPlaceVisited(Long itineraryId, Long dayId, Long placeId) {
+        itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
+                .orElseThrow(() -> new ItineraryDayNotFound(
+                        "Día no encontrado en este itinerario"));
+
+        ItineraryPlace itineraryPlace = itineraryPlaceRepository
+                .findByIdAndItineraryDayId(placeId, dayId)
+                .orElseThrow(() -> new ItineraryPlaceNotFound(
+                        "Lugar no encontrado en este día"));
+
+        if (itineraryPlace.getIsVisited()) {
+            throw new PlaceVisited("El lugar ya fue visitado");
+        }
+        itineraryPlace.setIsVisited(true);
+        itineraryPlaceRepository.save(itineraryPlace);
+    }
+
+    @Override
     @Transactional
     public void updatePlace(Long itineraryId, Long dayId, Long placeId, UpdatePlaceDTO dto) {
         itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
@@ -287,6 +305,71 @@ public class ItineraryServiceImpl implements ItineraryService {
         itineraryPlace.setLeavingTime(dto.getLeavingTime());
 
         return itineraryPlaceRepository.save(itineraryPlace);
+    }
+
+    @Override
+    public List<ItineraryDaysResponseDto> getItineraryDays(Long itineraryId) {
+        List<ItineraryDay> days = itineraryDayRepository.findByItineraryId(itineraryId);
+
+        if (days.isEmpty()) {
+            throw new ItineraryDayNotFound("Este itinerario no tiene ningún día");
+        }
+
+        return days.stream()
+                .map(day -> new ItineraryDaysResponseDto(day.getId(), day.getItineraryDate()))
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void addPlaceToDay(Long itineraryId, Long dayId, AddNewPlaceDTO dto) {
+        ItineraryDay day = itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
+                .orElseThrow(() -> new ItineraryNotFound("Día no encontrado en este itinerario"));
+
+        Place newPlace = placeRepository.findById(dto.getNewPlaceId())
+                .orElseThrow(() -> new PlaceNotFoundException("Nuevo lugar no encontrado"));
+
+        List<ItineraryPlace> placesByDay = itineraryPlaceRepository.findByItineraryDayId(dayId);
+        if (placesByDay.size() >= 6) {
+            throw new RuntimeException("El límite de lugares por día es 6");
+        }
+
+        int nextVisitOrder = 1;
+        if (!placesByDay.isEmpty()) {
+            ItineraryPlace lastPlace = itineraryPlaceRepository.findFirstByItineraryDayIdOrderByVisitOrderDesc(dayId);
+            if (lastPlace != null) {
+                nextVisitOrder = lastPlace.getVisitOrder() + 1;
+            }
+        }
+
+        PostalCodeCatalog postalCode = dto.getPostalCode() != null
+                ? postalCodeRepository.findByPostalCode(dto.getPostalCode()).orElse(null)
+                : null;
+
+        ItineraryPlace newItineraryPlace = ItineraryPlace.builder()
+                .place(newPlace)
+                .itineraryDay(day)
+                .postalCode(postalCode)
+                .arrivalTime(dto.getArrivalTime())
+                .leavingTime(dto.getLeavingTime())
+                .visitOrder(nextVisitOrder)
+                .build();
+
+        itineraryPlaceRepository.save(newItineraryPlace);
+    }
+
+    @Override
+    public void deletePlaceByDayId(Long itineraryId, Long dayId, Long placeId) {
+        itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
+                .orElseThrow(() -> new ItineraryNotFound(
+                        "Día no encontrado en este itinerario"));
+
+        ItineraryPlace itineraryPlace = itineraryPlaceRepository
+                .findByIdAndItineraryDayId(placeId, dayId)
+                .orElseThrow(() -> new ItineraryPlaceNotFound(
+                        "Lugar no encontrado en este día"));
+
+        itineraryPlaceRepository.delete(itineraryPlace);
     }
 
     @Override

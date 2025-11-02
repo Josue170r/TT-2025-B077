@@ -17,20 +17,83 @@
         :travelState="getStateName()"
         :dateRange="formatDateRange()"
         :environmentalScore="currentItinerary.averageSustainableIndex || 0"
-        @edit-travel="handleEdit"
-        @show-environmental-info="handleEnvironmentalInfo"
       />
 
-      <div class="main-spacer"></div>
-
       <div class="itinerary-content container py-4">
-        <div v-for="(day, dayIndex) in sortedItineraryDays" :key="day.id" class="day-section mb-5">
+        <div v-if="currentItinerary.hotelPlace" class="day-section mb-5">
           <div class="day-header bg-white">
+            <h2 class="day-title mb-2">
+              <i class="fa-solid fa-hotel me-2"></i>
+              Hotel
+            </h2>
+            <p class="day-date text-muted mb-0">
+              {{ currentItinerary.hotelPlace.name }}
+              <span
+                v-if="
+                  currentItinerary.certificatedHotel &&
+                  currentItinerary.certificatedHotel.certifications &&
+                  currentItinerary.certificatedHotel.certifications.length > 0
+                "
+                class="cert-count"
+              >
+                • {{ currentItinerary.certificatedHotel.certifications.length }} certificación<span
+                  v-if="currentItinerary.certificatedHotel.certifications.length > 1"
+                  >es</span
+                >
+              </span>
+            </p>
+          </div>
+
+          <div class="places-grid">
+            <div class="draggable-item">
+              <div class="place-card-wrapper">
+                <PlaceCard
+                  :place="currentItinerary.hotelPlace"
+                  :is-favorite="isFavorite(currentItinerary.hotelPlace.id)"
+                  :logo-url="getDefaultImage()"
+                  @select-place="selectPlace"
+                  @toggle-favorite="toggleFavorite"
+                />
+              </div>
+
+              <div
+                v-if="
+                  currentItinerary.certificatedHotel &&
+                  currentItinerary.certificatedHotel.certifications &&
+                  currentItinerary.certificatedHotel.certifications.length > 0
+                "
+                class="certifications-info"
+              >
+                <div class="cert-title">
+                  <i class="mdi mdi-leaf"></i>
+                  <span>Certificaciones sostenibles</span>
+                </div>
+                <div class="cert-links">
+                  <a
+                    v-for="cert in currentItinerary.certificatedHotel.certifications"
+                    :key="cert.id"
+                    :href="cert.institutionWebsite"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="cert-badge"
+                  >
+                    <i class="mdi mdi-certificate"></i>
+                    <span>{{ cert.certification }}</span>
+                    <i class="mdi mdi-open-in-new"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-for="(day, dayIndex) in sortedItineraryDays" :key="day.id" class="day-section mb-5">
+          <div class="day-header">
             <h2 class="day-title mb-2">
               <i class="fa-solid fa-calendar-day me-2"></i>
               Día {{ dayIndex + 1 }}
             </h2>
-            <p class="day-date text-muted mb-0">
+            <p class="day-date mb-0">
               {{ formatDate(day.itineraryDate) }} • {{ day.places?.length || 0 }} lugares
             </p>
           </div>
@@ -52,12 +115,17 @@
                     </div>
                   </div>
 
+                  <div v-if="itineraryPlace.isVisited" class="visited-badge">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Visitado</span>
+                  </div>
+
                   <div class="place-card-wrapper">
                     <PlaceCard
                       v-if="itineraryPlace.place"
                       :place="itineraryPlace.place"
                       :is-favorite="isFavorite(itineraryPlace.place.id)"
-                      :logo-url="getPlaceImage(itineraryPlace.place)"
+                      :logo-url="getDefaultImage()"
                       @select-place="selectPlace"
                       @toggle-favorite="toggleFavorite"
                     />
@@ -72,25 +140,73 @@
                       >
                     </div>
                     <div class="place-actions">
-                      <button
-                        class="btn-icon"
-                        @click="openTimeModal(day.id, itineraryPlace)"
-                        title="Cambiar horario"
+                      <v-menu
+                        offset-y
+                        transition="slide-y-transition"
                       >
-                        <i class="fa-regular fa-clock"></i>
-                      </button>
-                      <button
-                        class="btn-icon"
-                        @click="openChangePlaceModal(day.id, itineraryPlace)"
-                        title="Cambiar lugar"
-                      >
-                        <i class="fa-solid fa-exchange-alt"></i>
-                      </button>
+                        <template v-slot:activator="{ props }">
+                          <button class="btn-icon btn-menu" v-bind="props">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                          </button>
+                        </template>
+
+                        <v-list class="actions-menu-list">
+                          <v-list-item @click="openTimeModal(day.id, itineraryPlace)">
+                            <template v-slot:prepend>
+                              <i class="fa-regular fa-clock menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Cambiar horario</v-list-item-title>
+                          </v-list-item>
+
+                          <v-list-item @click="openChangePlaceModal(day.id, itineraryPlace)">
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-exchange-alt menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Cambiar lugar</v-list-item-title>
+                          </v-list-item>
+
+                          <v-list-item @click="openDirections(itineraryPlace.place)">
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-directions menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Cómo llegar</v-list-item-title>
+                          </v-list-item>
+
+                          <v-list-item
+                            v-if="!itineraryPlace.isVisited"
+                            @click="markAsVisited(day.id, itineraryPlace)"
+                          >
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-check menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Marcar como visitado</v-list-item-title>
+                          </v-list-item>
+
+                          <v-divider class="my-2"></v-divider>
+
+                          <v-list-item
+                            @click="showDeleteDialog(day.id, itineraryPlace)"
+                            class="delete-item"
+                          >
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-trash menu-icon"></i>
+                            </template>
+                            <v-list-item-title>Eliminar</v-list-item-title>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
                     </div>
                   </div>
                 </div>
               </template>
             </draggable>
+
+            <div v-if="(day.places?.length || 0) < 6" class="add-place-card" @click="openAddPlaceModal(day.id)">
+              <div class="add-place-content">
+                <i class="fa-solid fa-plus"></i>
+                <span>Agregar lugar</span>
+              </div>
+            </div>
           </div>
           <div v-else class="empty-day">
             <p>No hay lugares asignados para este día</p>
@@ -99,33 +215,99 @@
       </div>
     </template>
 
-    <div v-if="showTimeModal" class="modal-overlay" @click="closeTimeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>Modificar horario</h3>
-          <button class="modal-close" @click="closeTimeModal">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
+    <v-dialog v-model="showTimeModal" max-width="400px">
+      <v-card>
+        <v-card-title class="modal-title">
+          <i class="fa-regular fa-clock me-2"></i>
+          Modificar horario
+        </v-card-title>
 
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Hora de llegada</label>
-            <input type="time" v-model="editingTime.arrivalTime" class="form-control" />
+        <v-card-text class="modal-body">
+          <div class="time-input-section">
+            <label class="time-label">Hora de llegada</label>
+            <div class="time-input-wrapper">
+              <span class="time-display-value">{{ editingTime.arrivalTime || '--:--' }}</span>
+              <button
+                class="time-input-btn"
+                @click="openTimePickerModal('arrival')"
+              >
+                <i class="fa-regular fa-clock"></i>
+              </button>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>Hora de salida</label>
-            <input type="time" v-model="editingTime.leavingTime" class="form-control" />
-          </div>
-        </div>
+          <v-divider class="my-4"></v-divider>
 
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeTimeModal">Cancelar</button>
-          <button class="btn btn-primary" @click="saveTimeChanges">Guardar</button>
-        </div>
-      </div>
-    </div>
+          <div class="time-input-section">
+            <label class="time-label">Hora de salida</label>
+            <div class="time-input-wrapper">
+              <span class="time-display-value">{{ editingTime.leavingTime || '--:--' }}</span>
+              <button
+                class="time-input-btn"
+                @click="openTimePickerModal('leaving')"
+              >
+                <i class="fa-regular fa-clock"></i>
+              </button>
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="closeTimeModal">Cancelar</v-btn>
+          <v-btn color="#1b515e" dark @click="saveTimeChanges">Guardar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showTimePickerModal" max-width="400px">
+      <v-card>
+        <v-card-title class="modal-title">
+          <i class="fa-regular fa-clock me-2"></i>
+          Seleccionar {{ timePickerType === 'arrival' ? 'hora de llegada' : 'hora de salida' }}
+        </v-card-title>
+
+        <v-card-text class="modal-body">
+          <v-time-picker
+            v-model="tempTime"
+          ></v-time-picker>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="closeTimePickerModal">Cancelar</v-btn>
+          <v-btn color="#1b515e" dark @click="confirmTimeSelection">Aceptar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showDeleteConfirmDialog" max-width="400px">
+      <v-card>
+        <v-card-title class="modal-title error-title">
+          <i class="fa-solid fa-exclamation-circle me-2"></i>
+          ¿Eliminar lugar?
+        </v-card-title>
+
+        <v-card-text class="modal-body">
+          <p class="mb-0">
+            ¿Estás seguro de que deseas eliminar "<strong>{{ placeToDelete?.place?.name }}</strong
+            >" de este día?
+          </p>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="showDeleteConfirmDialog = false">Cancelar</v-btn>
+          <v-btn
+            color="error"
+            dark
+            @click="deletePlace(pendingDeleteData.dayId, pendingDeleteData.placeId)"
+          >
+            Eliminar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -147,11 +329,20 @@ export default {
   data() {
     return {
       showTimeModal: false,
+      showDeleteConfirmDialog: false,
+      showTimePickerModal: false,
+      timePickerType: null,
+      tempTime: '',
       editingTime: {
         dayId: null,
         placeId: null,
         arrivalTime: '',
         leavingTime: '',
+      },
+      placeToDelete: null,
+      pendingDeleteData: {
+        dayId: null,
+        placeId: null,
       },
     }
   },
@@ -194,10 +385,13 @@ export default {
       updateVisitOrder: 'updateVisitOrder',
       updatePlaceTime: 'updatePlaceTime',
       toggleFavoritePlace: 'toggleFavoritePlace',
+      setPlaceVisited: 'setPlaceVisited',
+      deletePlaceFromDay: 'deletePlaceFromDay',
     }),
     ...mapMutations('places', {
       setSelectedPlaceId: 'setSelectedPlaceId',
     }),
+
     async loadItinerary(id) {
       this.fetchItineraryById(id)
         .then(() => {})
@@ -237,10 +431,7 @@ export default {
         })
     },
 
-    getPlaceImage(place) {
-      if (place?.images && place.images.length > 0) {
-        return place.images[0]
-      }
+    getDefaultImage() {
       return 'https://www.turismomexico.es/wp-content/uploads/2015/07/chichen_itza.jpg'
     },
 
@@ -279,6 +470,30 @@ export default {
 
     closeTimeModal() {
       this.showTimeModal = false
+      this.showTimePickerModal = false
+      this.tempTime = ''
+      this.timePickerType = null
+    },
+
+    openTimePickerModal(type) {
+      this.timePickerType = type
+      this.tempTime = type === 'arrival' ? this.editingTime.arrivalTime : this.editingTime.leavingTime
+      this.showTimePickerModal = true
+    },
+
+    closeTimePickerModal() {
+      this.showTimePickerModal = false
+      this.tempTime = ''
+      this.timePickerType = null
+    },
+
+    confirmTimeSelection() {
+      if (this.timePickerType === 'arrival') {
+        this.editingTime.arrivalTime = this.tempTime
+      } else if (this.timePickerType === 'leaving') {
+        this.editingTime.leavingTime = this.tempTime
+      }
+      this.closeTimePickerModal()
     },
 
     async saveTimeChanges() {
@@ -294,7 +509,7 @@ export default {
             title: 'Horario actualizado',
             text: response.message,
           })
-          this.showTimeModal = false
+          this.closeTimeModal()
           this.loadItinerary(this.currentItinerary.id)
         })
         .catch((error) => {
@@ -306,8 +521,104 @@ export default {
     },
 
     openChangePlaceModal(dayId, itineraryPlace) {
-      console.log('Abrir modal para cambiar lugar:', dayId, itineraryPlace)
-      // TODO: Implementar modal para cambiar lugar
+      this.$router.push({
+        name: 'change-place',
+        query: {
+          itineraryId: this.currentItineraryId,
+          dayId: dayId,
+          itineraryPlaceId: itineraryPlace.id,
+          latitude: itineraryPlace.place.lat,
+          longitude: itineraryPlace.place.lng,
+          placeName: itineraryPlace.place.name,
+          placeAddress: itineraryPlace.place.formattedAddress,
+          arrivalTime: itineraryPlace.arrivalTime,
+          leavingTime: itineraryPlace.leavingTime,
+        },
+      })
+    },
+
+    openAddPlaceModal(dayId) {
+      this.$router.push({
+        name: 'add-place',
+        query: {
+          itineraryId: this.currentItineraryId,
+          dayId: dayId,
+          latitude: this.currentItinerary.hotelPlace.lat,
+          longitude: this.currentItinerary.hotelPlace.lng,
+          hotelName: this.currentItinerary.hotelPlace.name,
+          hotelAddress: this.currentItinerary.hotelPlace.formattedAddress,
+        },
+      })
+    },
+
+    openDirections(place) {
+      let mapsUrl = ''
+
+      if (place.googleMapsUrl) {
+        mapsUrl = place.googleMapsUrl
+      } else if (place.lat && place.lng) {
+        mapsUrl = `https://www.google.com/maps?q=${place.lat},${place.lng}`
+      } else {
+        this.$alert.error({
+          title: 'Ubicación no disponible',
+          text: 'No se pudo obtener la ubicación de este lugar',
+        })
+        return
+      }
+
+      window.open(mapsUrl, '_blank')
+    },
+
+    async markAsVisited(dayId, itineraryPlace) {
+      this.setPlaceVisited({
+        itineraryId: this.currentItinerary.id,
+        dayId: dayId,
+        placeId: itineraryPlace.id,
+      })
+        .then((response) => {
+          this.$alert.success({
+            title: 'Lugar visitado',
+            text: response.message,
+          })
+          this.loadItinerary(this.currentItinerary.id)
+        })
+        .catch((error) => {
+          this.$alert.error({
+            title: 'Error al marcar como visitado',
+            text: getErrorDetails(error),
+          })
+        })
+    },
+
+    showDeleteDialog(dayId, itineraryPlace) {
+      this.placeToDelete = itineraryPlace
+      this.pendingDeleteData = {
+        dayId: dayId,
+        placeId: itineraryPlace.id,
+      }
+      this.showDeleteConfirmDialog = true
+    },
+
+    async deletePlace(dayId, placeId) {
+      this.deletePlaceFromDay({
+        itineraryId: this.currentItinerary.id,
+        dayId: dayId,
+        placeId: placeId,
+      })
+        .then((response) => {
+          this.$alert.success({
+            title: 'Lugar eliminado',
+            text: response.message,
+          })
+          this.showDeleteConfirmDialog = false
+          this.loadItinerary(this.currentItinerary.id)
+        })
+        .catch((error) => {
+          this.$alert.error({
+            title: 'Error al eliminar el lugar',
+            text: getErrorDetails(error),
+          })
+        })
     },
 
     formatDate(dateString) {
@@ -328,27 +639,25 @@ export default {
 
       if (sortedDays.length === 0) return ''
 
-      const start = new Date(sortedDays[0].itineraryDate)
-      const end = new Date(sortedDays[sortedDays.length - 1].itineraryDate)
+      const firstDate = new Date(sortedDays[0].itineraryDate)
+      const lastDate = new Date(sortedDays[sortedDays.length - 1].itineraryDate)
 
       const options = { day: 'numeric', month: 'short' }
-      return `${start.toLocaleDateString('es-MX', options)} - ${end.toLocaleDateString('es-MX', { ...options, year: 'numeric' })}`
+      const firstDateStr = firstDate.toLocaleDateString('es-MX', options)
+      const lastDateStr = lastDate.toLocaleDateString('es-MX', options)
+
+      return `${firstDateStr} - ${lastDateStr}`
     },
 
     getStateName() {
-      return 'Estado'
-    },
-
-    handleEdit() {
-      console.log('Editar viaje')
-    },
-
-    handleEnvironmentalInfo(score) {
-      console.log('Información ambiental:', score)
+      if (!this.currentItinerary?.certificatedHotel?.settlement?.state?.state) {
+        return ''
+      }
+      return this.currentItinerary.certificatedHotel.settlement.state.state
     },
 
     goBack() {
-      this.$router.push({ name: 'itinerary' })
+      this.$router.go(-1)
     },
   },
 }
@@ -387,10 +696,6 @@ export default {
   margin-bottom: 1.5rem;
 }
 
-.main-spacer {
-  height: 20px;
-}
-
 .itinerary-content {
   max-width: 1400px;
   margin: 0 auto;
@@ -401,7 +706,7 @@ export default {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
-  overflow: visible; /* Cambiado para evitar cortes */
+  overflow: visible;
   margin-bottom: 3rem !important;
 }
 
@@ -430,9 +735,14 @@ export default {
   padding-left: 2.2rem;
 }
 
+.cert-count {
+  color: #28a745;
+  font-weight: 500;
+}
+
 .places-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   padding: 2rem;
   background: white;
@@ -458,11 +768,12 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .drag-handle-wrapper {
   position: absolute;
-  top: -10px;
+  top: -15px;
   right: -18px;
   z-index: 10;
   height: 0;
@@ -491,8 +802,25 @@ export default {
   transform: scale(0.95);
 }
 
+.visited-badge {
+  position: absolute;
+  top: -20px;
+  left: 5px;
+  z-index: 10;
+  background: #28a745;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
 .place-card-wrapper {
   width: 100%;
+  min-width: 0;
 }
 
 .time-info {
@@ -502,7 +830,7 @@ export default {
   background: #f8f9fa;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
 }
 
 .time-display {
@@ -520,6 +848,8 @@ export default {
 .place-actions {
   display: flex;
   gap: 0.5rem;
+  position: relative;
+  z-index: 20;
 }
 
 .btn-icon {
@@ -538,97 +868,200 @@ export default {
   border-color: #1b515e;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+.btn-menu {
+  min-width: 40px;
+}
+
+.add-place-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background: white;
+  min-height: 200px;
+  max-height: 300px;
+  border: 2px dashed #4caf50;
   border-radius: 12px;
-  min-width: 350px;
-  max-width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #1b515e;
-  font-size: 1.25rem;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #999;
+  background: rgba(76, 175, 80, 0.05);
   cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
   transition: all 0.3s;
 }
 
-.modal-close:hover {
-  background: #f0f0f0;
-  color: #333;
+.add-place-card:hover {
+  border-color: #1b515e;
+  background: rgba(27, 81, 94, 0.08);
+  transform: translateY(-2px);
+}
+
+.add-place-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: #4caf50;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.add-place-card:hover .add-place-content {
+  color: #1b515e;
+}
+
+.add-place-content i {
+  font-size: 2.5rem;
+}
+
+.actions-menu-list {
+  min-width: 280px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
+}
+
+.actions-menu-list .v-list-item {
+  padding: 0.75rem 1rem !important;
+  height: auto !important;
+  min-height: 48px !important;
+}
+
+.actions-menu-list .v-list-item-title {
+  font-size: 0.95rem !important;
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+.actions-menu-list .menu-icon {
+  width: 24px;
+  text-align: center;
+  color: #1b515e;
+  margin-right: 0.75rem;
+}
+
+.actions-menu-list .delete-item {
+  color: #dc3545 !important;
+}
+
+.actions-menu-list .delete-item .menu-icon {
+  color: #dc3545 !important;
+}
+
+.actions-menu-list .v-list-item:hover {
+  background-color: #f8f9fa !important;
+}
+
+.modal-title {
+  color: #1b515e !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  padding: 1rem 1.5rem !important;
+  display: flex;
+  align-items: center;
+}
+
+.modal-title.error-title {
+  color: #dc3545 !important;
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 1rem 1.5rem !important;
 }
 
-.form-group {
-  margin-bottom: 1rem;
+.time-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #555;
-  font-weight: 500;
+.time-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1b515e;
 }
 
-.form-control {
-  width: 100%;
-  padding: 0.75rem;
+.time-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.time-display-value {
+  flex: 1;
+  font-size: 1rem;
+  color: #333;
+}
+
+.time-input-btn {
+  background: white;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #1b515e;
 }
 
-.form-control:focus {
-  outline: none;
+.time-input-btn:hover {
+  background: #1b515e;
+  color: white;
   border-color: #1b515e;
 }
 
-.modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e9ecef;
+.certifications-info {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: #f0f8f5;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+}
+
+.cert-title {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  color: #28a745;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.cert-title i {
+  font-size: 1.1rem;
+}
+
+.cert-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid #28a745;
+  border-radius: 20px;
+  color: #28a745;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+
+.cert-badge:hover {
+  background: #28a745;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.cert-badge i:first-child {
+  font-size: 1rem;
+}
+
+.cert-badge i:last-child {
+  font-size: 0.75rem;
 }
 
 .btn {
@@ -662,25 +1095,36 @@ export default {
   background: #0e2325;
 }
 
+@media (max-width: 1024px) {
+  .places-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .itinerary-container {
     padding-top: 100px;
     overflow-x: hidden;
+    width: 100%;
   }
 
   .itinerary-content {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   .day-section {
     margin-bottom: 2rem !important;
     overflow: visible;
+    max-width: 100%;
   }
 
   .day-header {
     padding: 1rem 1.25rem;
     border-radius: 8px 8px 0 0;
+    max-width: 100%;
   }
 
   .day-title {
@@ -692,17 +1136,23 @@ export default {
   }
 
   .places-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 2rem;
     padding: 1rem;
     padding-right: 0.75rem;
     padding-left: 0.75rem;
     overflow: visible;
+    max-width: 100%;
+  }
+
+  .drag-area {
+    max-width: 100%;
+    overflow: visible;
   }
 
   .drag-handle-wrapper {
-    top: -8px;
-    right: 5px;
+    top: -10px;
+    right: 6px;
   }
 
   .drag-handle {
@@ -713,16 +1163,22 @@ export default {
   .draggable-item {
     width: 100%;
     max-width: 100%;
+    overflow: visible;
+    box-sizing: border-box;
   }
 
   .place-card-wrapper {
     width: 100%;
+    max-width: 100%;
     overflow: visible;
+    box-sizing: border-box;
   }
 
   .time-info {
     padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .time-display {
@@ -734,25 +1190,57 @@ export default {
     font-size: 0.9rem;
   }
 
-  .modal-content {
-    min-width: unset;
-    width: 90%;
-    margin: 1rem;
+  .visited-badge {
+    top: -8px;
+    left: 5px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+
+  .certifications-info {
+    padding: 0.75rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .cert-title {
+    font-size: 0.9rem;
+  }
+
+  .cert-badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    word-wrap: break-word;
+  }
+
+  .actions-menu-list {
+    min-width: 240px !important;
+  }
+
+  .add-place-card {
+    min-height: 160px;
+  }
+
+  .add-place-content i {
+    font-size: 2rem;
   }
 }
 
 @media (max-width: 576px) {
   .itinerary-content {
     padding: 0.5rem !important;
+    max-width: 100%;
   }
 
   .day-section {
     margin-bottom: 1.5rem !important;
+    max-width: 100%;
   }
 
   .day-header {
     padding: 0.75rem 1rem;
     border-radius: 6px 6px 0 0;
+    max-width: 100%;
   }
 
   .day-title {
@@ -765,27 +1253,42 @@ export default {
   }
 
   .places-grid {
+    grid-template-columns: 1fr;
     padding: 0.75rem;
     padding-right: 0.5rem;
     padding-left: 0.5rem;
     gap: 0.75rem;
     border-radius: 0 0 6px 6px;
+    max-width: 100%;
+  }
+
+  .drag-area {
+    max-width: 100%;
   }
 
   .drag-handle-wrapper {
-    right: 3px;
-    top: -6px;
+    right: -10px;
+    top: -10px;
   }
 
   .drag-handle {
-    padding: 4px 6px;
+    padding: 5px 8px;
     font-size: 0.85rem;
+  }
+
+  .draggable-item {
+    max-width: 100%;
+  }
+
+  .place-card-wrapper {
+    max-width: 100%;
   }
 
   .time-info {
     padding: 0.5rem;
     flex-wrap: wrap;
     gap: 0.5rem;
+    max-width: 100%;
   }
 
   .time-display {
@@ -800,11 +1303,46 @@ export default {
     padding: 0.35rem 0.5rem;
     font-size: 0.85rem;
   }
-}
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .places-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .visited-badge {
+    top: -6px;
+    left: 3px;
+    padding: 3px 6px;
+    font-size: 0.75rem;
+  }
+
+  .certifications-info {
+    padding: 0.5rem;
+    max-width: 100%;
+  }
+
+  .cert-title {
+    font-size: 0.85rem;
+  }
+
+  .cert-badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .cert-links {
+    flex-wrap: wrap;
+  }
+
+  .actions-menu-list {
+    min-width: 200px !important;
+  }
+
+  .add-place-card {
+    min-height: 140px;
+  }
+
+  .add-place-content i {
+    font-size: 1.75rem;
+  }
+
+  .add-place-content {
+    font-size: 0.9rem;
   }
 }
 
@@ -818,6 +1356,8 @@ export default {
   .time-info {
     transform: translateZ(0);
     backface-visibility: hidden;
+    max-width: 100%;
+    overflow: visible;
   }
 }
 </style>
