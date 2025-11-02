@@ -1,17 +1,10 @@
 <template>
+  <NavTopFootPrint />
   <div class="carbon-wrapper">
-    <!-- Header con título -->
-    <div class="text-center mb-4">
-      <p class="header-text mb-1">Tu huella de carbono al utilizar nuestra app</p>
-      <p class="header-subtitle mb-0">"Huellas por México"</p>
-    </div>
-
-    <!-- Container responsive: columna en mobile, row en desktop -->
-    <div class="row g-3">
+    <div class="row g-4 g-md-5">
       <!-- Card con gráfica - Izquierda en desktop -->
       <div class="col-12 col-md-6">
         <div class="card shadow-sm carbon-card">
-          <!-- TODO: Agregar loading state -->
           <!-- <div v-if="isLoading" class="card-body text-center py-5">
             <div class="spinner-border" style="color: #ABCD9E;" role="status">
               <span class="visually-hidden">Cargando...</span>
@@ -19,20 +12,15 @@
             <p class="mt-3 text-muted">Cargando datos...</p>
           </div> -->
           
-          <!-- TODO: Agregar error state -->
           <!-- <div v-else-if="error" class="card-body text-center py-5">
             <div class="text-danger mb-3">
-              <svg width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
-              </svg>
             </div>
             <p class="text-muted">{{ error }}</p>
             <button @click="fetchCarbonData" class="btn btn-sm" style="background-color: #ABCD9E; color: #1B515E; border: none;">Reintentar</button>
           </div> -->
           
-          <!-- Contenido principal (mostrar solo si hay datos) -->
-          <!-- TODO: Cambiar v-if por: v-else-if="!isLoading && !error && months.length > 0" -->
+          <!-- Contenido principal -->
+          <!-- Cambiar v-if por: v-else-if="!isLoading && !error && months.length > 0" -->
           <div class="card-body">
             <!-- Selector de mes -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -125,31 +113,28 @@
 
 <script>
 import VueApexCharts from "vue3-apexcharts";
-// TODO: Importar servicio/API para consumir datos del backend
+import NavTopFootPrint from "@/components/NavTopFootPrint.vue";
 // import { getCarbonFootprintData } from '@/services/carbonApi';
 
 export default {
   name: "CarbonFootPrint",
   components: {
-    apexchart: VueApexCharts,
+    apexchart: VueApexCharts, NavTopFootPrint
   },
   data() {
     return {
       currentMonthIndex: 2,
-      // TODO: Reemplazar con datos del backend
-      // Este array debe ser poblado con la respuesta del API
-      // Estructura esperada del backend:
       // [
       //   {
       //     label: "Enero 2025",           // Nombre del mes y año
-      //     data: [3.2, 4.1, 5.5, ...],    // Array con emisiones diarias (últimos 5-7 días)
+      //     data: [3.2, 4.1, 5.5, ...],    // Array con emisiones diarias (últimos 5 días)
       //     categories: ["10", "11", ...], // Array con números de día correspondientes
       //     today: 4.6,                    // Emisiones del día actual en gramos
       //     lowest: 3.2,                   // Emisión más baja del mes en gramos
       //     total: 42.8                    // Total acumulado del mes en gramos
       //   },
-      //   ...
       // ]
+      //Esto debe de borrarse despues dee ser conectado, sonm datos de ejemplo
       months: [
         {
           label: "Enero 2025",
@@ -192,12 +177,10 @@ export default {
           total: 49.5,
         },
       ],
-      // TODO: Agregar estados de carga y error
       // isLoading: false,
       // error: null,
     };
   },
-  // TODO: Agregar lifecycle hook para cargar datos al montar el componente
   // async mounted() {
   //   await this.fetchCarbonData();
   // },
@@ -227,7 +210,6 @@ export default {
               delay: 80,
             },
           },
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         },
         plotOptions: {
           bar: {
@@ -313,7 +295,6 @@ export default {
           theme: "light",
           style: {
             fontSize: "13px",
-            fontFamily: "'Inter', sans-serif",
           },
           y: {
             formatter: (val) => `${val} gr of CO₂`,
@@ -343,27 +324,21 @@ export default {
     },
   },
   methods: {
-    // TODO: Método para obtener datos del backend
     // async fetchCarbonData() {
     //   try {
     //     this.isLoading = true;
     //     this.error = null;
     //     
-    //     // Llamada al API del backend
-    //     // Endpoint sugerido: GET /api/carbon-footprint/monthly
-    //     // Parámetros opcionales: ?userId=xxx&startMonth=2025-01&endMonth=2025-05
     //     const response = await getCarbonFootprintData();
     //     
-    //     // Validar y asignar datos
     //     if (response && Array.isArray(response.data)) {
     //       this.months = response.data;
-    //       // Establecer mes actual por defecto (último mes con datos)
+    //       // Establecer mes actual por defecto
     //       this.currentMonthIndex = this.months.length - 1;
     //     }
     //   } catch (error) {
     //     console.error('Error al cargar datos de huella de carbono:', error);
     //     this.error = 'No se pudieron cargar los datos. Por favor, intenta de nuevo.';
-    //     // Opcional: Mostrar notificación al usuario
     //   } finally {
     //     this.isLoading = false;
     //   }
@@ -384,13 +359,10 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Wrapper principal */
 .carbon-wrapper {
   max-width: 320px;
   margin: 0 auto;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   padding: 2rem 1rem;
   min-height: 100vh;
   display: flex;
@@ -398,12 +370,10 @@ export default {
   justify-content: center;
 }
 
-/* Content wrapper para secciones externas */
 .content-wrapper {
   animation: fadeInUp 0.5s ease-out 0.2s backwards;
 }
 
-/* Estilos de la card */
 .carbon-card {
   border-radius: 24px !important;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
@@ -416,22 +386,6 @@ export default {
               0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
   transform: translateY(-2px);
 }
-
-/* Header styles */
-.header-text {
-  font-size: 13px;
-  color: #1B515E;
-  font-weight: 400;
-  line-height: 1.4;
-}
-
-.header-subtitle {
-  font-size: 13px;
-  color: #1B515E;
-  font-weight: 600;
-}
-
-/* Navigation buttons */
 
 .nav-btn {
   width: 36px;
@@ -507,7 +461,6 @@ export default {
   font-weight: 500;
 }
 
-/* Impact summary section */
 .impact-summary {
   background: linear-gradient(135deg, #F0F8F0 0%, #E8F5E8 100%);
   border-left: 3px solid #ABCD9E;
@@ -543,7 +496,6 @@ export default {
   left: 0.5rem;
 }
 
-/* Tips section */
 .tips-section {
   margin-top: 1rem;
 }
@@ -579,7 +531,6 @@ export default {
   left: 0.5rem;
 }
 
-/* Animations */
 
 @keyframes fadeInUp {
   from {
@@ -608,11 +559,6 @@ export default {
     border-radius: 16px !important;
   }
   
-  .header-text,
-  .header-subtitle {
-    font-size: 12px;
-  }
-  
   .month-title {
     font-size: 15px;
   }
@@ -630,13 +576,8 @@ export default {
 
 @media (min-width: 768px) {
   .carbon-wrapper {
-    max-width: 960px;
+    max-width: 1000px;
     padding: 2rem;
-  }
-  
-  .header-text,
-  .header-subtitle {
-    font-size: 14px;
   }
   
   .impact-text,
@@ -649,22 +590,21 @@ export default {
     font-size: 12px;
   }
   
-  /* Asegurar que las columnas tengan la misma altura */
   .row {
     align-items: stretch;
+  }
+  
+  .row > [class*='col-'] {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 }
 
 @media (min-width: 992px) {
   .carbon-wrapper {
-    max-width: 1100px;
+    max-width: 1200px;
   }
-  
-  .header-text,
-  .header-subtitle {
-    font-size: 15px;
-  }
-  
+
   .impact-text,
   .tips-title {
     font-size: 14px;
@@ -673,6 +613,12 @@ export default {
   .impact-list li,
   .tips-list li {
     font-size: 13px;
+  }
+  
+  /* Mayor separación en pantallas grandes */
+  .row > [class*='col-'] {
+    padding-left: 4rem;
+    padding-right: 4rem;
   }
 }
 </style>
