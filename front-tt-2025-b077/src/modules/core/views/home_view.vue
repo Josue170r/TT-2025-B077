@@ -125,7 +125,7 @@ export default {
       fetchPlacesByIds: 'fetchPlacesByIds',
     }),
     ...mapActions('trips', {
-      fetchFavorites: 'fetchFavorites',
+      fetchFavoriteIds: 'fetchFavoriteIds',
       toggleFavoritePlace: 'toggleFavoritePlace',
     }),
     ...mapMutations('places', {
@@ -161,7 +161,7 @@ export default {
     },
     async loadFavorites() {
       try {
-        await this.fetchFavorites()
+        await this.fetchFavoriteIds()
       } catch (error) {
         console.error('Error cargando favoritos:', error)
       }
