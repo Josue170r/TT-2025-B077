@@ -136,7 +136,6 @@ export default {
     gap: 0.2rem;
   }
 }
-
 @media (min-width: 1200px) {
   .navbar-title {
     font-size: 1.15rem;
