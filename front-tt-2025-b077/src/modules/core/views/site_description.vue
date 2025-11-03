@@ -145,7 +145,7 @@
             </div>
 
             <div class="text-center">
-              <button class="btn map-btn rounded-pill px-4 py-2 border-0">
+              <button @click="goToMap" class="btn map-btn rounded-pill px-4 py-2 border-0">
                 <i class="fa-solid fa-map-pin me-3"></i>
                 Ver en el mapa
               </button>
@@ -452,6 +452,20 @@ export default {
     },
     goBack() {
       this.$router.push({ name: 'home' })
+    },
+    goToMap() {
+      const place = this.selectedPlaceDetails
+      this.$router.push({
+        name: 'interactive_map',
+        query: {
+          name: place.name,
+          lat: place.lat,
+          lng: place.lng,
+          placeId: place.placeId,
+          address: place.formattedAddress,
+          rating: place.rating,
+        },
+      })
     },
     openReviewModal(review) {
       this.selectedReview = review

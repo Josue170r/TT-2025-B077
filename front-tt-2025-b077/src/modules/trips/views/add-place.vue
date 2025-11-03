@@ -71,7 +71,6 @@
       </div>
     </div>
 
-    <!-- MODAL PRINCIPAL DE CONFIRMACIÓN -->
     <div v-if="showConfirmModal" class="modal-overlay" @click="closeConfirmModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
@@ -123,7 +122,6 @@
       </div>
     </div>
 
-    <!-- MODAL PARA SELECCIONAR HORA -->
     <v-dialog v-model="showTimePickerModal" max-width="400px">
       <v-card>
         <v-card-title class="modal-title">
