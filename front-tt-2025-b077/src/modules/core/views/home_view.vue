@@ -13,7 +13,7 @@
         </div>
         <div class="d-flex flex-column align-items-center map-section">
           <i class="fa-solid fa-location-dot map-icon"></i>
-          <span class="map-text">Mapa</span>
+          <button class="map-text" @click="goToMap()">Mapa</button>
         </div>
       </div>
 
@@ -156,7 +156,9 @@ export default {
         this.userLocation = { lat: 19.4326, lng: -99.1332 }
       }
     },
-
+    goToMap() {
+      this.$router.push({ name: 'interactive_map' })
+    },
     async loadFavorites() {
       try {
         await this.fetchFavorites()
