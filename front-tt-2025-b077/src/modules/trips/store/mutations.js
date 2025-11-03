@@ -1,6 +1,10 @@
 export default {
   setFavoritesIds(state, data) {
-    state.favoriteIds = (data?.content ?? []).map((fav) => fav?.place?.id).filter(Boolean)
+    state.favoriteIds = data
+  },
+
+  setFavoritePlaces(state, places) {
+    state.favoritePlaces = places
   },
 
   toggleFavorite(state, placeId) {
