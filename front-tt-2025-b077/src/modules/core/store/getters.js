@@ -6,6 +6,10 @@ export function placesIds(state) {
   return state.placeIds
 }
 
+export function currentFilterIndex(state) {
+  return state.currentFilterIndex
+}
+
 export function pagination(state) {
   return state.pagination
 }

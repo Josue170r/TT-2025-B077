@@ -329,6 +329,10 @@ public class ItineraryServiceImpl implements ItineraryService {
         Place newPlace = placeRepository.findById(dto.getNewPlaceId())
                 .orElseThrow(() -> new PlaceNotFoundException("Nuevo lugar no encontrado"));
 
+        if (itineraryPlaceRepository.existsByPlacePlaceIdAndItineraryDayId(newPlace.getPlaceId(), day.getId())) {
+            throw new RuntimeException("El lugar ya se encuentra en el itinerario");
+        }
+
         List<ItineraryPlace> placesByDay = itineraryPlaceRepository.findByItineraryDayId(dayId);
         if (placesByDay.size() >= 6) {
             throw new RuntimeException("El límite de lugares por día es 6");

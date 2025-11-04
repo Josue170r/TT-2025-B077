@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/favorites")
 public class FavoritesController {
@@ -30,6 +32,14 @@ public class FavoritesController {
                     direction = Sort.Direction.DESC
             ) Pageable pageable) {
         return favoritesService.getAllByUserId(authentication.getName(), pageable);
+    }
+
+    @RequestMapping(path = "/ids", method = RequestMethod.GET)
+    public ResponseEntity<ApiResponse<List<Long>>> getFavoritesIdsByUser(Authentication authentication) {
+        List<Long> ids = favoritesService.getAllFavoritesIds(authentication.getName());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.of(HttpStatus.OK, null, ids));
     }
 
     @RequestMapping(method = RequestMethod.POST)

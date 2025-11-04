@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="main-container">
     <div class="header-container">
@@ -255,7 +254,6 @@ export default {
     try {
       await this.getUserLocation()
       await this.fetchCertifications()
-      await this.fetchFavorites()
 
       if (this.newItinerary.selectedState) {
         await this.fetchSettlements(this.newItinerary.selectedState)
@@ -275,7 +273,6 @@ export default {
       fetchCertifications: 'fetchCertifications',
       fetchSettlements: 'fetchSettlements',
       fetchHotels: 'fetchHotels',
-      fetchFavorites: 'fetchFavorites',
       toggleFavoritePlace: 'toggleFavoritePlace',
     }),
     ...mapActions('places', {

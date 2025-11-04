@@ -3,10 +3,12 @@ export default function () {
     places: [],
     placeIds: [],
     favoriteIds: [],
+    favoritePlaces: [],
     states: [],
     certifications: [],
     settlements: [],
     hotels: [],
+    hotelIds: [],
     newItinerary: {
       tripTitle: '',
       selectedState: '',

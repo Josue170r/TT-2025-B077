@@ -19,7 +19,7 @@
             >
             <div class="separator"></div>
           </li>
-          <li @click="goTo('huella')">
+          <li @click="goTo('carbonfootprint ')">
             <span class="menu-text d-flex align-items-center">
               <img src="/huella.png" alt="icono huella" class="me-2" width="23" height="23" />
               Huella de carbono por uso de la app
