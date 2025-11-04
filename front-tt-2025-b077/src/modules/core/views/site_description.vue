@@ -144,11 +144,12 @@
               </div>
             </div>
 
-            <div class="text-center">
+            <div class="text-center d-flex justify-content-center">
               <button @click="goToMap" class="btn map-btn rounded-pill px-4 py-2 border-0">
                 <i class="fa-solid fa-map-pin me-3"></i>
                 Ver en el mapa
               </button>
+              <AddToItineraryModal :place="selectedPlaceDetails" @place-added="handlePlaceAdded" />
             </div>
           </div>
         </div>
@@ -351,12 +352,14 @@ import { getErrorDetails } from '@/utils/utils'
 import { mapActions, mapState, mapGetters } from 'vuex'
 import ResilientAvatar from '@/components/resilient-avatar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
+import AddToItineraryModal from '@/components/addtoitinerarymodal.vue'
 
 export default {
   name: 'PlaceDetail',
   components: {
     ResilientAvatar,
     hamburgermenu,
+    AddToItineraryModal,
   },
   data() {
     return {
@@ -381,7 +384,7 @@ export default {
     ...mapState('places', {
       selectedPlaceDetails: 'selectedPlaceDetails',
     }),
-    ...mapGetters('trips', ['favoriteIds']),
+    ...mapGetters('trips', ['favoriteIds', 'userItineraries']),
     placeName() {
       return this.selectedPlaceDetails?.name || 'Cargando...'
     },
@@ -427,6 +430,7 @@ export default {
   async mounted() {
     try {
       await this.fetchPlaceDetails()
+      await this.fetchUserItineraries()
       await this.loadWeatherData()
     } catch (error) {
       console.error('Error cargando detalles del lugar:', error)
@@ -440,6 +444,7 @@ export default {
     }),
     ...mapActions('trips', {
       toggleFavoritePlace: 'toggleFavoritePlace',
+      fetchUserItineraries: 'fetchUserItineraries',
     }),
     async toggleFavorite() {
       if (!this.selectedPlaceDetails?.id) return
@@ -581,6 +586,9 @@ export default {
     },
     handleNavigation(route) {
       this.$router.push({ name: route })
+    },
+    handlePlaceAdded() {
+      console.log('Lugar agregado exitosamente')
     },
   },
 }

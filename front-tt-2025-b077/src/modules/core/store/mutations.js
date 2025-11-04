@@ -5,6 +5,9 @@ export default {
   setPlaceIds(state, ids) {
     state.placeIds = ids
   },
+  setCurrentFilterIndex(state, index) {
+    state.currentFilterIndex = index
+  },
   setPagination(state, paginationData) {
     state.pagination = {
       pageNumber: paginationData.pageable.pageNumber,

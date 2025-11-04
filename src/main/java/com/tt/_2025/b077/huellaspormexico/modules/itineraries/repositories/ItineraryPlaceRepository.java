@@ -10,5 +10,6 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlace, 
     List<ItineraryPlace> findByItineraryDayIdOrderByVisitOrder(Long itineraryDayId);
     List<ItineraryPlace> findByItineraryDayId(Long itineraryDayId);
     ItineraryPlace findFirstByItineraryDayIdOrderByVisitOrderDesc(Long itineraryDayId);
+    Boolean existsByPlacePlaceIdAndItineraryDayId(String placeId, Long itineraryDay_id);
     Optional<ItineraryPlace> findByIdAndItineraryDayId(Long placeId, Long dayId);
 }

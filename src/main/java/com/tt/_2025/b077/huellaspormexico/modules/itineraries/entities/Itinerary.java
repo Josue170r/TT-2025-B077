@@ -1,6 +1,7 @@
 package com.tt._2025.b077.huellaspormexico.modules.itineraries.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tt._2025.b077.huellaspormexico.modules.catalogs.entities.SettlementCatalog;
 import com.tt._2025.b077.huellaspormexico.modules.hotels.entities.CertificatedHotel;
 import com.tt._2025.b077.huellaspormexico.modules.places.entities.Place;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = false)
 @SuperBuilder
@@ -59,10 +61,11 @@ public class Itinerary extends BaseModel {
 
         List<BigDecimal> allIndexes = itineraryDays.stream()
                 .flatMap(day -> day.getPlaces().stream())
-                .map(itineraryPlace -> itineraryPlace
-                        .getPostalCode()
-                        .getSettlement()
-                        .getSustainabilityIndex())
+                .map(itineraryPlace -> Optional.ofNullable(itineraryPlace)
+                        .flatMap(place -> Optional.ofNullable(place.getPostalCode()))
+                        .flatMap(postalCode -> Optional.ofNullable(postalCode.getSettlement()))
+                        .map(SettlementCatalog::getSustainabilityIndex)
+                        .orElse(null))
                 .filter(Objects::nonNull)
                 .toList();
 

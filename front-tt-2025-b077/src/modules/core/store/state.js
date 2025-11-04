@@ -1,6 +1,7 @@
 export default {
   places: [],
   placeIds: [],
+  currentFilterIndex: 0,
   pagination: {
     pageNumber: 0,
     pageSize: 10,

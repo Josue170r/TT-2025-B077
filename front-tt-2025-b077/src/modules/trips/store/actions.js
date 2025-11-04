@@ -1,13 +1,38 @@
 import axios from 'axios'
 
-export async function fetchFavorites({ commit }) {
+export async function fetchFavoriteIds({ commit }) {
   return new Promise((resolve, reject) => {
     axios
-      .get('/favorites')
+      .get('/favorites/ids')
       .then((response) => {
         const data = response.data
-        commit('setFavoritesIds', data)
+        commit('setFavoritesIds', data.data)
         resolve()
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function fetchFavorites({ commit }, { page = 0, size = 10 } = {}) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Cargando favoritos',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/favorites?page=${page}&size=${size}`)
+      .then((response) => {
+        const data = response.data
+        resolve(data)
       })
       .catch((error) => {
         reject(error)
@@ -211,6 +236,31 @@ export async function fetchItineraryById({ commit }, itineraryId) {
       .then((response) => {
         const itinerary = response.data.data
         commit('setCurrentItinerary', itinerary)
+        resolve(itinerary)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function fetchItineraryDays({ commit }, itineraryId) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Cargando días del itinerario',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get(`/itineraries/${itineraryId}/days`)
+      .then((response) => {
+        const itinerary = response.data.data
         resolve(itinerary)
       })
       .catch((error) => {
