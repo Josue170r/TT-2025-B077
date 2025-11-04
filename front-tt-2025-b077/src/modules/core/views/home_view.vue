@@ -1,5 +1,5 @@
 <template>
-  <div class="pb-16">
+  <div>
     <nav
       id="mainNav"
       class="d-flex flex-column align-items-center mt-0 position-fixed w-100 bg-white shadow-sm top-0 start-0"
@@ -17,10 +17,28 @@
         </div>
       </div>
 
-      <topnavbar @filter-change="handleFilterChange" />
+      <div class="filters-container w-100 px-4 py-3">
+        <v-slide-group v-model="currentFilterIndex" class="filters-slide" show-arrows>
+          <v-slide-group-item
+            v-for="(filter, idx) in filters"
+            :key="filter.id"
+            v-slot="{ isSelected }"
+          >
+            <v-chip
+              :class="{ 'filter-chip-active': isSelected, 'filter-chip': !isSelected }"
+              @click="selectFilter(filter, idx)"
+              label
+              size="small"
+            >
+              <i :class="filter.icon" class="me-2"></i>
+              {{ filter.label }}
+            </v-chip>
+          </v-slide-group-item>
+        </v-slide-group>
+      </div>
     </nav>
 
-    <div class="p-4 content-section">
+    <div class="px-6 pt-6 content-section">
       <div class="d-flex align-items-center justify-content-between mb-4">
         <h5 class="mb-0 text-dark">Lugares Recomendados</h5>
         <v-btn
@@ -59,7 +77,7 @@
         v-model="currentPage"
         :length="pagination.totalPages"
         @update:modelValue="handlePageChange"
-        class="mb-5 d-flex justify-center"
+        class="mb-3 d-flex justify-center"
       ></v-pagination>
 
       <div v-if="places.length === 0 && !error" class="text-center py-4">
@@ -81,7 +99,6 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
 import { getErrorDetails } from '@/utils/utils'
 import BottomNavbar from '@/components/bottomnavbar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
-import topnavbar from '@/components/topnavbar.vue'
 import Inputexplore from '@/components/inputexplore.vue'
 import PlaceCard from '@/components/placecard.vue'
 
@@ -89,23 +106,116 @@ export default {
   components: {
     BottomNavbar,
     hamburgermenu,
-    topnavbar,
     Inputexplore,
     PlaceCard,
   },
   data() {
     return {
+      filters: [
+        {
+          id: 'best',
+          label: 'Mejores',
+          icon: 'fa-solid fa-star',
+          types: ['tourist_attraction'],
+          isPreferences: false,
+        },
+        {
+          id: 'preferences',
+          label: 'Preferencias',
+          icon: 'fa-solid fa-heart',
+          types: [],
+          isPreferences: true,
+        },
+        {
+          id: 'restaurant',
+          label: 'Restaurantes',
+          icon: 'fa-solid fa-utensils',
+          types: ['restaurant'],
+          isPreferences: false,
+        },
+        {
+          id: 'hotel',
+          label: 'Hoteles',
+          icon: 'fa-solid fa-hotel',
+          types: ['lodging'],
+          isPreferences: false,
+        },
+        {
+          id: 'park',
+          label: 'Parques',
+          icon: 'fa-solid fa-tree',
+          types: ['park'],
+          isPreferences: false,
+        },
+        {
+          id: 'museum',
+          label: 'Museos',
+          icon: 'fa-solid fa-building-columns',
+          types: ['museum'],
+          isPreferences: false,
+        },
+        {
+          id: 'library',
+          label: 'Librerías',
+          icon: 'fa-solid fa-book',
+          types: ['library'],
+          isPreferences: false,
+        },
+        {
+          id: 'cafe',
+          label: 'Cafés',
+          icon: 'fa-solid fa-coffee',
+          types: ['cafe'],
+          isPreferences: false,
+        },
+        {
+          id: 'shopping',
+          label: 'Compras',
+          icon: 'fa-solid fa-shopping-bag',
+          types: ['shopping_mall'],
+          isPreferences: false,
+        },
+        {
+          id: 'entertainment',
+          label: 'Entretenimiento',
+          icon: 'fa-solid fa-gamepad',
+          types: ['amusement_park', 'entertainment'],
+          isPreferences: false,
+        },
+        {
+          id: 'gallery',
+          label: 'Galerías',
+          icon: 'fa-solid fa-image',
+          types: ['art_gallery'],
+          isPreferences: false,
+        },
+        {
+          id: 'spa',
+          label: 'Spa & Bienestar',
+          icon: 'fa-solid fa-spa',
+          types: ['spa', 'gym'],
+          isPreferences: false,
+        },
+      ],
       googleApiKey: '',
       error: null,
       userLocation: null,
-      currentFilter: 'recommended',
       forceRefresh: false,
       logoUrl: '/logo-letras.png',
     }
   },
   computed: {
-    ...mapGetters('places', ['places', 'pagination', 'placesIds', 'currentPage']),
+    ...mapGetters('places', [
+      'places',
+      'pagination',
+      'placesIds',
+      'currentPage',
+      'currentFilterIndex',
+    ]),
     ...mapGetters('trips', ['favoriteIds']),
+    currentFilter() {
+      return this.filters[this.currentFilterIndex]
+    },
   },
   async created() {
     await this.getUserLocation()
@@ -133,6 +243,7 @@ export default {
       setPlaceIds: 'setPlaceIds',
       setPlaces: 'setPlaces',
       setPagination: 'setPagination',
+      setCurrentFilterIndex: 'setCurrentFilterIndex',
     }),
     async getUserLocation() {
       try {
@@ -211,11 +322,10 @@ export default {
       this.error = null
 
       try {
-        if (this.currentFilter === 'preferences') {
+        if (this.currentFilter.isPreferences) {
           await this.loadNearPreferencePlaces()
         } else {
-          const types = this.getTypesForFilter(this.currentFilter)
-          await this.loadNearPlaces(types)
+          await this.loadNearPlaces(this.currentFilter.types)
         }
       } catch (e) {
         console.error(e)
@@ -229,16 +339,9 @@ export default {
       this.forceRefresh = false
     },
 
-    getTypesForFilter(filter) {
-      const typeMap = {
-        recommended: ['restaurant', 'tourist_attraction', 'shopping_mall', 'park'],
-        restaurant: ['restaurant'],
-        hotel: ['lodging'],
-        park: ['park'],
-        shopping: ['shopping_mall'],
-        cafe: ['cafe'],
-      }
-      return typeMap[filter] || typeMap.recommended
+    async selectFilter(filter, idx) {
+      this.setCurrentFilterIndex(idx)
+      await this.refreshPlaces()
     },
 
     async handlePageChange(page) {
@@ -264,11 +367,6 @@ export default {
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
       this.$router.push({ name: 'site_description' })
-    },
-
-    async handleFilterChange(filter) {
-      this.currentFilter = filter
-      await this.refreshPlaces()
     },
 
     handleSearchError(error) {
@@ -324,9 +422,11 @@ export default {
 .map-section {
   color: #1b515e;
 }
+
 .map-icon {
   font-size: 1.2rem;
 }
+
 .map-text {
   font-size: 14px;
 }
@@ -351,6 +451,7 @@ export default {
 .btn-refresh:hover {
   background: rgba(27, 81, 94, 0.06) !important;
 }
+
 .btn-refresh .v-icon {
   color: #1b515e !important;
 }
@@ -359,28 +460,16 @@ export default {
   gap: 0;
 }
 
-.map-section {
-  color: #1b515e;
-}
-
-.map-icon {
-  font-size: 1.2rem;
-}
-
-.map-text {
-  font-size: 14px;
-}
-
 .input-container :deep(.form-control):focus::after {
   color: #1b515e;
 }
 
 .content-section {
-  height: calc(100vh - 200px);
+  min-height: calc(100vh - var(--nav-height, 280px));
   overflow-y: auto;
+  padding-bottom: 100px;
 }
 
-/* Estilos para la grilla vertical de lugares */
 .places-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -391,7 +480,7 @@ export default {
 hr {
   margin-top: 0;
   height: 2px;
-  background-color: #35aa06;
+  background-color: #1b515e;
   border-color: #b0d4a1;
 }
 
@@ -399,11 +488,54 @@ hr {
   z-index: 1000;
 }
 
-/* Responsive Design */
+.filters-container {
+  border-top: 1px solid #e9ecef;
+  background: white;
+}
+
+.filters-slide {
+  width: 100%;
+}
+
+.filter-chip {
+  background: transparent !important;
+  border: none !important;
+  color: #999 !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent !important;
+  padding: 0.5rem 0.7rem !important;
+  margin: 0 3px !important;
+  font-weight: 400;
+  font-size: 0.85rem !important;
+  height: auto !important;
+}
+
+.filter-chip:hover {
+  padding: 1rem;
+  color: #1b515e !important;
+  background: transparent !important;
+}
+
+.filter-chip-active {
+  padding: 0.25rem 0.5rem !important;
+  background: transparent !important;
+  color: #abcd9e !important;
+  font-weight: 400;
+  font-size: 0.85rem !important;
+  height: auto !important;
+  border-bottom: 2px solid #abcd9e !important;
+  margin: 0 8px;
+}
+
 @media (max-width: 480px) {
   .places-grid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 0.75rem;
+  }
+
+  .content-section {
+    height: calc(100vh - 320px);
   }
 }
 
@@ -472,6 +604,7 @@ hr {
     gap: 1.5rem;
   }
 }
+
 .content-section {
   margin-top: var(--nav-height);
 }
