@@ -99,10 +99,11 @@ export default {
       if (!url || !url.includes('googleusercontent.com')) {
         return url
       }
-
-      // Usar proxy del servidor para evitar rate limiting
       const encodedUrl = encodeURIComponent(url)
-      return `/api/proxy-avatar?url=${encodedUrl}`
+      const baseURL = import.meta.env.DEV
+        ? 'http://127.0.0.1:8080/api/'
+        : import.meta.env.VITE_API_BACK
+      return `${baseURL}place/proxy-image?url=${encodedUrl}`
     },
 
     async handleError() {
