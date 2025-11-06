@@ -1,9 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <NavTopIItinerary />
-
-  <div style="padding-top: 55px"></div>
-
+  <div style="padding-top: 62px"></div>
   <div v-if="userItineraries.length > 0" class="cards-container">
     <div v-for="itinerary in userItineraries" :key="itinerary.id" class="itinerary-wrapper">
       <v-card class="itinerary-card" elevation="2">
@@ -67,7 +65,7 @@
           Ver itinerario
           <i class="fa-solid fa-arrow-right"></i>
         </button>
-        <button class="btn-delete" @click="deleteItinerary(itinerary.id)">
+        <button class="btn-delete" @click="openDeleteDialog(itinerary.id)">
           <i class="fa-solid fa-trash"></i>
           Eliminar itinerario
         </button>
@@ -90,12 +88,26 @@
   </div>
 
   <v-pagination
-    v-if="pagination.totalPages"
+    v-if="userItineraries.length > 0"
     v-model="currentPage"
     :length="pagination.totalPages"
     @update:modelValue="handlePageChange"
     class="d-flex justify-center pagination-container"
   ></v-pagination>
+
+  <v-dialog v-model="deleteDialog" max-width="400" persistent>
+    <v-card class="custom-dialog">
+      <v-card-title class="dialog-title"> ¿Eliminar itinerario? </v-card-title>
+      <v-card-text class="dialog-text">
+        ¿Estás seguro de que deseas eliminar este itinerario? Esta acción no se puede deshacer.
+      </v-card-text>
+      <v-card-actions class="dialog-actions">
+        <v-spacer></v-spacer>
+        <v-btn text @click="closeDeleteDialog">Cancelar</v-btn>
+        <v-btn color="error" dark @click="confirmDelete">Eliminar</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
   <BottomNavbar />
 </template>
@@ -107,15 +119,18 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
 
 export default {
   components: { BottomNavbar, NavTopIItinerary },
-
+  data() {
+    return {
+      deleteDialog: false,
+      itineraryToDelete: null,
+    }
+  },
   computed: {
     ...mapGetters('trips', ['userItineraries', 'pagination', 'currentPage']),
   },
-
   mounted() {
     this.fetchItineraries()
   },
-
   methods: {
     ...mapActions('trips', {
       fetchUserItineraries: 'fetchUserItineraries',
@@ -134,7 +149,6 @@ export default {
       }
     },
     async handlePageChange(page) {
-      console.log(page)
       await this.fetchUserItineraries({
         page: page - 1,
         size: this.pagination.pageSize,
@@ -172,10 +186,21 @@ export default {
       })
     },
 
-    deleteItinerary(itineraryId) {
-      this.deleteItineraryAction(itineraryId).then((response) => {
+    openDeleteDialog(itineraryId) {
+      this.itineraryToDelete = itineraryId
+      this.deleteDialog = true
+    },
+
+    closeDeleteDialog() {
+      this.deleteDialog = false
+      this.itineraryToDelete = null
+    },
+
+    confirmDelete() {
+      this.deleteItineraryAction(this.itineraryToDelete).then((response) => {
         this.$alert.success(response.message)
         this.fetchItineraries()
+        this.closeDeleteDialog()
       })
     },
 
@@ -195,7 +220,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
-  padding: 30px 40px;
+  padding: 20px 20px 20px 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -428,7 +453,63 @@ export default {
   font-size: 1.2rem;
 }
 
-/* Responsive */
+.custom-dialog {
+  border-radius: 12px;
+}
+
+.dialog-title {
+  color: #1a3c40;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  padding: 20px !important;
+}
+
+.dialog-text {
+  color: #555;
+  font-size: 0.95rem;
+  padding: 0 20px 20px 20px !important;
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  padding: 16px 20px !important;
+  gap: 10px;
+}
+
+.btn-dialog-cancel {
+  background-color: #f5f5f5;
+  color: #1a3c40;
+  border: 2px solid #1a3c40;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-dialog-cancel:hover {
+  background-color: #1a3c40;
+  color: #f5f5f5;
+}
+
+.btn-dialog-confirm {
+  background-color: #f44336;
+  color: white;
+  border: 2px solid #f44336;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-dialog-confirm:hover {
+  background-color: #d32f2f;
+  border-color: #d32f2f;
+}
+
 @media (max-width: 1024px) {
   .cards-container {
     grid-template-columns: repeat(2, 1fr);
