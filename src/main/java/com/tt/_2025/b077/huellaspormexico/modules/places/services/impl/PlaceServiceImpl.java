@@ -69,7 +69,6 @@ public class PlaceServiceImpl implements PlaceService {
                 .orElseThrow(() -> new PlaceNotFoundException("No existe el lugar con id " + id));
     }
 
-
     @Override
     public List<Long> getNearBySearchPlaces(NearBySearchRequest request) {
         return getLongs(request);
@@ -97,6 +96,11 @@ public class PlaceServiceImpl implements PlaceService {
     @Transactional(readOnly = true)
     public Page<Place> getAllByIdList(List<Long> ids, Pageable pageable) {
         return placeRepository.findByIdIn(ids, pageable);
+    }
+
+    @Override
+    public byte[] getGooglePhoto(String photoReference, int width) {
+        return placeApiService.fetchGooglePhoto(photoReference, width);
     }
 
     @Override
