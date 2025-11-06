@@ -10,7 +10,7 @@
 
     <v-dialog v-model="addToItineraryModalOpen" max-width="700px">
       <v-card>
-        <v-card-title v-if="userItineraries.length === 0" class="d-flex align-items-center pa-4">
+        <v-card-title v-if="userItineraries.length === 0" class="d-flex align-items-center pa-2">
           <i
             class="fa-regular fa-calendar-xmark me-2"
             style="color: #1b515e; font-size: 1.5rem"
@@ -103,6 +103,14 @@
             </div>
           </v-card-text>
 
+          <v-pagination
+            v-if="userItineraries.length > 0 && pagination.totalPages > 0"
+            v-model="currentPage"
+            :length="pagination.totalPages"
+            @update:modelValue="handlePageChange"
+            class="mb-3 d-flex justify-center"
+          ></v-pagination>
+
           <v-card-actions class="pa-4">
             <v-spacer></v-spacer>
             <v-btn variant="text" @click="addToItineraryModalOpen = false">Cancelar</v-btn>
@@ -113,11 +121,11 @@
 
     <v-dialog v-model="selectDayModalOpen" max-width="600px">
       <v-card>
-        <v-card-title class="pa-4">
-          <h6 class="mb-0">Seleccionar día</h6>
+        <v-card-title>
+          <h6 class="mb-0 mt-2">Seleccionar día</h6>
         </v-card-title>
 
-        <v-card-text class="pa-4">
+        <v-card-text>
           <v-skeleton-loader v-if="loadingDays" type="list-item@5" />
 
           <div v-else>
@@ -160,7 +168,7 @@
           <h6 class="mb-0">Confirmar agregación de lugar</h6>
         </v-card-title>
 
-        <v-card-text class="pa-4">
+        <v-card-text class="pa-2">
           <div class="info-section mb-4">
             <p class="fw-bold mb-2" style="color: #1b515e">Itinerario:</p>
             <p class="mb-1">{{ selectedItinerary?.tripTitle }}</p>
@@ -223,7 +231,7 @@
           Seleccionar {{ timePickerType === 'arrival' ? 'hora de llegada' : 'hora de salida' }}
         </v-card-title>
 
-        <v-card-text class="modal-body-vuetify pa-4">
+        <v-card-text class="modal-picker-body">
           <v-time-picker v-model="tempTime"></v-time-picker>
         </v-card-text>
 
@@ -273,7 +281,7 @@ export default {
     ...mapState('places', {
       selectedPlaceDetails: 'selectedPlaceDetails',
     }),
-    ...mapGetters('trips', ['userItineraries']),
+    ...mapGetters('trips', ['userItineraries', 'pagination', 'currentPage']),
   },
   methods: {
     ...mapActions('trips', {
@@ -317,6 +325,15 @@ export default {
         alignItems: 'center',
         justifyContent: 'center',
       }
+    },
+    async handlePageChange(page) {
+      await this.fetchUserItineraries({
+        page: page - 1,
+        size: this.pagination.pageSize,
+      }).then((response) => {
+        this.setUserItineraries(response.content)
+        this.setPagination(response)
+      })
     },
     async selectItinerary(itinerary) {
       this.selectedItinerary = itinerary
@@ -412,7 +429,7 @@ export default {
 .trip-name-modal {
   color: #1b515e;
   font-size: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid #e9ecef;
 }
@@ -497,6 +514,52 @@ export default {
 .itinerary-card {
   transition: all 0.3s ease;
   border: 2px solid #e9ecef;
+}
+
+.modal-picker-body {
+  padding: 0.2rem 0.5rem !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-picker-body :deep(.v-picker__header) {
+  max-width: 100px !important;
+  max-height: 90px;
+  margin: 0 auto;
+}
+
+.modal-picker-body :deep(.v-time-picker-controls__time) {
+  max-width: 150px !important;
+  max-height: 90px;
+  margin: 0 auto;
+}
+
+.modal-picker-body :deep(.v-theme--light .v-btn--size-default) {
+  width: 90px !important;
+  height: 80px !important;
+}
+
+.modal-picker-body :deep(.v-time-picker-controls__ampm) {
+  width: 10px !important;
+  height: 10px !important;
+  margin-bottom: 100px;
+}
+
+.modal-picker-body :deep(.v-picker__body) {
+  margin-left: 35px;
+  padding: 2px !important;
+  max-height: 250px;
+  max-width: 250px;
+}
+
+.modal-picker-body :deep(.v-btn__content) {
+  max-height: 250px;
+  max-width: 250px;
+}
+
+.modal-picker-body :deep(.v-time-picker) {
+  align-items: center;
 }
 
 .itinerary-card:hover {

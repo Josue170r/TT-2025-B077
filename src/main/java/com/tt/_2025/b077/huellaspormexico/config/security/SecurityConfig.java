@@ -61,7 +61,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/profile-pictures/**"
+                                "/profile-pictures/**",
+                                "/api/place/photo",
+                                "/api/place/proxy-image"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()

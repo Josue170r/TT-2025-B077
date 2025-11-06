@@ -160,6 +160,15 @@ export default {
     }
   },
 
+  deleteItinerayById(state, { itineraryId }) {
+    const index = state.userItineraries.findIndex((itinerary) => {
+      return itinerary.id == itineraryId
+    })
+    if (index != -1) {
+      state.userItineraries.splice(index, 1)
+    }
+  },
+
   clearCurrentItinerary(state) {
     state.currentItinerary = null
   },
