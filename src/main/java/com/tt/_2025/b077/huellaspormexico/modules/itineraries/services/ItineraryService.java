@@ -3,13 +3,15 @@ package com.tt._2025.b077.huellaspormexico.modules.itineraries.services;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.Itinerary;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryPlace;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface ItineraryService {
     Itinerary createCompleteItinerary(CreateItineraryDTO dto, String username);
     Itinerary getItineraryById(Long id);
-    List<ItinerarySummaryDTO> getUserItineraries(String username);
+    Page<ItinerarySummaryDTO> getUserItineraries(String username, Pageable pageable);
     ItineraryPlace updatePlaceTime(Long itineraryId, Long dayId, Long placeId, UpdatePlaceTimeDTO dto);
     List<ItineraryDaysResponseDto> getItineraryDays(Long itineraryId);
     void addPlaceToDay(Long itineraryId, Long dayId, AddNewPlaceDTO dto);

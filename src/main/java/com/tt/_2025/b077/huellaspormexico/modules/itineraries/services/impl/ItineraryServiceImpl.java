@@ -23,6 +23,8 @@ import com.tt._2025.b077.huellaspormexico.modules.places.exceptions.PlaceNotFoun
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRepository;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -148,15 +150,12 @@ public class ItineraryServiceImpl implements ItineraryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ItinerarySummaryDTO> getUserItineraries(String username) {
+    public Page<ItinerarySummaryDTO> getUserItineraries(String username, Pageable pageable) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        List<Itinerary> itineraries = itineraryRepository.findByUserId(user.getId());
-
-        return itineraries.stream()
-                .map(this::mapToSummaryDTO)
-                .collect(Collectors.toList());
+        Page<Itinerary> itinerariesPage = itineraryRepository.findByUserId(user.getId(), pageable);
+        return itinerariesPage.map(this::mapToSummaryDTO);
     }
 
     private ItinerarySummaryDTO mapToSummaryDTO(Itinerary itinerary) {
