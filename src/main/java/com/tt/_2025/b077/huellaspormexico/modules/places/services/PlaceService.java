@@ -13,6 +13,7 @@ public interface PlaceService {
     List<Long> getNearBySearchPlaces (NearBySearchRequest request);
     List<Long> getNearByPreferences(String username, NearByPreferencesRequest request);
     Page<Place> getAllByIdList(List<Long> ids, Pageable pageable);
+    byte[] getGooglePhoto(String photoReference, int width);
     List<SearchByNameResponse> searchPlacesByName(SearchByNameRequest request);
     List<SearchByNameResponse> searchPlacesByText(TextSearchRequest request);
 }

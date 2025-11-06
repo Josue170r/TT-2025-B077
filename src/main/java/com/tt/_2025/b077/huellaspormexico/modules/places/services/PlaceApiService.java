@@ -14,4 +14,5 @@ public interface PlaceApiService {
     List<String> fetchNearBySearchPlaces(NearBySearchRequest request);
     List<SearchByNameResponse> searchPlacesByName(SearchByNameRequest request);
     List<SearchByNameResponse> searchPlacesByText(TextSearchRequest request);
+    byte[] fetchGooglePhoto(String photoReference, int with);
 }
