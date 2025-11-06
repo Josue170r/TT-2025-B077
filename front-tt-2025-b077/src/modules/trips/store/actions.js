@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { acoApi } from '@/plugins/axios'
 
 export async function fetchFavoriteIds({ commit }) {
   return new Promise((resolve, reject) => {
@@ -195,7 +196,32 @@ export async function searchHotelsByText({ commit }, { query, latitude, longitud
   })
 }
 
-export async function fetchUserItineraries({ commit }) {
+export async function generateItinerary({ commit, state }) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Generando itinerario sostenible',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    acoApi
+      .post('/itinerary/generate', state.newItinerary)
+      .then((response) => {
+        commit('clearNewItinerary')
+        resolve(response.data)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function fetchUserItineraries({ commit }, { page = 0, size = 7 } = {}) {
   commit(
     'setLoading',
     {
@@ -206,11 +232,11 @@ export async function fetchUserItineraries({ commit }) {
   )
   return new Promise((resolve, reject) => {
     axios
-      .get('/itineraries/user')
+      .get(`/itineraries/user?page=${page}&size=${size}`)
       .then((response) => {
-        const itineraries = response.data.data
-        commit('setUserItineraries', itineraries)
-        resolve(itineraries)
+        const data = response.data
+        commit('setPagination', data)
+        commit('setUserItineraries', data.content)
       })
       .catch((error) => {
         reject(error)
@@ -444,6 +470,7 @@ export async function deleteItinerary({ commit }, itineraryId) {
       .delete(`/itineraries/${itineraryId}`)
       .then((response) => {
         resolve(response.data)
+        commit('deleteItinerayById', { itineraryId })
       })
       .catch((error) => {
         reject(error)
