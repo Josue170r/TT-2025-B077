@@ -6,6 +6,10 @@ import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.Itinerary
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryPlace;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.services.ItineraryService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -44,12 +48,14 @@ public class ItineraryController {
     }
 
     @RequestMapping(path = "/user", method = RequestMethod.GET)
-    public ResponseEntity<ApiResponse<List<ItinerarySummaryDTO>>> getUserItineraries(Authentication authentication) {
+    public Page<ItinerarySummaryDTO> getUserItineraries(
+            Authentication authentication,
+            @PageableDefault(
+                    sort = {"createdAt"},
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable) {
         String username = authentication.getName();
-        List<ItinerarySummaryDTO> itineraries = itineraryService.getUserItineraries(username);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, null, itineraries));
+        return itineraryService.getUserItineraries(username, pageable);
     }
 
     @RequestMapping(path = "/{id}/days", method = RequestMethod.GET)

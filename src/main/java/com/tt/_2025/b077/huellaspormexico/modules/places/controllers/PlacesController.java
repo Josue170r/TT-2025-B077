@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.client.RestTemplate;
+
 import java.util.List;
 
 @RestController
@@ -40,6 +42,30 @@ public class PlacesController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of(HttpStatus.OK, null, place));
+    }
+
+    @RequestMapping(path = "/photo", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> getGooglePhoto(
+            @RequestParam String photoReference,
+            @RequestParam(defaultValue = "4000") int width) {
+        byte[] imageBytes = placeService.getGooglePhoto(photoReference, width);
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/jpeg")
+                .body(imageBytes);
+    }
+
+    @GetMapping("/proxy-image")
+    public ResponseEntity<byte[]> proxyImage(@RequestParam String url) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            byte[] imageBytes = restTemplate.getForObject(url, byte[].class);
+            return ResponseEntity.ok()
+                    .header("Content-Type", "image/jpeg")
+                    .header("Cache-Control", "public, max-age=2592000")
+                    .body(imageBytes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @RequestMapping(path = "/nearby-search", method = RequestMethod.POST)

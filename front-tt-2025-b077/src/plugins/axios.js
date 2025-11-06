@@ -3,8 +3,13 @@ import store from '../store'
 import router from '../router'
 
 const baseURL = import.meta.env.DEV ? 'http://127.0.0.1:8080/api/' : import.meta.env.VITE_API_BACK
+const acoBaseURL = import.meta.env.DEV ? 'http://127.0.0.1:7071/api/' : import.meta.env.VITE_ACO_API
 
 axios.defaults.baseURL = baseURL
+
+const acoApi = axios.create({
+  baseURL: acoBaseURL,
+})
 
 // Token Refresh
 let isAlreadyFetchingAccessToken = false
@@ -78,4 +83,20 @@ axios.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+acoApi.interceptors.request.use(
+  (config) => {
+    const tokenAccess = store.state['auth']['tokenAccess']
+    if (tokenAccess) {
+      config.headers.Authorization = `Bearer ${tokenAccess}`
+    }
+    config.headers['Accept-Language'] = 'es-es'
+    return config
+  },
+  (error) => {
+    Promise.reject(error)
+  },
+)
+
 export default axios
+export { acoApi }

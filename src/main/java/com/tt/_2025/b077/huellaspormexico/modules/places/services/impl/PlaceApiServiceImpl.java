@@ -51,6 +51,9 @@ public class PlaceApiServiceImpl implements PlaceApiService {
     @Value("${tripadvisor.base.url}")
     private String tripAdvisorBaseUrl;
 
+    @Value("${app.backend.url}")
+    private String backendUrl;
+
     public PlaceApiServiceImpl(
             RestTemplate restTemplate,
             ObjectMapper objectMapper,
@@ -192,6 +195,22 @@ public class PlaceApiServiceImpl implements PlaceApiService {
             throw new PlaceNotFoundException("Error al buscar lugares por nombre");
         }
         return suggestions;
+    }
+
+    @Override
+    public byte[] fetchGooglePhoto(String photoReference, int width) {
+        try {
+            String url = UriComponentsBuilder
+                    .fromUriString(googleBaseUrl + "/photo")
+                    .queryParam("maxwidth", width)
+                    .queryParam("photo_reference", photoReference)
+                    .queryParam("key", googleApiKey)
+                    .toUriString();
+
+            return restTemplate.getForObject(url, byte[].class);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching Google photo", e);
+        }
     }
 
     private Place fetchFromGoogle(String placeId, FetchMode mode) {
@@ -456,10 +475,9 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                 if (photoReference != null) {
                     image.setPhotoReference(photoReference);
                     String photoUrl = UriComponentsBuilder
-                            .fromUriString(googleBaseUrl + "/photo")
+                            .fromUriString(backendUrl + "/api/place/photo")
+                            .queryParam("photoReference", photoReference)
                             .queryParam("maxwidth", "4000")
-                            .queryParam("photo_reference", photoReference)
-                            .queryParam("key", googleApiKey)
                             .toUriString();
                     image.setPhotoUrl(photoUrl);
                 }
@@ -583,7 +601,6 @@ public class PlaceApiServiceImpl implements PlaceApiService {
             return null;
         }
     }
-
 
     private double calculateSimilarity(String s1, String s2) {
         if (s1 == null || s2 == null) return 0.0;
