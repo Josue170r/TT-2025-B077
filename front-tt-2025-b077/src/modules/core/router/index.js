@@ -1,6 +1,7 @@
 import HomeView from '../views/home_view.vue'
 import Interactive_map from '../views/interactive_map.vue'
 import SiteDescription from '../views/site_description.vue'
+import Support from '../views/support.vue'
 
 export default [
   {
@@ -29,5 +30,15 @@ export default [
       rule: 'auth',
     },
     component: Interactive_map,
+  },
+  
+  {
+    path: '/core/support',
+    name: 'support',
+    meta: {
+      title: 'Centro de ayuda',
+      rule: 'auth',
+    },
+    component: Support,
   },
 ]
