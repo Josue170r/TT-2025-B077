@@ -3,10 +3,10 @@
     <nav
       id="mainNav"
       class="d-flex flex-column align-items-center mt-0 position-fixed w-100 bg-white shadow-sm top-0 start-0"
-      style="z-index: 1000;"
+      style="z-index: 1000"
     >
       <div
-        class=" d-flex align-items-center justify-content-between bg-white px-6 py-4 w-75 w-md-50 w-lg-60 mt-2 nav-container"
+        class="d-flex align-items-center justify-content-between bg-white px-6 py-4 w-75 w-md-50 w-lg-60 mt-2 nav-container"
       >
         <div class="hamburger-wrapper">
           <hamburgermenu />
@@ -17,26 +17,13 @@
       </div>
     </nav>
 
-    <div class="p-4 content-section" style="margin-top: 50px;">
+    <div class="p-4 content-section" style="margin-top: 50px">
       <div class="d-flex align-items-center justify-content-between mb-4">
         <h5 class="mb-0"></h5>
-        <v-btn
-          class="btn-refresh"
-          variant="outlined"
-          size="small"
-          prepend-icon="mdi-refresh"
-          @click="loadFavoritesPlaces"
-        >
-          Actualizar
-        </v-btn>
       </div>
 
       <div v-if="loading" class="text-center py-5">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-          size="64"
-        ></v-progress-circular>
+        <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
         <p class="text-muted mt-3">Cargando favoritos...</p>
       </div>
 
@@ -49,7 +36,7 @@
         <PlaceCard
           v-for="place in favoritePlaces"
           :key="place.id"
-          :place="place"
+          :place="place.place"
           :is-favorite="true"
           :logo-url="logoUrl"
           @select-place="selectPlace"
@@ -61,10 +48,18 @@
         <i class="mdi mdi-heart-off text-muted mb-3" style="font-size: 3rem"></i>
         <h6 class="text-muted">No tienes lugares favoritos</h6>
         <p class="text-muted">Agrega algunos lugares desde la pantalla principal.</p>
-        <router-link to="/" class="btn btn-outline-success mt-3">
+        <router-link to="/core/home" class="btn btn-outline-success mt-3">
           <i class="mdi mdi-arrow-left me-2"></i>Explorar lugares
         </router-link>
       </div>
+
+      <v-pagination
+        v-if="pagination.totalPages > 1"
+        v-model="currentPage"
+        :length="pagination.totalPages"
+        @update:modelValue="handlePageChange"
+        class="mb-5 d-flex justify-center"
+      ></v-pagination>
     </div>
 
     <BottomNavbar />
@@ -72,9 +67,11 @@
 </template>
 
 <script>
+import { mapActions, mapMutations, mapGetters } from 'vuex/dist/vuex.cjs.js'
 import BottomNavbar from '@/components/bottomnavbar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
 import PlaceCard from '@/components/placecard.vue'
+import { getErrorDetails } from '@/utils/utils'
 
 export default {
   name: 'FavoritesView',
@@ -88,69 +85,72 @@ export default {
       loading: false,
       error: null,
       logoUrl: '/logo-letras.png',
-      favoritePlaces: []
     }
   },
   mounted() {
     this.loadFavoritesPlaces()
   },
+  computed: {
+    ...mapGetters('trips', ['favoriteIds', 'favoritePlaces', 'pagination', 'currentPage']),
+  },
   methods: {
+    ...mapActions('trips', {
+      fetchFavorites: 'fetchFavorites',
+      toggleFavoritePlace: 'toggleFavoritePlace',
+    }),
+    ...mapMutations('trips', {
+      setFavoritePlaces: 'setFavoritePlaces',
+      setPagination: 'setPagination',
+    }),
+    ...mapMutations('places', {
+      setSelectedPlaceId: 'setSelectedPlaceId',
+    }),
     async loadFavoritesPlaces() {
-      this.loading = true
-      this.error = null
-      
-      try {
-        // const favorites = await this.$store.dispatch('loadFavorites')
-        // this.favoritePlaces = favorites
-        //Quiotar los ejemplos
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        this.favoritePlaces = [
-          {
-            id: '1',
-            name: 'Bosque de Chapultepec',
-            address: 'Ciudad de México, CDMX',
-            rating: 4.7,
-            types: ['park', 'tourist_attraction'],
-          },
-          {
-            id: '2',
-            name: 'Café El Jarocho',
-            address: 'Av. Cuauhtémoc 123, CDMX',
-            rating: 4.5,
-            types: ['cafe', 'restaurant'],
-          },
-        ]
-      } catch (err) {
-        this.error = 'No se pudieron cargar los favoritos. Intenta nuevamente.'
-        console.error('Error al cargar favoritos:', err)
-      } finally {
-        this.loading = false
-      }
-    },
-    
-    selectPlace(place) {
-      this.$router.push({
-        name: 'site_description', 
-        params: { id: place.id }
+      await this.fetchFavorites().then((response) => {
+        this.setFavoritePlaces(response.content)
+        this.setPagination(response)
       })
     },
-    
-    toggleFavorite(place) {
-      // Remover de favoritos
-      this.favoritePlaces = this.favoritePlaces.filter(p => p.id !== place.id)
-      
-      // this.$store.dispatch('removeFavorite', place.id)
-      
-      console.log('Lugar removido de favoritos:', place.name)
+
+    selectPlace(place) {
+      this.setSelectedPlaceId(place.placeId)
+      this.$router.push({ name: 'site_description' })
+    },
+
+    async toggleFavorite(place) {
+      this.toggleFavoritePlace(place.id)
+        .then(() => {
+          const isFav = this.favoriteIds.includes(place.id)
+          this.$alert.success({
+            title: isFav ? 'Agregado a favoritos' : 'Eliminado de favoritos',
+            text: isFav
+              ? 'El lugar ha sido agregado a tus favoritos'
+              : 'El lugar ha sido eliminado de tus favoritos',
+          })
+          this.loadFavoritesPlaces()
+        })
+        .catch((error) => {
+          this.$alert.error({
+            title: 'Error al actualizar favoritos',
+            text: getErrorDetails(error),
+          })
+        })
+    },
+    async handlePageChange(page) {
+      await this.fetchFavorites({
+        page: page - 1,
+        size: this.pagination.pageSize,
+      }).then((response) => {
+        this.setFavoritePlaces(response.content)
+        this.setPagination(response)
+      })
     },
   },
 }
 </script>
 
 <style scoped>
-
-.color-text{
+.color-text {
   color: #1b515e;
   font-weight: bold;
 }
@@ -183,16 +183,16 @@ export default {
   .places-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .nav-container {
     padding-left: 0.5rem !important;
     padding-right: 1rem !important;
   }
-  
+
   .hamburger-wrapper {
     margin-right: 1rem;
   }
-  
+
   .title-wrapper {
     margin-right: auto;
   }

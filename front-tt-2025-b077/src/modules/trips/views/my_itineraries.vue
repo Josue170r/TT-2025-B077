@@ -1,54 +1,73 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <NavTopIItinerary />
-
-  <div style="padding-top: 55px"></div>
-
+  <div style="padding-top: 62px"></div>
   <div v-if="userItineraries.length > 0" class="cards-container">
-    <div v-for="itinerary in userItineraries" :key="itinerary.id" class="itinerary-card">
-      <v-carousel
-        v-if="itinerary.images && itinerary.images.length > 0"
-        class="itinerary-carousel"
-        height="200"
-        hide-delimiters
-        show-arrows="hover"
-      >
-        <v-carousel-item
-          v-for="(image, i) in itinerary.images"
-          :key="i"
-          :src="image"
-          cover
-        ></v-carousel-item>
-      </v-carousel>
-      <div v-else class="image-placeholder">
-        <i class="fa-solid fa-image"></i>
-        <p>Sin imagen</p>
-      </div>
-
-      <div class="itinerary-info">
-        <h3>{{ itinerary.tripTitle }}</h3>
-        <ul>
-          <li>
-            <i class="fa-regular fa-calendar"></i>
-            {{ formatDateRange(itinerary.startDate, itinerary.endDate) }}
-          </li>
-          <li>
-            <i class="fa-solid fa-location-dot"></i>
-            {{ itinerary.totalPlaces }} lugares para visitar
-          </li>
-          <li v-if="itinerary.averageSustainableIndex" class="sustainability-item">
-            <i class="fa-solid fa-leaf"></i>
-            <div
-              class="sustainability-badge"
-              :class="getSustainabilityClass(itinerary.averageSustainableIndex)"
+    <div v-for="itinerary in userItineraries" :key="itinerary.id" class="itinerary-wrapper">
+      <v-card class="itinerary-card" elevation="2">
+        <v-row class="ma-0 h-100">
+          <v-col cols="12" sm="5" class="pa-0">
+            <v-carousel
+              v-if="itinerary.images && itinerary.images.length > 0"
+              class="itinerary-carousel"
+              height="250"
+              hide-delimiters
+              show-arrows="hover"
             >
-              {{ formatSustainability(itinerary.averageSustainableIndex) }}
+              <v-carousel-item
+                v-for="(image, i) in itinerary.images"
+                :key="i"
+                :src="image"
+                cover
+              ></v-carousel-item>
+            </v-carousel>
+            <div v-else class="image-placeholder">
+              <i class="fa-solid fa-image"></i>
+              <p>Sin imagen</p>
             </div>
-          </li>
-        </ul>
+          </v-col>
+
+          <v-col cols="12" sm="7" class="pa-4 d-flex flex-column justify-space-between">
+            <div>
+              <h3 class="itinerary-title mb-3">{{ itinerary.tripTitle }}</h3>
+
+              <div class="itinerary-details">
+                <div class="detail-item">
+                  <i class="fa-regular fa-calendar"></i>
+                  <span>{{ formatDateRange(itinerary.startDate, itinerary.endDate) }}</span>
+                </div>
+
+                <div class="detail-item">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <span>{{ itinerary.totalPlaces }} lugares para visitar</span>
+                </div>
+
+                <div
+                  v-if="itinerary.averageSustainableIndex"
+                  class="detail-item sustainability-detail"
+                >
+                  <i class="fa-solid fa-leaf"></i>
+                  <div
+                    class="sustainability-badge"
+                    :class="getSustainabilityClass(itinerary.averageSustainableIndex)"
+                  >
+                    {{ formatSustainability(itinerary.averageSustainableIndex) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+      </v-card>
+
+      <div class="buttons-section">
         <button class="btn-view" @click="viewItinerary(itinerary.id)">
           Ver itinerario
           <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <button class="btn-delete" @click="openDeleteDialog(itinerary.id)">
+          <i class="fa-solid fa-trash"></i>
+          Eliminar itinerario
         </button>
       </div>
     </div>
@@ -68,6 +87,28 @@
     </div>
   </div>
 
+  <v-pagination
+    v-if="userItineraries.length > 0"
+    v-model="currentPage"
+    :length="pagination.totalPages"
+    @update:modelValue="handlePageChange"
+    class="d-flex justify-center pagination-container"
+  ></v-pagination>
+
+  <v-dialog v-model="deleteDialog" max-width="400" persistent>
+    <v-card class="custom-dialog">
+      <v-card-title class="dialog-title"> ¿Eliminar itinerario? </v-card-title>
+      <v-card-text class="dialog-text">
+        ¿Estás seguro de que deseas eliminar este itinerario? Esta acción no se puede deshacer.
+      </v-card-text>
+      <v-card-actions class="dialog-actions">
+        <v-spacer></v-spacer>
+        <v-btn text @click="closeDeleteDialog">Cancelar</v-btn>
+        <v-btn color="error" dark @click="confirmDelete">Eliminar</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <BottomNavbar />
 </template>
 
@@ -78,23 +119,28 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
 
 export default {
   components: { BottomNavbar, NavTopIItinerary },
-
-  computed: {
-    ...mapGetters('trips', ['userItineraries']),
+  data() {
+    return {
+      deleteDialog: false,
+      itineraryToDelete: null,
+    }
   },
-
+  computed: {
+    ...mapGetters('trips', ['userItineraries', 'pagination', 'currentPage']),
+  },
   mounted() {
     this.fetchItineraries()
   },
-
   methods: {
     ...mapActions('trips', {
       fetchUserItineraries: 'fetchUserItineraries',
+      deleteItineraryAction: 'deleteItinerary',
     }),
     ...mapMutations('trips', {
       setCurrentItineraryId: 'setCurrentItineraryId',
+      setUserItineraries: 'setUserItineraries',
+      setPagination: 'setPagination',
     }),
-
     async fetchItineraries() {
       try {
         await this.fetchUserItineraries()
@@ -102,7 +148,15 @@ export default {
         console.error('Error cargando itinerarios:', error)
       }
     },
-
+    async handlePageChange(page) {
+      await this.fetchUserItineraries({
+        page: page - 1,
+        size: this.pagination.pageSize,
+      }).then((response) => {
+        this.setUserItineraries(response.content)
+        this.setPagination(response)
+      })
+    },
     formatDateRange(startDate, endDate) {
       const start = new Date(startDate)
       const end = new Date(endDate)
@@ -132,6 +186,24 @@ export default {
       })
     },
 
+    openDeleteDialog(itineraryId) {
+      this.itineraryToDelete = itineraryId
+      this.deleteDialog = true
+    },
+
+    closeDeleteDialog() {
+      this.deleteDialog = false
+      this.itineraryToDelete = null
+    },
+
+    confirmDelete() {
+      this.deleteItineraryAction(this.itineraryToDelete).then((response) => {
+        this.$alert.success(response.message)
+        this.fetchItineraries()
+        this.closeDeleteDialog()
+      })
+    },
+
     createNewTrip() {
       this.$router.push({ name: 'new-trips' })
     },
@@ -140,42 +212,45 @@ export default {
 </script>
 
 <style scoped>
+.pagination-container {
+  margin-bottom: 100px;
+}
+
 .cards-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 20px 20px 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.itinerary-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 20px;
-  padding-bottom: 80px;
+  gap: 6px;
 }
 
 .itinerary-card {
-  display: flex;
-  background: #fff;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   overflow: hidden;
-  width: 100%;
-  max-width: 500px;
-  transition:
-    transform 0.3s,
-    box-shadow 0.3s;
+  transition: all 0.3s ease;
+  height: 100%;
 }
 
 .itinerary-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
 }
 
 .itinerary-carousel {
-  width: 40%;
-  min-height: 200px;
+  width: 100%;
 }
 
 .image-placeholder {
-  width: 40%;
-  min-height: 200px;
-  background: #f0f0f0;
+  width: 100%;
+  height: 250px;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -193,59 +268,50 @@ export default {
   font-size: 0.9rem;
 }
 
-.itinerary-info {
-  padding: 15px;
-  flex: 1;
+.itinerary-title {
+  color: #1a3c40;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.itinerary-details {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 10px;
 }
 
-.itinerary-info h3 {
-  color: #1a3c40;
-  margin-bottom: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.itinerary-info ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 15px 0;
-  flex: 1;
-}
-
-.itinerary-info li {
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: #555;
-  font-size: 14px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 0.95rem;
 }
 
-.itinerary-info li i {
+.detail-item i {
   color: #1a3c40;
-  width: 16px;
+  width: 18px;
   text-align: center;
+  flex-shrink: 0;
+  font-size: 1rem;
 }
 
-.sustainability-item {
-  display: flex;
-  align-items: center;
+.sustainability-detail {
   gap: 8px;
 }
 
-.sustainability-item i {
+.sustainability-detail i {
   color: #4caf50;
 }
 
 .sustainability-badge {
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
   color: white;
+  display: inline-block;
 }
 
 .sustainability-badge.high {
@@ -260,36 +326,62 @@ export default {
   background: linear-gradient(135deg, #f44336, #ef5350);
 }
 
+.buttons-section {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
 .btn-view {
   background-color: #1a3c40;
-  color: white;
-  border: none;
+  color: #f5f5f5;
+  border: 2px solid #1a3c40;
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   cursor: pointer;
   transition: all 0.3s;
   font-size: 14px;
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-weight: 500;
-  margin-top: auto;
+  flex: 1;
 }
 
 .btn-view:hover {
-  background-color: #0e2325;
-  transform: translateX(2px);
+  background-color: #f5f5f5;
+  color: #1a3c40;
 }
 
 .btn-view i {
   font-size: 12px;
-  transition: transform 0.3s;
 }
 
-.btn-view:hover i {
-  transform: translateX(4px);
+.btn-delete {
+  background-color: #f5f5f5;
+  color: #f44336;
+  border: 2px solid #f44336;
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.btn-delete:hover {
+  background-color: #f44336;
+  color: white;
+}
+
+.btn-delete i {
+  font-size: 12px;
 }
 
 .empty-state {
@@ -361,55 +453,194 @@ export default {
   font-size: 1.2rem;
 }
 
-@media (min-width: 768px) {
+.custom-dialog {
+  border-radius: 12px;
+}
+
+.dialog-title {
+  color: #1a3c40;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  padding: 20px !important;
+}
+
+.dialog-text {
+  color: #555;
+  font-size: 0.95rem;
+  padding: 0 20px 20px 20px !important;
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  padding: 16px 20px !important;
+  gap: 10px;
+}
+
+.btn-dialog-cancel {
+  background-color: #f5f5f5;
+  color: #1a3c40;
+  border: 2px solid #1a3c40;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-dialog-cancel:hover {
+  background-color: #1a3c40;
+  color: #f5f5f5;
+}
+
+.btn-dialog-confirm {
+  background-color: #f44336;
+  color: white;
+  border: 2px solid #f44336;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-dialog-confirm:hover {
+  background-color: #d32f2f;
+  border-color: #d32f2f;
+}
+
+@media (max-width: 1024px) {
   .cards-container {
-    display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
-    padding: 30px 20px;
-    padding-bottom: 100px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .itinerary-card {
-    max-width: 100%;
+    padding: 20px 20px;
   }
 }
 
-@media (min-width: 1024px) {
+@media (max-width: 900px) {
   .cards-container {
-    gap: 25px;
-    padding: 40px 40px;
-    padding-bottom: 120px;
-    max-width: 1400px;
-  }
-
-  .itinerary-carousel {
-    width: 280px;
-    min-height: 250px;
-  }
-
-  .image-placeholder {
-    width: 280px;
-    min-height: 250px;
-  }
-}
-
-@media (max-width: 480px) {
-  .itinerary-card {
-    flex-direction: column;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 15px 15px;
   }
 
   .itinerary-carousel,
   .image-placeholder {
-    width: 100%;
-    height: 180px;
-    min-height: unset;
+    height: 200px;
   }
 
-  .itinerary-info {
-    min-height: 180px;
+  .itinerary-title {
+    font-size: 1.15rem;
+  }
+
+  .detail-item {
+    font-size: 0.9rem;
+  }
+
+  .buttons-section {
+    gap: 8px;
+  }
+
+  .btn-view,
+  .btn-delete {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .btn-view i,
+  .btn-delete i {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 700px) {
+  .cards-container {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .itinerary-carousel,
+  .image-placeholder {
+    height: 220px;
+  }
+
+  .itinerary-title {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  .itinerary-details {
+    gap: 8px;
+  }
+
+  .detail-item {
+    font-size: 0.9rem;
+  }
+
+  .buttons-section {
+    gap: 10px;
+  }
+
+  .btn-view,
+  .btn-delete {
+    padding: 11px 14px;
+    font-size: 14px;
+  }
+
+  .btn-view i,
+  .btn-delete i {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 500px) {
+  .pagination-container {
+    margin-bottom: 70px;
+  }
+  .cards-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .itinerary-card {
+    border-radius: 10px;
+  }
+
+  .itinerary-carousel,
+  .image-placeholder {
+    height: 200px;
+  }
+
+  .itinerary-title {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .itinerary-details {
+    gap: 6px;
+  }
+
+  .detail-item {
+    font-size: 0.85rem;
+  }
+
+  .buttons-section {
+    gap: 8px;
+  }
+
+  .btn-view,
+  .btn-delete {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .btn-view i,
+  .btn-delete i {
+    font-size: 11px;
   }
 }
 </style>

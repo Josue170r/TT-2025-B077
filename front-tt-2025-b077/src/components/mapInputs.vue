@@ -1,39 +1,61 @@
 <template>
   <div class="floating-controls d-flex align-items-center gap-3">
-    <!-- Inputs con Bootstrap -->
     <div class="route-card flex-fill p-3">
-      <!-- Origen -->
-      <div class="d-flex align-items-center mb-1">
+      <div class="d-flex align-items-center mb-1 position-relative">
         <span class="icon origin me-3 d-inline-block"></span>
         <input
           v-model="localOrigin"
-          @input="$emit('update:origin', localOrigin)"
-          placeholder="Punto de partida (puedes dejar vacío)"
+          placeholder="Tu ubicación"
           class="form-control route-input border-0"
         />
+        <div v-if="showOriginSuggestions" class="autocomplete-dropdown origin-dropdown">
+          <div
+            v-for="suggestion in originSuggestions"
+            :key="suggestion.place_id"
+            class="autocomplete-item"
+            @click="selectOrigin(suggestion)"
+          >
+            {{ suggestion.description }}
+          </div>
+        </div>
       </div>
 
-      <!-- Línea divisoria con botón de intercambio -->
       <div class="d-flex align-items-center justify-content-between my-1">
         <span class="route-line flex-fill me-3"></span>
         <button class="btn swap-btn p-2" @click="handleSwap">⇆</button>
       </div>
 
-      <!-- Destino -->
       <div class="d-flex align-items-center position-relative">
         <span class="icon destination me-3">
           <i class="fa-solid fa-location-dot"></i>
         </span>
         <input
           v-model="localDestination"
-          @input="$emit('update:destination', localDestination)"
           placeholder="Destino"
           class="form-control route-input border-0"
         />
+        <button
+          v-if="localDestination"
+          class="btn-clear-destination p-0"
+          @click="clearDestination"
+          type="button"
+          title="Limpiar destino"
+        >
+          ✕
+        </button>
+        <div v-if="showDestinationSuggestions" class="autocomplete-dropdown destination-dropdown">
+          <div
+            v-for="suggestion in destinationSuggestions"
+            :key="suggestion.place_id"
+            class="autocomplete-item"
+            @click="selectDestination(suggestion)"
+          >
+            {{ suggestion.description }}
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Botón de búsqueda circular separado -->
     <button
       class="btn search-btn-circular d-flex align-items-center justify-content-center"
       @click="$emit('search')"
@@ -57,11 +79,26 @@ export default {
       type: String,
       default: '',
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    suppressDestinationSearch: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
       localOrigin: this.origin,
       localDestination: this.destination,
+      autocompleteService: null,
+      originSuggestions: [],
+      destinationSuggestions: [],
+      showOriginSuggestions: false,
+      showDestinationSuggestions: false,
+      isSelectingOrigin: false,
+      isSelectingDestination: false,
     }
   },
   watch: {
@@ -71,23 +108,134 @@ export default {
     destination(newVal) {
       this.localDestination = newVal
     },
+    localOrigin(newVal) {
+      this.$emit('update:origin', newVal)
+
+      if (this.isSelectingOrigin) {
+        this.isSelectingOrigin = false
+        return
+      }
+
+      if (newVal && newVal.length > 2 && newVal !== 'Tu ubicación') {
+        this.getOriginSuggestions(newVal)
+      } else {
+        this.originSuggestions = []
+        this.showOriginSuggestions = false
+      }
+    },
+    localDestination(newVal) {
+      this.$emit('update:destination', newVal)
+
+      if (this.isSelectingDestination) {
+        this.isSelectingDestination = false
+        return
+      }
+
+      if (this.suppressDestinationSearch) {
+        this.showDestinationSuggestions = false
+        this.destinationSuggestions = []
+        return
+      }
+
+      if (newVal && newVal.length > 2) {
+        this.getDestinationSuggestions(newVal)
+      } else {
+        this.destinationSuggestions = []
+        this.showDestinationSuggestions = false
+      }
+    },
+    suppressDestinationSearch(newVal) {
+      if (newVal) {
+        this.showDestinationSuggestions = false
+        this.destinationSuggestions = []
+      }
+    },
+  },
+  mounted() {
+    this.initAutocomplete()
+    document.addEventListener('click', this.handleClickOutside)
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
+    initAutocomplete() {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        this.autocompleteService = new window.google.maps.places.AutocompleteService()
+      }
+    },
+    getOriginSuggestions(input) {
+      if (!this.autocompleteService) {
+        this.initAutocomplete()
+      }
+
+      if (this.autocompleteService) {
+        this.autocompleteService.getPlacePredictions(
+          {
+            input,
+            componentRestrictions: { country: 'mx' },
+          },
+          (predictions) => {
+            this.originSuggestions = predictions || []
+            this.showOriginSuggestions = this.originSuggestions.length > 0
+          }
+        )
+      }
+    },
+    getDestinationSuggestions(input) {
+      if (!this.autocompleteService) {
+        this.initAutocomplete()
+      }
+
+      if (this.autocompleteService) {
+        this.autocompleteService.getPlacePredictions(
+          {
+            input,
+            componentRestrictions: { country: 'mx' },
+          },
+          (predictions) => {
+            this.destinationSuggestions = predictions || []
+            this.showDestinationSuggestions = this.destinationSuggestions.length > 0
+          }
+        )
+      }
+    },
+    selectOrigin(suggestion) {
+      this.isSelectingOrigin = true
+      this.localOrigin = suggestion.description
+      this.showOriginSuggestions = false
+      this.originSuggestions = []
+    },
+    selectDestination(suggestion) {
+      this.isSelectingDestination = true
+      this.localDestination = suggestion.description
+      this.showDestinationSuggestions = false
+      this.destinationSuggestions = []
+    },
+    clearDestination() {
+      this.localDestination = ''
+      this.showDestinationSuggestions = false
+      this.destinationSuggestions = []
+      this.$emit('clear-route')
+    },
     handleSwap() {
       const temp = this.localOrigin
       this.localOrigin = this.localDestination
       this.localDestination = temp
-
-      this.$emit('update:origin', this.localOrigin)
-      this.$emit('update:destination', this.localDestination)
-      this.$emit('swap')
+      this.showOriginSuggestions = false
+      this.showDestinationSuggestions = false
+    },
+    handleClickOutside(event) {
+      if (!this.$el.contains(event.target)) {
+        this.showOriginSuggestions = false
+        this.showDestinationSuggestions = false
+      }
     },
   },
 }
 </script>
 
 <style scoped>
-/* Controles flotantes superiores */
 .floating-controls {
   position: absolute;
   top: 20px;
@@ -99,7 +247,6 @@ export default {
   animation: fadeInUp 0.6s ease-out;
 }
 
-/* Tarjeta de inputs con glassmorphism */
 .route-card {
   background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(15px);
@@ -121,12 +268,12 @@ export default {
   z-index: -1;
 }
 
-/* Inputs personalizados */
 .route-input {
   background: transparent !important;
   font-weight: 500 !important;
   color: #1b515e !important;
-  padding: 0.375rem 0 !important;
+  padding: 0.375rem 0 0.375rem 0 !important;
+  padding-right: 40px !important;
   line-height: 1.3 !important;
 }
 
@@ -141,7 +288,6 @@ export default {
   color: #1b515e !important;
 }
 
-/* Iconos mejorados */
 .icon {
   width: 24px;
   height: 24px;
@@ -168,7 +314,6 @@ export default {
   border-radius: 1px;
 }
 
-/* Botón de intercambio */
 .swap-btn {
   background: rgba(247, 250, 252, 0.9) !important;
   border: 1px solid rgba(27, 81, 94, 0.2) !important;
@@ -186,7 +331,6 @@ export default {
   border-color: #1b515e !important;
 }
 
-/* Botón de búsqueda circular mejorado */
 .search-btn-circular {
   background: white !important;
   border: none !important;
@@ -207,11 +351,71 @@ export default {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
 }
 
-.search-btn-circular:active {
-  transform: translateY(-1px) scale(0.98) !important;
+.search-btn-circular:disabled,
+.search-btn-circular.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-/* Animación de carga */
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.autocomplete-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+  color: #333;
+  transition: background-color 0.15s ease;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover {
+  background-color: #f5f5f5;
+  color: #1b515e;
+}
+
+.btn-clear-destination {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #1b515e;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 5;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+}
+
+.btn-clear-destination:hover {
+  color: #1b515e;
+  transform: translateY(-50%) scale(1.3);
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -223,7 +427,6 @@ export default {
   }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .floating-controls {
     width: 95%;
@@ -233,7 +436,6 @@ export default {
   .search-btn-circular {
     width: 56px !important;
     height: 56px !important;
-    font-size: 1.1rem !important;
   }
 }
 
@@ -243,39 +445,9 @@ export default {
     top: 10px;
   }
 
-  .route-input {
-    font-size: 0.85rem !important;
-    padding: 0.25rem 0 !important;
-  }
-
-  .route-input::placeholder {
-    font-size: 0.85rem !important;
-  }
-
-  .icon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .icon.origin {
-    border-width: 2px;
-  }
-
-  .icon.destination i {
-    font-size: 16px;
-  }
-
-  .swap-btn {
-    width: 32px !important;
-    height: 32px !important;
-    font-size: 0.95rem !important;
-  }
-
   .search-btn-circular {
     width: 48px !important;
     height: 48px !important;
-    font-size: 0.95rem !important;
-    flex-shrink: 0;
   }
 }
 
@@ -287,7 +459,6 @@ export default {
   .search-btn-circular {
     width: 72px !important;
     height: 72px !important;
-    font-size: 1.4rem !important;
   }
 }
 </style>

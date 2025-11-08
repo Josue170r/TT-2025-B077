@@ -1,6 +1,10 @@
 export default {
   setFavoritesIds(state, data) {
-    state.favoriteIds = (data?.content ?? []).map((fav) => fav?.place?.id).filter(Boolean)
+    state.favoriteIds = data
+  },
+
+  setFavoritePlaces(state, places) {
+    state.favoritePlaces = places
   },
 
   toggleFavorite(state, placeId) {
@@ -153,6 +157,15 @@ export default {
           day.places[placeIndex] = updatedPlace
         }
       }
+    }
+  },
+
+  deleteItinerayById(state, { itineraryId }) {
+    const index = state.userItineraries.findIndex((itinerary) => {
+      return itinerary.id == itineraryId
+    })
+    if (index != -1) {
+      state.userItineraries.splice(index, 1)
     }
   },
 

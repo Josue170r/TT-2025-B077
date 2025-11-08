@@ -1,8 +1,8 @@
 <template>
   <nav class="bottom-navbar">
     <div class="container-fluid d-flex justify-content-center py-2">
-      <button 
-        @click="generateItinerary" 
+      <button
+        @click="createItinerary"
         class="btn btn-primary btn-lg w-100 generate-btn"
         :disabled="!hasHotelSelected"
         :class="{ 'btn-disabled': !hasHotelSelected }"
@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+
 export default {
   name: 'NavButtom',
   props: {
@@ -24,12 +26,21 @@ export default {
     },
   },
   methods: {
-    generateItinerary() {
-      if (!this.hasHotelSelected) {
-        return
+    ...mapActions('trips', {
+      generateItinerary: 'generateItinerary',
+    }),
+    async createItinerary() {
+      try {
+        const response = await this.generateItinerary()
+        this.$alert.success({
+          text: response.message,
+          nextRoute: 'itinerary'
+        })
+      } catch {
+        this.$alert.error({
+          text: 'Error al generar itinerario',
+        })
       }
-      console.log('¡Itinerario generado!')
-      this.$router.push({ name: 'generate_itinerary' })
     },
   },
 }

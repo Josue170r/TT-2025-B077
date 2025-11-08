@@ -132,7 +132,7 @@
           Seleccionar {{ timePickerType === 'arrival' ? 'hora de llegada' : 'hora de salida' }}
         </v-card-title>
 
-        <v-card-text class="modal-body-vuetify">
+        <v-card-text class="modal-picker-body">
           <v-time-picker
             v-model="tempTime"
           ></v-time-picker>
@@ -645,8 +645,50 @@ export default {
   padding: 1.5rem;
 }
 
-.modal-body-vuetify {
-  padding: 1rem 1.5rem !important;
+.modal-picker-body {
+  padding: 0.2rem 0.5rem !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-picker-body :deep(.v-picker__header) {
+  max-width: 100px !important;
+  max-height: 90px;
+  margin: 0 auto;
+}
+
+.modal-picker-body :deep(.v-time-picker-controls__time) {
+  max-width: 150px !important;
+  max-height: 90px;
+  margin: 0 auto;
+}
+
+.modal-picker-body :deep(.v-theme--light .v-btn--size-default) {
+  width: 90px !important;
+  height: 80px !important;
+}
+
+.modal-picker-body :deep(.v-time-picker-controls__ampm) {
+  width: 10px !important;
+  height: 10px !important;
+  margin-bottom: 100px;
+}
+
+.modal-picker-body :deep(.v-picker__body) {
+  margin-left: 35px;
+  padding: 2px !important;
+  max-height: 250px;
+  max-width: 250px;
+}
+
+.modal-picker-body :deep(.v-btn__content) {
+  max-height: 250px;
+  max-width: 250px;
+}
+
+.modal-picker-body :deep(.v-time-picker) {
+  align-items: center;
 }
 
 .modal-title {

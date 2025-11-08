@@ -10,6 +10,10 @@ export function favoriteIds(state) {
   return state.favoriteIds
 }
 
+export function favoritePlaces(state) {
+  return state.favoritePlaces
+}
+
 export function isFavorite(state) {
   return (placeId) => state.favoriteIds.includes(placeId)
 }

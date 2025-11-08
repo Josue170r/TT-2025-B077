@@ -254,7 +254,6 @@ export default {
     try {
       await this.getUserLocation()
       await this.fetchCertifications()
-      await this.fetchFavorites()
 
       if (this.newItinerary.selectedState) {
         await this.fetchSettlements(this.newItinerary.selectedState)
@@ -274,7 +273,6 @@ export default {
       fetchCertifications: 'fetchCertifications',
       fetchSettlements: 'fetchSettlements',
       fetchHotels: 'fetchHotels',
-      fetchFavorites: 'fetchFavorites',
       toggleFavoritePlace: 'toggleFavoritePlace',
     }),
     ...mapActions('places', {
@@ -570,24 +568,7 @@ export default {
       if (this.isSustainable) {
         await this.fetchHotels({ page: 0, size: 10 })
       } else {
-        if (!this.hotelIds || this.hotelIds.length === 0) {
-          await this.loadNearbyHotels()
-        } else {
-          const response = await this.fetchPlacesByIds({
-            place_ids: this.hotelIds,
-            page: 0,
-            size: 10,
-          })
-
-          const hotels = response.content.map((place) => ({
-            id: place.id,
-            place: place,
-            certifications: [],
-          }))
-
-          this.setHotels(hotels)
-          this.setPagination(response)
-        }
+        await this.loadNearbyHotels()
       }
     },
 
@@ -640,7 +621,7 @@ export default {
 .main-container {
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-top: 130px;
+  padding-top: 200px;
   padding-bottom: 80px;
 }
 
@@ -662,11 +643,11 @@ export default {
   right: 0;
   background: white;
   border-bottom: 1px solid #e0e0e0;
-  padding: 12px 0;
+  padding: 1px 0;
   z-index: 90;
-  min-height: 50px;
-  max-height: 120px;
+  height: 60px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .filters-chips-wrapper {
@@ -742,7 +723,7 @@ export default {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0px 20px 15px 15px;
-  margin-top: 70px;
+  margin-top: 0;
 }
 
 .filters-sidebar {
@@ -961,7 +942,7 @@ export default {
 @media (max-width: 768px) {
   .content-layout {
     flex-direction: column;
-    margin-top: 50px;
+    margin-top: 0;
     padding: 15px 10px;
   }
 
@@ -984,12 +965,35 @@ export default {
 
 @media (max-width: 576px) {
   .main-container {
-    padding-top: 130px;
+    padding-top: 170px;
     padding-bottom: 85px;
   }
 
+  .header-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    z-index: 100;
+    box-shadow: none;
+  }
+
   .filters-chips-container {
+    position: fixed;
+    top: 100px;
+    left: 0;
+    right: 0;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
     padding: 8px 0;
+    z-index: 90;
+    height: 60px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 0;
+    border-top: none;
   }
 
   .filters-chips-wrapper {
@@ -997,8 +1001,16 @@ export default {
   }
 
   .content-layout {
+    flex-direction: column;
     padding: 10px 8px;
-    margin-top: 50px;
+    margin-top: 0;
+  }
+
+  .filters-sidebar {
+    width: 100%;
+    position: static;
+    max-height: none;
+    margin-bottom: 20px;
   }
 
   .filters-sidebar-content {

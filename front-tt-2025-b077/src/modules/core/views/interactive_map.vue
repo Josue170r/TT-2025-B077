@@ -4,21 +4,20 @@
       :origin="originInput"
       :destination="destinationInput"
       :disabled="!isMapReady"
+      :suppressDestinationSearch="suppressDestinationSearch"
       @update:origin="originInput = $event"
       @update:destination="destinationInput = $event"
       @search="calculateRoute"
       @swap="handleSwap"
+      @clear-route="clearRoute"
     />
 
-    <!-- Mapa -->
     <div id="map" class="fullscreen-map"></div>
 
-    <!-- Card de información -->
     <transition name="slide-up">
       <div v-if="routeInfo" class="floating-info">
         <div class="card info-card border-0">
           <div class="card-body p-4">
-            <!-- Header siempre visible con botón de colapso -->
             <div
               class="info-header-with-toggle d-flex align-items-center justify-content-between mb-0"
             >
@@ -26,31 +25,51 @@
                 <div class="d-flex align-items-center justify-content-between">
                   <div class="flex-fill">
                     <h5 class="card-title mb-1 fw-bold">{{ routeInfo.name }}</h5>
-                    <div class="duration-inline d-flex align-items-center gap-2 mt-1">
+                    <div class="duration-inline d-flex align-items-center gap-2 mt-1" v-if="isRouteActive">
                       <span class="fw-semibold text-primary">{{ routeInfo.duration }}</span>
                       <span class="text-muted small">• {{ routeInfo.distance }}</span>
                     </div>
                   </div>
-                  <button
-                    class="btn toggle-btn p-2 ms-3 d-flex align-items-center justify-content-center"
-                    @click="toggleCardExpanded"
-                    :title="isCardExpanded ? 'Contraer información' : 'Expandir información'"
-                  >
-                    <span class="toggle-icon" :class="{ expanded: isCardExpanded }">
-                      {{ isCardExpanded ? '▼' : '▲' }}
-                    </span>
-                  </button>
+                  <div class="d-flex gap-2 ms-3">
+                    <button
+                      v-if="isRouteActive"
+                      class="btn toggle-btn p-2 d-flex align-items-center justify-content-center"
+                      @click="toggleCardExpanded"
+                      title="Minimizar/Expandir"
+                    >
+                      <span class="toggle-icon" :class="{ expanded: isCardExpanded }">
+                        {{ isCardExpanded ? '▼' : '▲' }}
+                      </span>
+                    </button>
+                    <button
+                      v-if="isRouteActive"
+                      class="btn toggle-btn p-2 ms-2 d-flex align-items-center justify-content-center"
+                      @click="clearRoute"
+                      title="Limpiar ruta"
+                    >
+                      <span class="toggle-icon">✕</span>
+                    </button>
+                    <button
+                      v-else
+                      class="btn toggle-btn p-2 d-flex align-items-center justify-content-center"
+                      @click="toggleCardExpanded"
+                      :title="isCardExpanded ? 'Contraer información' : 'Expandir información'"
+                    >
+                      <span class="toggle-icon" :class="{ expanded: isCardExpanded }">
+                        {{ isCardExpanded ? '▼' : '▲' }}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Dropdown -->
             <transition name="expand">
               <div v-show="isCardExpanded" class="expandable-content pt-3">
                 <div class="info-details mb-3">
                   <p class="card-text text-muted small mb-2">{{ routeInfo.address }}</p>
 
-                  <div class="row g-2 mb-3">
+                  <div class="row g-2 mb-3" v-if="isRouteActive">
                     <div class="col-6">
                       <div class="detail-item text-center">
                         <small class="text-muted">Llegas en:</small>
@@ -65,38 +84,37 @@
                     </div>
                   </div>
 
-                  <div>
-                    <span class="badge bg-light text-dark rating"
-                      ><i class="fa-solid fa-star m-1"></i> {{ routeInfo.rating || 'N/A' }}</span
-                    >
-                  </div>
                 </div>
 
-                <!-- Dropdown manual sin Bootstrap JS -->
-                <div class="info-actions d-flex gap-2 flex-column flex-md-row">
-                  <div class="dropdown-manual w-100 w-md-auto">
-                    <button
-                      class="btn btn-light border dropdown-toggle w-100 text-start py-2 px-3 small d-flex align-items-center justify-content-between"
-                      type="button"
-                      @click="isDropdownOpen = !isDropdownOpen"
-                    >
-                      <div class="d-flex align-items-center gap-2">
-                        <i v-if="travelMode === 'DRIVING'" class="fa-solid fa-car text-primary"></i>
-                        <i
-                          v-else-if="travelMode === 'WALKING'"
-                          class="fa-solid fa-person-walking text-success"
-                        ></i>
-                        <i
-                          v-else-if="travelMode === 'BICYCLING'"
-                          class="fa-solid fa-bicycle text-warning"
-                        ></i>
-                        <i
-                          v-else-if="travelMode === 'TRANSIT'"
-                          class="fa-solid fa-bus text-info"
-                        ></i>
-                        <span>{{ travelModeText }}</span>
-                      </div>
-                    </button>
+                <div class="info-actions d-flex gap-2 flex-column">
+                  <div v-if="isRouteActive" class="dropdown-manual w-100">
+                    <div class="d-flex align-items-center gap-2 w-100">
+                      <button
+                        class="btn btn-light border dropdown-toggle flex-fill text-start py-2 px-3 small d-flex align-items-center justify-content-between"
+                        type="button"
+                        @click="isDropdownOpen = !isDropdownOpen"
+                      >
+                        <div class="d-flex align-items-center gap-2">
+                          <i v-if="travelMode === 'DRIVING'" class="fa-solid fa-car text-primary"></i>
+                          <i
+                            v-else-if="travelMode === 'WALKING'"
+                            class="fa-solid fa-person-walking text-success"
+                          ></i>
+                          <i
+                            v-else-if="travelMode === 'BICYCLING'"
+                            class="fa-solid fa-bicycle text-warning"
+                          ></i>
+                          <i
+                            v-else-if="travelMode === 'TRANSIT'"
+                            class="fa-solid fa-bus text-info"
+                          ></i>
+                          <span>{{ travelModeText }}</span>
+                        </div>
+                      </button>
+                      <span v-if="routeInfo.rating && routeInfo.rating !== 'N/A'" class="badge bg-light text-dark rating flex-shrink-0"
+                        ><i class="fa-solid fa-star m-1"></i> {{ routeInfo.rating }}</span
+                      >
+                    </div>
 
                     <ul v-show="isDropdownOpen" class="dropdown-menu-custom w-100 show">
                       <li>
@@ -133,9 +151,22 @@
                       </li>
                     </ul>
                   </div>
-                  <button class="btn add-btn text-nowrap py-2 px-3 small w-100 w-md-auto">
-                    Agregar a itinerario
-                  </button>
+
+                  <div class="d-flex gap-2 flex-column flex-sm-row">
+                    <button
+                      v-if="!isRouteActive"
+                      class="btn btn-route text-nowrap py-2 px-3 small flex-fill"
+                      @click="setAsDestination"
+                    >
+                      Ver ruta
+                    </button>
+                    <button
+                      class="btn btn-details text-nowrap py-2 px-3 small flex-fill"
+                      @click="goToPlaceDetails"
+                    >
+                      Ver detalles
+                    </button>
+                  </div>
                 </div>
               </div>
             </transition>
@@ -147,6 +178,7 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex'
 import RouteInputs from '@/components/mapInputs.vue'
 
 export default {
@@ -159,6 +191,7 @@ export default {
       originInput: '',
       destinationInput: '',
       userLocation: null,
+      userAddress: '',
       travelMode: 'DRIVING',
       map: null,
       directionsService: null,
@@ -167,6 +200,13 @@ export default {
       isCardExpanded: true,
       isMapReady: false,
       isDropdownOpen: false,
+      selectedPlaceId: null,
+      selectedPlaceCoordinates: null,
+      placeMarkers: [],
+      userLocationMarker: null,
+      isRouteActive: false,
+      geocoder: null,
+      suppressDestinationSearch: false,
     }
   },
   computed: {
@@ -185,6 +225,14 @@ export default {
       }
     },
   },
+  watch: {
+    '$route.query': {
+      handler(newQuery) {
+        this.handleRouteQuery(newQuery)
+      },
+      deep: true,
+    },
+  },
   mounted() {
     this.loadBootstrap()
 
@@ -193,8 +241,14 @@ export default {
     } else {
       this.getCurrentLocation()
     }
+
+    this.handleRouteQuery(this.$route.query)
   },
   methods: {
+    ...mapMutations('places', {
+      setSelectedPlaceId: 'setSelectedPlaceId',
+    }),
+
     loadBootstrap() {
       if (!document.querySelector('link[href*="bootstrap"]')) {
         const bootstrapCSS = document.createElement('link')
@@ -205,10 +259,23 @@ export default {
       }
     },
 
+    clearAllPlaceMarkers() {
+      this.placeMarkers.forEach(marker => {
+        marker.setMap(null)
+      })
+      this.placeMarkers = []
+    },
+
+    clearDirectionsRenderer() {
+      if (this.directionsRenderer) {
+        this.directionsRenderer.setDirections({ routes: [] })
+      }
+    },
+
     setTravelMode(mode) {
       this.travelMode = mode
       this.isDropdownOpen = false
-      if (this.routeInfo) {
+      if (this.routeInfo && this.isRouteActive) {
         this.calculateRoute()
       }
     },
@@ -228,20 +295,18 @@ export default {
           return
         }
 
-        const existingScript = document.querySelector(
-          "script[src*='maps.googleapis.com']"
-        );
-        if (existingScript) existingScript.remove();
+        const existingScript = document.querySelector("script[src*='maps.googleapis.com']")
+        if (existingScript) existingScript.remove()
 
-        const script = document.createElement("script");
-        script.src =
-          "https://maps.googleapis.com/maps/api/js?key={API_KEY}&libraries=places";
-        script.async = true;
-        script.defer = true;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
+        const script = document.createElement('script')
+        const apiKey = import.meta.env.VITE_GOOGLE_MAP_KEY
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
+        script.async = true
+        script.defer = true
+        script.onload = resolve
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
     },
 
     getCurrentLocation() {
@@ -252,16 +317,35 @@ export default {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             }
+            this.getAddressFromCoordinates(this.userLocation)
             this.initMap(this.userLocation)
           },
           () => {
             this.userLocation = { lat: -34.397, lng: 150.644 }
+            this.userAddress = 'Tu ubicación'
+            this.originInput = 'Tu ubicación'
             this.initMap(this.userLocation)
           },
         )
       } else {
         this.userLocation = { lat: -34.397, lng: 150.644 }
+        this.userAddress = 'Tu ubicación'
+        this.originInput = 'Tu ubicación'
         this.initMap(this.userLocation)
+      }
+    },
+
+    getAddressFromCoordinates(coordinates) {
+      if (this.geocoder) {
+        this.geocoder.geocode({ location: coordinates }, (results, status) => {
+          if (status === 'OK' && results[0]) {
+            this.userAddress = results[0].formatted_address
+            this.originInput = this.userAddress
+          } else {
+            this.userAddress = 'Tu ubicación'
+            this.originInput = 'Tu ubicación'
+          }
+        })
       }
     },
 
@@ -271,17 +355,98 @@ export default {
         zoom: 14,
       })
 
+      this.geocoder = new google.maps.Geocoder()
       this.directionsService = new google.maps.DirectionsService()
-      this.directionsRenderer = new google.maps.DirectionsRenderer()
+      this.directionsRenderer = new google.maps.DirectionsRenderer({
+        suppressMarkers: true,
+        suppressInfoWindows: true,
+      })
       this.directionsRenderer.setMap(this.map)
 
-      new google.maps.Marker({
+      this.userLocationMarker = new google.maps.Marker({
         position: center,
         map: this.map,
         title: 'Tu ubicación actual',
       })
 
+      this.map.addListener('click', (event) => {
+        this.handleMapClick(event)
+      })
+
       this.isMapReady = true
+    },
+
+    handleMapClick(event) {
+      this.clearAllPlaceMarkers()
+      this.clearDirectionsRenderer()
+
+      const latLng = event.latLng
+      const placeId = event.placeId
+
+      if (placeId) {
+        this.getPlaceDetailsByPlaceId(placeId, latLng)
+      } else {
+        this.searchNearbyPlace(latLng)
+      }
+    },
+
+    getPlaceDetailsByPlaceId(placeId, latLng) {
+      const placesService = new google.maps.places.PlacesService(this.map)
+
+      placesService.getDetails(
+        {
+          placeId: placeId,
+          fields: ['name', 'formatted_address', 'rating', 'place_id', 'geometry'],
+        },
+        (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            this.createMarkerAndShowInfo(place, latLng)
+          } else {
+            console.log('Error obteniendo detalles del lugar:', status)
+            this.searchNearbyPlace(latLng)
+          }
+        }
+      )
+    },
+
+    searchNearbyPlace(latLng) {
+      const placesService = new google.maps.places.PlacesService(this.map)
+
+      placesService.nearbySearch(
+        {
+          location: latLng,
+          radius: 50,
+        },
+        (places, status) => {
+          if (places && places.length > 0) {
+            this.createMarkerAndShowInfo(places[0], latLng)
+          }
+        }
+      )
+    },
+
+    createMarkerAndShowInfo(place, latLng) {
+      const marker = new google.maps.Marker({
+        position: latLng,
+        map: this.map,
+        title: place.name,
+      })
+
+      this.placeMarkers.push(marker)
+
+      this.selectedPlaceCoordinates = latLng
+      this.routeInfo = {
+        name: place.name,
+        address: place.formatted_address || place.vicinity || 'Dirección no disponible',
+        rating: place.rating || 'N/A',
+        distance: '',
+        duration: '',
+        placeId: place.place_id,
+      }
+
+      this.selectedPlaceId = place.place_id
+      this.isCardExpanded = true
+      this.isRouteActive = false
     },
 
     calculateRoute() {
@@ -294,6 +459,8 @@ export default {
         alert('El mapa aún se está cargando. Por favor, espera un momento.')
         return
       }
+
+      this.clearAllPlaceMarkers()
 
       const origin = this.originInput.trim() !== '' ? this.originInput : this.userLocation
 
@@ -319,21 +486,134 @@ export default {
           placesService.nearbySearch(placesRequest, (places, status) => {
             const place = places?.[0] || {}
 
-            this.routeInfo = {
-              name: leg.end_address.split(',')[0],
-              address: leg.end_address,
-              rating: place.rating,
-              distance: leg.distance.text,
-              duration: leg.duration.text,
-            }
-
-            this.isCardExpanded = true
+            this.updateRouteInfo(place, leg)
           })
         } else {
           console.error('Error al calcular la ruta:', status)
           alert('No se pudo calcular la ruta.')
         }
       })
+    },
+
+    updateRouteInfo(place, leg) {
+      this.routeInfo = {
+        name: place.name || leg.end_address.split(',')[0],
+        address: leg.end_address,
+        rating: place.rating || 'N/A',
+        distance: leg.distance.text,
+        duration: leg.duration.text,
+        placeId: place.place_id || null,
+      }
+
+      this.selectedPlaceId = place.place_id || null
+      this.isCardExpanded = true
+      this.isRouteActive = true
+    },
+
+    setAsDestination() {
+      if (this.routeInfo && this.selectedPlaceCoordinates) {
+        this.clearAllPlaceMarkers()
+
+        const origin = this.originInput.trim() !== '' ? this.originInput : this.userLocation
+
+        const request = {
+          origin,
+          destination: this.selectedPlaceCoordinates,
+          travelMode: this.travelMode,
+        }
+
+        this.directionsService.route(request, (result, status) => {
+          if (status === 'OK') {
+            this.directionsRenderer.setDirections(result)
+
+            const leg = result.routes[0].legs[0]
+
+            this.routeInfo = {
+              name: this.routeInfo.name,
+              address: leg.end_address,
+              rating: this.routeInfo.rating,
+              distance: leg.distance.text,
+              duration: leg.duration.text,
+              placeId: this.routeInfo.placeId,
+            }
+
+            this.suppressDestinationSearch = true
+            this.destinationInput = this.routeInfo.name
+
+            this.$nextTick(() => {
+              setTimeout(() => {
+                this.suppressDestinationSearch = false
+              }, 50)
+            })
+
+            this.isDropdownOpen = false
+            this.isCardExpanded = true
+            this.isRouteActive = true
+          } else {
+            console.error('Error al calcular la ruta con coordenadas:', status)
+            alert('No se pudo calcular la ruta.')
+          }
+        })
+      }
+    },
+
+    clearRoute() {
+      this.routeInfo = null
+      this.destinationInput = ''
+      this.isRouteActive = false
+      this.selectedPlaceCoordinates = null
+      this.isDropdownOpen = false
+      this.suppressDestinationSearch = false
+
+      this.clearAllPlaceMarkers()
+      this.clearDirectionsRenderer()
+    },
+
+    handleRouteQuery(query) {
+      if (query.name && query.lat && query.lng && query.placeId) {
+        if (!this.isMapReady) {
+          setTimeout(() => this.handleRouteQuery(query), 500)
+          return
+        }
+
+        const lat = parseFloat(query.lat)
+        const lng = parseFloat(query.lng)
+        const coordinates = { lat, lng }
+
+        this.map.setCenter(coordinates)
+        this.map.setZoom(16)
+
+        this.clearAllPlaceMarkers()
+
+        const marker = new google.maps.Marker({
+          position: coordinates,
+          map: this.map,
+          title: query.name,
+        })
+
+        this.placeMarkers.push(marker)
+        this.selectedPlaceCoordinates = coordinates
+
+        this.routeInfo = {
+          name: query.name,
+          address: query.address || 'Dirección no disponible',
+          rating: query.rating || 'N/A',
+          distance: '',
+          duration: '',
+          placeId: query.placeId,
+        }
+
+        this.selectedPlaceId = query.placeId
+        this.isCardExpanded = true
+        this.isRouteActive = false
+
+        this.clearDirectionsRenderer()
+      }
+    },
+
+    goToPlaceDetails() {
+      this.setSelectedPlaceId(this.selectedPlaceId)
+      this.$router.push({ name: 'site_description' })
     },
   },
 }
@@ -389,7 +669,6 @@ export default {
   z-index: -1;
 }
 
-/* Botón de toggle*/
 .toggle-btn {
   background: rgba(27, 81, 94, 0.1) !important;
   border: 1px solid rgba(27, 81, 94, 0.2) !important;
@@ -399,6 +678,7 @@ export default {
   height: 40px;
   transition: all 0.3s ease !important;
   flex-shrink: 0;
+  font-size: 1.1rem;
 }
 
 .toggle-btn:hover {
@@ -503,21 +783,28 @@ export default {
   border: 1px solid rgba(27, 81, 94, 0.2) !important;
 }
 
-.transport-select {
+.info-actions {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.btn-route {
   background: #abcdab !important;
   border: none !important;
   border-radius: 25px !important;
   color: #1b515e !important;
   font-weight: 500 !important;
+  transition: all 0.3s ease !important;
 }
 
-.transport-select:focus {
+.btn-route:hover {
   background: #9bc19b !important;
-  box-shadow: 0 0 0 0.2rem rgba(171, 205, 171, 0.5) !important;
-  border: none !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(171, 205, 171, 0.3) !important;
 }
 
-.add-btn {
+.btn-details {
   background: #1b515e !important;
   border: none !important;
   border-radius: 25px !important;
@@ -526,7 +813,7 @@ export default {
   transition: all 0.3s ease !important;
 }
 
-.add-btn:hover {
+.btn-details:hover {
   background: #163f49 !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 12px rgba(27, 81, 94, 0.3) !important;
