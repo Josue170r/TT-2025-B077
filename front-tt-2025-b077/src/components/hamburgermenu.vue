@@ -13,6 +13,12 @@
     <transition name="fade">
       <div v-if="isOpen" class="menu">
         <ul>
+          <li @click="goTo('home')">
+            <span class="menu-text"
+              ><i class="fa-solid fa-house-user me-3"></i>Inicio</span
+            >
+            <div class="separator"></div>
+          </li>
           <li @click="goTo('preferences')">
             <span class="menu-text"
               ><i class="fa-solid fa-arrows-rotate me-3"></i>Modificar mis preferencias</span
@@ -24,6 +30,12 @@
               <img src="/huella.png" alt="icono huella" class="me-2" width="23" height="23" />
               Huella de carbono por uso de la app
             </span>
+            <div class="separator"></div>
+          </li>
+          <li @click="goTo('itinerary')">
+            <span class="menu-text"
+              ><i class="fa-regular fa-map icon icon-large me-3"></i>Mis viajes realizados</span
+            >
             <div class="separator"></div>
           </li>
           <li @click="goTo('support')">
