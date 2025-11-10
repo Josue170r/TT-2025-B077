@@ -2,6 +2,7 @@ package com.tt._2025.b077.huellaspormexico.modules.users.services.impl;
 
 import com.tt._2025.b077.huellaspormexico.modules.users.services.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,6 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
+@Profile("dev")
 public class FileStorageServiceImpl implements FileStorageService {
 
     @Value("${app.file.upload-dir}")
