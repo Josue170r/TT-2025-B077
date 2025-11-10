@@ -1,26 +1,10 @@
 <template>
   <NavTopFootPrint />
-  <div class="carbon-wrapper">
+  <div class="carbon-wrapper" style="margin-top: 20px">
     <div class="row g-4 g-md-5">
       <!-- Card con gráfica - Izquierda en desktop -->
       <div class="col-12 col-md-6">
         <div class="card shadow-sm carbon-card">
-          <!-- <div v-if="isLoading" class="card-body text-center py-5">
-            <div class="spinner-border" style="color: #ABCD9E;" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
-            <p class="mt-3 text-muted">Cargando datos...</p>
-          </div> -->
-          
-          <!-- <div v-else-if="error" class="card-body text-center py-5">
-            <div class="text-danger mb-3">
-            </div>
-            <p class="text-muted">{{ error }}</p>
-            <button @click="fetchCarbonData" class="btn btn-sm" style="background-color: #ABCD9E; color: #1B515E; border: none;">Reintentar</button>
-          </div> -->
-          
-          <!-- Contenido principal -->
-          <!-- Cambiar v-if por: v-else-if="!isLoading && !error && months.length > 0" -->
           <div class="card-body">
             <!-- Selector de mes -->
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -84,14 +68,56 @@
       <!-- Sección de resumen y consejos - Derecha en desktop -->
       <div class="col-12 col-md-6">
         <div class="content-wrapper">
-          <!-- Resumen de impacto -->
-          <div class="impact-summary p-3 rounded mb-3">
+          <!-- Selector de versión de resumen -->
+          <div class="mb-3 d-flex justify-content-center gap-2 flex-wrap">
+            <button 
+              v-for="n in 4" 
+              :key="n"
+              @click="summaryVersion = n"
+              class="btn btn-sm version-btn"
+              :class="{ 'active': summaryVersion === n }"
+            >
+              Impacto {{ n }}
+            </button>
+          </div>
+
+          <div v-if="summaryVersion === 1" class="impact-summary p-3 rounded mb-3">
             <p class="impact-text mb-2">
-              Haz generado <strong>{{ currentMonth.total }} gramos de CO<sub class="subscript">2</sub></strong> desde que empezaste a utilizar nuestra app.
+              Has generado <strong>{{ currentMonth.total }} gramos de CO<sub class="subscript">2</sub></strong> este mes usando la aplicación.
             </p>
             <ul class="impact-list mb-0">
-              <li>Equivale a encender una bombilla LED durante 22 horas.</li>
-              <li>Equivale a recorrer 0.715 km en coche.</li>
+              <li>Representa el {{ calculatePercentage() }}% del promedio mensual de emisiones de apps similares.</li>
+              <li>Has consultado la app {{ currentMonth.categories.length }} veces en los últimos 5 días.</li>
+            </ul>
+          </div>
+
+          <div v-if="summaryVersion === 2" class="impact-summary p-3 rounded mb-3">
+            <p class="impact-text mb-2">
+              Este mes has generado <strong>{{ currentMonth.total }} gramos de CO<sub class="subscript">2</sub></strong> al usar la aplicación.
+            </p>
+            <ul class="impact-list mb-0">
+              <li>Tu día con menor huella fue con {{ currentMonth.lowest }} gr de CO<sub class="subscript">2</sub>.</li>
+              <li>Mantener este ritmo significa {{ (currentMonth.total * 12).toFixed(1) }} gr anuales aproximadamente.</li>
+            </ul>
+          </div>
+
+          <div v-if="summaryVersion === 3" class="impact-summary p-3 rounded mb-3">
+            <p class="impact-text mb-2">
+              Has generado <strong>{{ currentMonth.total }} gramos de CO<sub class="subscript">2</sub></strong> este mes al usar la aplicación.
+            </p>
+            <ul class="impact-list mb-0">
+              <li>El promedio diario de este mes es {{ (currentMonth.total / 30).toFixed(1) }} gr de CO<sub class="subscript">2</sub>.</li>
+              <li>Cada transferencia de datos consume energía que genera emisiones.</li>
+            </ul>
+          </div>
+
+          <div v-if="summaryVersion === 4" class="impact-summary p-3 rounded mb-3">
+            <p class="impact-text mb-2">
+              Este mes has generado <strong>{{ currentMonth.total }} gramos de CO<sub class="subscript">2</sub></strong> usando la aplicación.
+            </p>
+            <ul class="impact-list mb-0">
+              <li>Cada acción digital tiene un impacto ambiental medible.</li>
+              <li>Pequeños cambios en tus hábitos pueden reducir estas emisiones.</li>
             </ul>
           </div>
 
@@ -114,7 +140,6 @@
 <script>
 import VueApexCharts from "vue3-apexcharts";
 import NavTopFootPrint from "@/components/NavTopFootPrint.vue";
-// import { getCarbonFootprintData } from '@/services/carbonApi';
 
 export default {
   name: "CarbonFootPrint",
@@ -124,17 +149,7 @@ export default {
   data() {
     return {
       currentMonthIndex: 2,
-      // [
-      //   {
-      //     label: "Enero 2025",           // Nombre del mes y año
-      //     data: [3.2, 4.1, 5.5, ...],    // Array con emisiones diarias (últimos 5 días)
-      //     categories: ["10", "11", ...], // Array con números de día correspondientes
-      //     today: 4.6,                    // Emisiones del día actual en gramos
-      //     lowest: 3.2,                   // Emisión más baja del mes en gramos
-      //     total: 42.8                    // Total acumulado del mes en gramos
-      //   },
-      // ]
-      //Esto debe de borrarse despues dee ser conectado, sonm datos de ejemplo
+      summaryVersion: 1, // Controla qué versión del resumen
       months: [
         {
           label: "Enero 2025",
@@ -177,13 +192,8 @@ export default {
           total: 49.5,
         },
       ],
-      // isLoading: false,
-      // error: null,
     };
   },
-  // async mounted() {
-  //   await this.fetchCarbonData();
-  // },
   computed: {
     currentMonth() {
       return this.months[this.currentMonthIndex];
@@ -324,26 +334,10 @@ export default {
     },
   },
   methods: {
-    // async fetchCarbonData() {
-    //   try {
-    //     this.isLoading = true;
-    //     this.error = null;
-    //     
-    //     const response = await getCarbonFootprintData();
-    //     
-    //     if (response && Array.isArray(response.data)) {
-    //       this.months = response.data;
-    //       // Establecer mes actual por defecto
-    //       this.currentMonthIndex = this.months.length - 1;
-    //     }
-    //   } catch (error) {
-    //     console.error('Error al cargar datos de huella de carbono:', error);
-    //     this.error = 'No se pudieron cargar los datos. Por favor, intenta de nuevo.';
-    //   } finally {
-    //     this.isLoading = false;
-    //   }
-    // },
-    
+    calculatePercentage() {
+      const average = 50;
+      return ((this.currentMonth.total / average) * 100).toFixed(0);
+    },
     previousMonth() {
       if (this.currentMonthIndex > 0) {
         this.currentMonthIndex--;
@@ -359,7 +353,6 @@ export default {
 </script>
 
 <style scoped>
-
 .carbon-wrapper {
   max-width: 320px;
   margin: 0 auto;
@@ -385,6 +378,29 @@ export default {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 
               0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
   transform: translateY(-2px);
+}
+
+.version-btn {
+  background: #F3F4F6;
+  color: #1B515E;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.version-btn:hover {
+  background: #E5E7EB;
+  transform: translateY(-1px);
+}
+
+.version-btn.active {
+  background: #ABCD9E;
+  color: #1B515E;
+  border-color: #7FA87D;
+  font-weight: 600;
 }
 
 .nav-btn {
@@ -464,6 +480,7 @@ export default {
 .impact-summary {
   background: linear-gradient(135deg, #F0F8F0 0%, #E8F5E8 100%);
   border-left: 3px solid #ABCD9E;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .impact-text {
@@ -531,7 +548,6 @@ export default {
   left: 0.5rem;
 }
 
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -540,6 +556,15 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -571,6 +596,11 @@ export default {
   .impact-list li,
   .tips-list li {
     font-size: 11px;
+  }
+  
+  .version-btn {
+    font-size: 10px;
+    padding: 0.35rem 0.6rem;
   }
 }
 
@@ -615,7 +645,6 @@ export default {
     font-size: 13px;
   }
   
-  /* Mayor separación en pantallas grandes */
   .row > [class*='col-'] {
     padding-left: 4rem;
     padding-right: 4rem;

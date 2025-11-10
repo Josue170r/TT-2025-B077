@@ -27,7 +27,6 @@
             aria-label="Ver mis itinerarios creados"
           >
             <i class="fa-solid fa-list-check" aria-hidden="true"></i>
-            <i class="fa-solid fa-list-check" aria-hidden="true"></i>
             <span class="d-none d-lg-inline-block ms-2">Itinerarios</span>
           </router-link>
         </div>
