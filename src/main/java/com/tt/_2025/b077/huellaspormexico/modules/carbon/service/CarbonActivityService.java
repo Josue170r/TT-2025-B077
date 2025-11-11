@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface CarbonActivityService {
     void saveCarbonActivity(CarbonActivity carbonActivity);
-    List<CarbonActivity> getUserActivities(Long userID, String activityType, LocalDate startDate, LocalDate endDate);
-    BigDecimal calculateUserTotalCo2(Long userID, String activityType, LocalDate startDate, LocalDate endDate);
-    User findUserById(Long userID);
+    List<CarbonActivity> getUserActivities(String username, String activityType, LocalDate startDate, LocalDate endDate);
+    BigDecimal calculateUserTotalCo2(String username, String activityType, LocalDate startDate, LocalDate endDate);
 }

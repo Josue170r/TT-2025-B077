@@ -39,11 +39,13 @@ public class CarbonActivityServiceImpl implements CarbonActivityService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CarbonActivity> getUserActivities(Long userID, String activityType, LocalDate startDate, LocalDate endDate) {
+    public List<CarbonActivity> getUserActivities(String username, String activityType, LocalDate startDate, LocalDate endDate) {
         LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime endDateTime = endDate != null ? endDate.atTime(23, 59, 59) : null;
 
-        User user = findUserById(userID);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
         Specification<CarbonActivity> spec = CarbonActivitySpecification.buildSpecification(user, activityType, startDateTime, endDateTime);
         Sort sort = Sort.by(Sort.Direction.DESC, "registeredAt");
         return carbonRepository.findAll(spec, sort);
@@ -51,22 +53,18 @@ public class CarbonActivityServiceImpl implements CarbonActivityService {
 
     @Override
     @Transactional(readOnly = true)
-    public BigDecimal calculateUserTotalCo2(Long userID, String activityType, LocalDate startDate, LocalDate endDate) {
+    public BigDecimal calculateUserTotalCo2(String username, String activityType, LocalDate startDate, LocalDate endDate) {
         LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime endDateTime = endDate != null ? endDate.atTime(23, 59, 59) : null;
 
-        User user = findUserById(userID);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
         Specification<CarbonActivity> spec = CarbonActivitySpecification.buildSpecification(user, activityType, startDateTime, endDateTime);
         List<CarbonActivity> activities = carbonRepository.findAll(spec);
 
         return activities.stream()
                 .map(CarbonActivity::getCo2Generated)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    @Override
-    public User findUserById(Long userID) {
-        return userRepository.findById(userID)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 }
