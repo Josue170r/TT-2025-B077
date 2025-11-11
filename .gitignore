@@ -36,6 +36,8 @@ build/
 .envs/.local/.jwt
 .envs/.local/.smtp
 .envs/.local/.spring
+.env_prod_backend
+.env_prod_frontend
 
 ### Directories ###
 /src/main/resources/profile-pictures
