@@ -141,3 +141,58 @@ export async function saveUserPreferences({ commit }, data) {
       })
   })
 }
+
+export async function fetchCarbonActivities({ commit }, { startDate = null, endDate = null } = {}) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Cargando actividades de carbono',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/carbon-activity', {
+        params: { startDate, endDate },
+      })
+      .then((response) => {
+        commit('setActivities', response.data.data || [])
+        resolve(response)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
+export async function fetchTotalCo2({ commit }, { startDate = null, endDate = null } = {}) {
+  commit(
+    'setLoading',
+    {
+      isLoading: true,
+      msg: 'Calculando total de CO₂',
+    },
+    { root: true },
+  )
+  return new Promise((resolve, reject) => {
+    axios
+      .get('/carbon-activity/total-co2', {
+        params: { startDate, endDate },
+      })
+      .then((response) => {
+        commit('setTotalCo2', response.data.data || 0)
+        resolve(response)
+      })
+      .catch((error) => {
+        reject(error)
+      })
+      .finally(() => {
+        commit('setLoading', false, { root: true })
+      })
+  })
+}
+
