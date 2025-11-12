@@ -1,11 +1,11 @@
-FROM node:18-alpine as builder
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY front-tt-2025-b077/package*.json ./
 RUN npm install
 
-COPY . .
+COPY front-tt-2025-b077 ./
 
 ARG VITE_API_BACK
 ARG VITE_ACO_API
@@ -15,8 +15,8 @@ RUN npm run build
 
 FROM nginx:alpine
 
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY default.conf /etc/nginx/conf.d/default.conf
+COPY front-tt-2025-b077/nginx.conf /etc/nginx/nginx.conf
+COPY front-tt-2025-b077/default.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 
