@@ -430,8 +430,8 @@ export default {
   async mounted() {
     try {
       await this.fetchPlaceDetails()
-      await this.fetchUserItineraries()
       await this.loadWeatherData()
+      await this.fetchUserItineraries()
     } catch (error) {
       console.error('Error cargando detalles del lugar:', error)
     }
