@@ -16,6 +16,6 @@ WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar
 
-EXPOSE 80
+EXPOSE 443
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
