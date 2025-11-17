@@ -18,7 +18,7 @@
         <v-carousel-item
           v-for="(image, index) in place.images"
           :key="index"
-          :src="image.photoUrl"
+          :src="getPlaceImage(image)"
           cover
         />
       </v-carousel>
@@ -133,6 +133,17 @@ export default {
       }
       return typeTranslations[type] || type.replace(/_/g, ' ')
     },
+    getPlaceImage(image) {
+      const baseURL = import.meta.env.DEV
+        ? 'http://127.0.0.1:8080/api/'
+        : import.meta.env.VITE_API_BACK
+
+      if (image.origin === "Google") {
+        return `${baseURL}place/photo?photoReference=${image.photoReference}`
+      } else {
+        return image.photoUrl
+      }
+    }
   },
 }
 </script>
