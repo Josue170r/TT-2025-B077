@@ -477,7 +477,6 @@ public class PlaceApiServiceImpl implements PlaceApiService {
             } else {
                 String photoId = getTextValue(imageNode, "id");
                 image.setPhotoReference(photoId != null ? photoId : "");
-
                 JsonNode imagesData = imageNode.get("images");
                 if (imagesData != null) {
                     JsonNode originalNode = imagesData.get("original");
@@ -491,7 +490,9 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                     }
                 }
             }
-            if (image.getPhotoUrl() != null && !image.getPhotoUrl().isEmpty()) {
+            String url = image.getPhotoUrl();
+            String ref = image.getPhotoReference();
+            if ((url != null && !url.isEmpty()) || (ref != null && !ref.isEmpty())) {
                 images.add(image);
             }
         }
