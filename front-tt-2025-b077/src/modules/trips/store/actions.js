@@ -221,15 +221,20 @@ export async function generateItinerary({ commit, state }) {
   })
 }
 
-export async function fetchUserItineraries({ commit }, { page = 0, size = 7 } = {}) {
-  commit(
-    'setLoading',
-    {
-      isLoading: true,
-      msg: 'Cargando itinerarios',
-    },
-    { root: true },
-  )
+export async function fetchUserItineraries(
+  { commit },
+  { page = 0, size = 7, showLoading = true } = {},
+) {
+  if (showLoading) {
+    commit(
+      'setLoading',
+      {
+        isLoading: true,
+        msg: 'Cargando itinerarios',
+      },
+      { root: true },
+    )
+  }
   return new Promise((resolve, reject) => {
     axios
       .get(`/itineraries/user?page=${page}&size=${size}`)
@@ -237,12 +242,15 @@ export async function fetchUserItineraries({ commit }, { page = 0, size = 7 } = 
         const data = response.data
         commit('setPagination', data)
         commit('setUserItineraries', data.content)
+        resolve(data)
       })
       .catch((error) => {
         reject(error)
       })
       .finally(() => {
-        commit('setLoading', false, { root: true })
+        if (showLoading) {
+          commit('setLoading', false, { root: true })
+        }
       })
   })
 }
