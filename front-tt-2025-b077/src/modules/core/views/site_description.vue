@@ -46,7 +46,7 @@
                 <v-carousel-item
                   v-for="(item, i) in imageItems"
                   :key="i"
-                  :src="item.photoUrl"
+                  :src="getPlaceImage(item)"
                   cover
                 >
                 </v-carousel-item>
@@ -431,7 +431,6 @@ export default {
     try {
       await this.fetchPlaceDetails()
       await this.loadWeatherData()
-      await this.fetchUserItineraries()
     } catch (error) {
       console.error('Error cargando detalles del lugar:', error)
     }
@@ -444,7 +443,6 @@ export default {
     }),
     ...mapActions('trips', {
       toggleFavoritePlace: 'toggleFavoritePlace',
-      fetchUserItineraries: 'fetchUserItineraries',
     }),
     async toggleFavorite() {
       if (!this.selectedPlaceDetails?.id) return
@@ -471,6 +469,17 @@ export default {
           rating: place.rating,
         },
       })
+    },
+    getPlaceImage(image) {
+      const baseURL = import.meta.env.DEV
+        ? 'http://127.0.0.1:8080/api/'
+        : import.meta.env.VITE_API_BACK
+
+      if (image.origin === "Google") {
+        return `${baseURL}place/photo?photoReference=${image.photoReference}`
+      } else {
+        return image.photoUrl
+      }
     },
     openReviewModal(review) {
       this.selectedReview = review
