@@ -187,19 +187,20 @@ public class ItineraryServiceImpl implements ItineraryService {
     }
 
     private static Set<String> getStrings(Itinerary itinerary) {
-        Set<String> imageSet = new HashSet<>();
-        for (ItineraryDay day : itinerary.getItineraryDays()) {
-            for (ItineraryPlace itineraryPlace : day.getPlaces()) {
-                Place place = itineraryPlace.getPlace();
-                if (place.getImages() != null && !place.getImages().isEmpty()) {
-                    PlaceImage firstImage = place.getImages().get(0);
-                    if (firstImage.getPhotoUrl() != null && !firstImage.getPhotoUrl().isEmpty()) {
-                        imageSet.add(firstImage.getPhotoUrl());
-                    }
-                }
-            }
-        }
-        return imageSet;
+        return itinerary.getItineraryDays().stream()
+                .flatMap(day -> day.getPlaces().stream())
+                .map(ItineraryPlace::getPlace)
+                .filter(place -> place.getImages() != null && !place.getImages().isEmpty())
+                .map(place -> place.getImages().get(0))
+                .filter(ItineraryServiceImpl::isValidImage)
+                .map(img -> "Google".equals(img.getOrigin()) ? img.getPhotoReference() : img.getPhotoUrl())
+                .collect(Collectors.toSet());
+    }
+
+    private static boolean isValidImage(PlaceImage img) {
+        String url = img.getPhotoUrl();
+        String ref = img.getPhotoReference();
+        return (url != null && !url.isEmpty()) || (ref != null && !ref.isEmpty());
     }
 
     @Override
