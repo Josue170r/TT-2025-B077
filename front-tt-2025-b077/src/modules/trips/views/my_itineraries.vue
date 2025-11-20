@@ -17,7 +17,7 @@
               <v-carousel-item
                 v-for="(image, i) in itinerary.images"
                 :key="i"
-                :src="image"
+                :src="getImageUrl(image)"
                 cover
               ></v-carousel-item>
             </v-carousel>
@@ -195,7 +195,15 @@ export default {
       this.deleteDialog = false
       this.itineraryToDelete = null
     },
-
+    getImageUrl(image) {
+      if (image.startsWith('http://') || image.startsWith('https://')) {
+        return image
+      }
+      const baseURL = import.meta.env.DEV
+        ? 'http://127.0.0.1:8080/api/'
+        : import.meta.env.VITE_API_BACK
+      return `${baseURL}place/photo?photoReference=${image}`
+    },
     confirmDelete() {
       this.deleteItineraryAction(this.itineraryToDelete).then((response) => {
         this.$alert.success(response.message)
