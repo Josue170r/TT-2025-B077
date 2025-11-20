@@ -52,7 +52,7 @@
                   <v-carousel-item
                     v-for="(image, idx) in itinerary.images.slice(0, 3)"
                     :key="idx"
-                    :src="image"
+                    :src="getImageUrl(image)"
                     cover
                   ></v-carousel-item>
                 </v-carousel>
@@ -277,6 +277,9 @@ export default {
       },
     }
   },
+  async mounted() {
+    await this.fetchUserItineraries()
+  },
   computed: {
     ...mapState('places', {
       selectedPlaceDetails: 'selectedPlaceDetails',
@@ -351,6 +354,15 @@ export default {
         this.loadingDays = false
       }
     },
+    getImageUrl(image) {
+      if (image.startsWith('http://') || image.startsWith('https://')) {
+        return image
+      }
+      const baseURL = import.meta.env.DEV
+        ? 'http://127.0.0.1:8080/api/'
+        : import.meta.env.VITE_API_BACK
+      return `${baseURL}place/photo?photoReference=${image}`
+    },
     selectDay(day, index) {
       this.selectedDay = day
       this.selectedDayIndex = index
@@ -409,7 +421,7 @@ export default {
         this.confirmAddModalOpen = false
         this.addToItineraryModalOpen = false
 
-        await this.fetchUserItineraries()
+        await this.fetchUserItineraries({ showLoading: false })
         this.$emit('place-added')
       } catch (error) {
         this.$alert.error(getErrorDetails(error))
