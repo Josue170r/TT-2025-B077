@@ -10,8 +10,8 @@ public class Co2CalculatorService {
 
     private static final double CO2_PER_CPU_MILLISECOND = 0.0000001;
     private static final double CO2_PER_MB_MEMORY = 0.0000005;
-    private static final double CO2_PER_DB_QUERY = 0.001;
-    private static final double CO2_PER_HTTP_REQUEST = 0.0005;
+    private static final double CO2_PER_DB_QUERY = 0.0001;
+    private static final double CO2_PER_HTTP_REQUEST = 0.00005;
 
     public BigDecimal calculateMethodCo2(ExecutionMetrics metrics) {
         double totalCo2 = 0.0;
