@@ -88,10 +88,6 @@
               usando la aplicación.
             </p>
             <ul class="impact-list mb-0">
-              <li>
-                Representa el {{ calculatePercentage() }}% del promedio mensual de emisiones de apps
-                similares.
-              </li>
               <li>Se registraron {{ activities.length }} actividades durante el mes.</li>
             </ul>
           </div>
@@ -256,10 +252,6 @@ export default {
       fetchCarbonActivities: 'fetchCarbonActivities',
       fetchTotalCo2: 'fetchTotalCo2',
     }),
-    calculatePercentage() {
-      const average = 50
-      return ((this.totalValue / average) * 100).toFixed(0)
-    },
     previousMonth() {
       if (this.currentMonthIndex > 0) this.currentMonthIndex--
     },
