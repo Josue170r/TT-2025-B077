@@ -11,6 +11,7 @@ let baseRoutes = [
     path: '/',
     name: 'index',
     component: FrontPage,
+    meta: { rule: 'public' }
   },
 ]
 

@@ -3,6 +3,8 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/src/main/resources/api-keystore.p12
+
 
 ### STS ###
 .apt_generated
@@ -36,6 +38,8 @@ build/
 .envs/.local/.jwt
 .envs/.local/.smtp
 .envs/.local/.spring
+.env_prod_backend
+.env_prod_frontend
 
 ### Directories ###
 /src/main/resources/profile-pictures

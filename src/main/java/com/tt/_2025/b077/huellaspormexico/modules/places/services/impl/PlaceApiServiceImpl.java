@@ -206,7 +206,6 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                     .queryParam("photo_reference", photoReference)
                     .queryParam("key", googleApiKey)
                     .toUriString();
-
             return restTemplate.getForObject(url, byte[].class);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching Google photo", e);
@@ -474,17 +473,10 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                 String photoReference = getTextValue(imageNode, "photo_reference");
                 if (photoReference != null) {
                     image.setPhotoReference(photoReference);
-                    String photoUrl = UriComponentsBuilder
-                            .fromUriString(backendUrl + "/api/place/photo")
-                            .queryParam("photoReference", photoReference)
-                            .queryParam("maxwidth", "4000")
-                            .toUriString();
-                    image.setPhotoUrl(photoUrl);
                 }
             } else {
                 String photoId = getTextValue(imageNode, "id");
                 image.setPhotoReference(photoId != null ? photoId : "");
-
                 JsonNode imagesData = imageNode.get("images");
                 if (imagesData != null) {
                     JsonNode originalNode = imagesData.get("original");
@@ -498,7 +490,9 @@ public class PlaceApiServiceImpl implements PlaceApiService {
                     }
                 }
             }
-            if (image.getPhotoUrl() != null && !image.getPhotoUrl().isEmpty()) {
+            String url = image.getPhotoUrl();
+            String ref = image.getPhotoReference();
+            if ((url != null && !url.isEmpty()) || (ref != null && !ref.isEmpty())) {
                 images.add(image);
             }
         }

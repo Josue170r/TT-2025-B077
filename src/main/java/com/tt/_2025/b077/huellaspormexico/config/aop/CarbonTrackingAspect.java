@@ -75,8 +75,7 @@ public class CarbonTrackingAspect {
                 carbonActivity.setActivityType(activityType);
                 carbonActivity.setDescription(description);
 
-//                carbonService.saveCarbonActivity(carbonActivity);
-
+                carbonService.saveCarbonActivity(carbonActivity);
                 log.debug("CO2 tracked: {} - {} kg CO2 - {}ms", activityType, co2Amount, executionTime);
             }
         } catch (Exception e) {

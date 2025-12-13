@@ -1,5 +1,10 @@
 package com.tt._2025.b077.huellaspormexico.modules.users.services.impl;
 
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.tt._2025.b077.huellaspormexico.modules.users.services.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -7,49 +12,50 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
-@Profile("dev")
-public class FileStorageServiceImpl implements FileStorageService {
+@Profile("prod")
+public class AzureBlobStorageServiceImpl implements FileStorageService {
 
-    @Value("${app.file.upload-dir}")
-    private String uploadDir;
+    private final BlobContainerClient containerClient;
 
-    @Value("${app.file.base-url}")
-    private String baseUrl;
+    public AzureBlobStorageServiceImpl(
+            @Value("${azure.storage.connection-string}") String connectionString,
+            @Value("${azure.storage.container-name}") String containerName) {
 
-    /**
-     * Saves uploaded file and returns the public URL
-     */
+        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+                .connectionString(connectionString)
+                .buildClient();
+
+        this.containerClient = blobServiceClient.getBlobContainerClient(containerName);
+
+        if (!this.containerClient.exists()) {
+            this.containerClient.create();
+        }
+    }
+
     @Override
     public String saveProfilePicture(MultipartFile file, String username) throws IOException {
         if (!isValidImage(file)) {
             throw new IllegalArgumentException("El archivo no es válido");
         }
 
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
         String originalFilename = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFilename);
         String uniqueFilename = username + "_" + UUID.randomUUID() + fileExtension;
 
-        Path filePath = uploadPath.resolve(uniqueFilename);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        BlobClient blobClient = containerClient.getBlobClient(uniqueFilename);
 
-        return baseUrl + "/profile-pictures/" + uniqueFilename;
+        BlobHttpHeaders headers = new BlobHttpHeaders()
+                .setContentType(file.getContentType());
+
+        blobClient.upload(file.getInputStream(), file.getSize(), true);
+        blobClient.setHttpHeaders(headers);
+
+        return blobClient.getBlobUrl();
     }
 
-    /**
-     * Validates if the uploaded file is a valid image
-     */
     @Override
     public boolean isValidImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -70,9 +76,6 @@ public class FileStorageServiceImpl implements FileStorageService {
         );
     }
 
-    /**
-     * Gets file extension from filename
-     */
     private String getFileExtension(String filename) {
         if (filename != null && filename.contains(".")) {
             return filename.substring(filename.lastIndexOf(".")).toLowerCase();
@@ -80,19 +83,16 @@ public class FileStorageServiceImpl implements FileStorageService {
         return ".jpg";
     }
 
-    /**
-     * Deletes a profile picture file
-     */
     @Override
     public void deleteProfilePicture(String pictureUrl) {
         try {
-            if (pictureUrl != null && pictureUrl.startsWith(baseUrl)) {
+            if (pictureUrl != null && pictureUrl.contains(containerClient.getBlobContainerName())) {
                 String filename = pictureUrl.substring(pictureUrl.lastIndexOf("/") + 1);
-                Path filePath = Paths.get(uploadDir).resolve(filename);
-                Files.deleteIfExists(filePath);
+                BlobClient blobClient = containerClient.getBlobClient(filename);
+                blobClient.deleteIfExists();
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Error al eliminar el imagen de perfil");
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar la imagen de perfil");
         }
     }
 }
