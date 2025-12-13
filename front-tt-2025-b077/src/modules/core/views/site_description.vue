@@ -369,7 +369,7 @@ export default {
         temperature: '--',
         iconClass: 'fa-solid fa-sun',
       },
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       reviewModalOpen: false,
       selectedReview: null,
       addReviewModalOpen: false,
@@ -454,7 +454,12 @@ export default {
       }
     },
     goBack() {
-      this.$router.push({ name: 'home' })
+      const from = this.$route.query.from
+      if (from) {
+        this.$router.push({ name: from })
+      } else {
+        this.$router.push({ name: 'home' })
+      }
     },
     goToMap() {
       const place = this.selectedPlaceDetails
@@ -475,7 +480,7 @@ export default {
         ? 'http://127.0.0.1:8080/api/'
         : import.meta.env.VITE_API_BACK
 
-      if (image.origin === "Google") {
+      if (image.origin === 'Google') {
         return `${baseURL}place/photo?photoReference=${image.photoReference}`
       } else {
         return image.photoUrl
