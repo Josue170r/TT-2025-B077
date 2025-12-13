@@ -14,7 +14,7 @@
     <div class="content-container text-center text-white">
       <h2 class="mb-3 fw-light animate-fade-up">Bienvenido a</h2>
       <div class="logo-box mb-3 animate-fade-down">
-        <img src="/logo-letras.png" alt="Logo letras" class="img-fluid" style="max-width: 300px" />
+        <img src="/logo-letras.png  " alt="Logo letras" class="img-fluid" style="max-width: 300px" />
       </div>
 
       <p class="lead animate-fade-up delay-1">
