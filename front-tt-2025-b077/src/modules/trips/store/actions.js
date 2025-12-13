@@ -123,15 +123,20 @@ export async function fetchSettlements({ commit }, stateId) {
   })
 }
 
-export async function fetchHotels({ commit, state }, { page = 0, size = 10 }) {
-  commit(
-    'setLoading',
-    {
-      isLoading: true,
-      msg: 'Buscando hoteles',
-    },
-    { root: true },
-  )
+export async function fetchHotels(
+  { commit, state },
+  { page = 0, size = 10, showLoading = true },
+) {
+  if (showLoading) {
+    commit(
+      'setLoading',
+      {
+        isLoading: true,
+        msg: 'Cargando hoteles',
+      },
+      { root: true },
+    )
+  }
   return new Promise((resolve, reject) => {
     const params = {
       state: state.newItinerary.selectedState,
