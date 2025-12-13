@@ -201,7 +201,7 @@ export default {
       error: null,
       userLocation: null,
       forceRefresh: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
     }
   },
   computed: {
@@ -366,7 +366,10 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({ name: 'site_description' })
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'home' },
+      })
     },
 
     handleSearchError(error) {
