@@ -98,6 +98,10 @@ export default {
     state.filters.latitude = latitude
     state.filters.longitude = longitude
   },
+  
+  setIsSustainable(state, value) {
+    state.isSustainable = value
+  },
 
   clearFilters(state) {
     state.filters = {
