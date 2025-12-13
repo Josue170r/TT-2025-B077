@@ -54,6 +54,10 @@ export function isCertificatedHotel(state) {
   return state.newItinerary.isCertificatedHotel
 }
 
+export function isSustainable(state) {
+  return state.isSustainable
+}
+
 export function pagination(state) {
   return state.pagination
 }
