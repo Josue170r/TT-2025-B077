@@ -84,7 +84,7 @@ export default {
     return {
       loading: false,
       error: null,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
     }
   },
   mounted() {
@@ -114,7 +114,10 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({ name: 'site_description' })
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'favorites' },
+      })
     },
 
     async toggleFavorite(place) {

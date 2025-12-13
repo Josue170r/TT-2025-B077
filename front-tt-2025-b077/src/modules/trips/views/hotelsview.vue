@@ -54,7 +54,7 @@
 
           <div class="filter-section sustainable-toggle">
             <v-switch
-              v-model="isSustainable"
+              v-model="sustainableFilter"
               color="success"
               label="Sostenibles"
               hide-details
@@ -73,7 +73,7 @@
               v-model="tempCertifications"
               :value="cert.id"
               :label="cert.certification"
-              :disabled="!isSustainable"
+              :disabled="!sustainableFilter"
               color="success"
               hide-details
               dense
@@ -90,7 +90,7 @@
             <v-radio-group
               v-model="locationType"
               @change="handleLocationTypeChange"
-              :disabled="!isSustainable"
+              :disabled="!sustainableFilter"
             >
               <v-radio label="Por municipio" value="settlement" color="success"></v-radio>
 
@@ -109,7 +109,7 @@
               label="Selecciona un municipio"
               outlined
               dense
-              :disabled="!isSustainable"
+              :disabled="!sustainableFilter"
               color="success"
               @update:modelValue="applyFilters"
               class="mt-2"
@@ -209,13 +209,13 @@ export default {
   },
   data() {
     return {
-      isSustainable: true,
       tempCertifications: [],
       tempSettlement: null,
       locationType: 'none',
       currentPageModel: 1,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       userLocation: null,
+      sustainableFilter: null,
     }
   },
   computed: {
@@ -228,6 +228,7 @@ export default {
       'currentPage',
       'filters',
       'newItinerary',
+      'isSustainable',
       'favoriteIds',
       'textSearchMode',
       'textSearchQuery',
@@ -260,8 +261,7 @@ export default {
 
         await this.$nextTick()
         this.restoreFilters()
-
-        await this.loadHotels()
+        this.sustainableFilter = this.isSustainable
       }
     } catch (error) {
       console.error('Error al cargar datos:', error)
@@ -291,6 +291,7 @@ export default {
       setHotelIds: 'setHotelIds',
       setPagination: 'setPagination',
       setSelectedHotel: 'setSelectedHotel',
+      setIsSustainable: 'setIsSustainable',
       setTextSearchMode: 'setTextSearchMode',
       setTextSearchQuery: 'setTextSearchQuery',
       setTextSearchPlaceId: 'setTextSearchPlaceId',
@@ -346,7 +347,6 @@ export default {
         this.setTextSearchMode(true)
         this.setTextSearchQuery(place.mainText)
         this.setTextSearchPlaceId(place.placeId)
-        this.setSelectedPlaceId(place.placeId)
 
         await this.fetchPlaceDetails()
 
@@ -367,7 +367,7 @@ export default {
           empty: false,
         })
 
-        this.isSustainable = false
+        this.setIsSustainable(false)
         this.tempCertifications = []
         this.tempSettlement = null
         this.locationType = 'none'
@@ -379,15 +379,17 @@ export default {
 
     removeTextSearch() {
       this.clearTextSearch()
-      this.isSustainable = true
+      this.setIsSustainable(true)
       this.reloadHotels()
     },
 
     async handleSustainableChange() {
-      if (!this.isSustainable) {
+      if (!this.sustainableFilter) {
         this.clearAllFilters()
+        this.setIsSustainable(false)
       } else {
         await this.reloadHotels()
+        this.setIsSustainable(true)
       }
     },
 
@@ -430,7 +432,10 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({ name: 'site_description' })
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'hotels' },
+      })
     },
 
     selectHotel(hotel) {
@@ -443,14 +448,14 @@ export default {
         this.selectedHotel = hotelId
         this.setSelectedHotel({
           hotelPlaceId: hotelId,
-          isCertificatedHotel: this.isSustainable,
+          isCertificatedHotel: this.sustainableFilter,
         })
       }
     },
 
     async handlePageChange(page) {
       try {
-        if (this.isSustainable) {
+        if (this.sustainableFilter) {
           await this.fetchHotels({
             page: page - 1,
             size: this.pagination.pageSize,
@@ -500,7 +505,7 @@ export default {
     },
 
     async applyFilters() {
-      if (!this.isSustainable) return
+      if (!this.sustainableFilter) return
 
       try {
         this.setFilterCertifications(this.tempCertifications)
@@ -565,7 +570,7 @@ export default {
     },
 
     async loadHotels() {
-      if (this.isSustainable) {
+      if (this.sustainableFilter) {
         await this.fetchHotels({ page: 0, size: 10 })
       } else {
         await this.loadNearbyHotels()

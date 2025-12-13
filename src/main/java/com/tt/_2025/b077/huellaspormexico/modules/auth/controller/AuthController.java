@@ -25,7 +25,9 @@ public class AuthController {
         User registeredUser = authService.registerUser(user);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.of(HttpStatus.CREATED, "Usuario registrado correctamente", registeredUser));
+                .body(ApiResponse.of(HttpStatus.CREATED,
+                        "Usuario registrado, revise su correo para verificar su cuenta",
+                        registeredUser));
     }
 
     @RequestMapping(path = "/login", method = RequestMethod.POST)

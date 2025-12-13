@@ -409,7 +409,10 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({ name: 'site_description' })
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'description-itinerary' },
+      })
     },
 
     async toggleFavorite(place) {
