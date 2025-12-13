@@ -177,7 +177,10 @@ export default {
       this.showSuggestions = false
       this.selectedIndex = -1
       this.setSelectedPlaceId(suggestion.placeId)
-      this.$router.push({ name: 'site_description' })
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'home' },
+      })
     },
 
     handleKeyNavigation(event) {
