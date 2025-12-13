@@ -31,7 +31,7 @@
 
 <script>
 export default {
-  name: 'Alert',
+  name: 'AlertComponent',
   data() {
     return {
       show: true,
