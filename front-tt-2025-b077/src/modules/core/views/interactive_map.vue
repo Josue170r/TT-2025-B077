@@ -268,7 +268,6 @@ export default {
 
     this.handleRouteQuery(this.$route.query)
   },
-  // REEMPLAZA TODA la sección methods de tu componente con esta versión corregida:
 
 methods: {
   ...mapMutations('places', {
@@ -503,10 +502,8 @@ methods: {
           const leg = result.routes[0].legs[0]
           const destinationLatLng = leg.end_location
 
-          // Primero intentar buscar el lugar por texto (lo que escribió el usuario)
           const placesService = new google.maps.places.PlacesService(this.map)
           
-          // Buscar usando el texto exacto que ingresó el usuario
           placesService.textSearch(
             {
               query: this.destinationInput,
@@ -614,7 +611,6 @@ methods: {
     updateRouteInfo(place, leg) {
       const distanceKm = this.getDistanceInKm(leg.distance.text)
 
-      // 🔒 Calcula recomendación SOLO una vez
       if (this.baseRouteDistanceKm === null) {
         this.baseRouteDistanceKm = distanceKm
         this.ecoRecommendationLocked =
