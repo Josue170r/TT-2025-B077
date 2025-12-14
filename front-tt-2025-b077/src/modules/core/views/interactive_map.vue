@@ -83,20 +83,28 @@
                       </div>
                     </div>
                   </div>
-<div
-  v-if="routeInfo.ecoRecommendation"
-  class="alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mt-2"
->
-  <i
-    class="fa-solid"
-    :class="[routeInfo.ecoRecommendation.icon, routeInfo.ecoRecommendation.color]"
-  ></i>
-  <span>
-    Recomendación ecológica:
-    <strong>{{ routeInfo.ecoRecommendation.text }}</strong>
-  </span>
-</div>
+                  <div
+                    v-if="routeInfo.ecoRecommendation"
+                    class="alert alert-success py-2 px-3 small mt-2"
+                  >
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i
+                        class="fa-solid"
+                        :class="[routeInfo.ecoRecommendation.icon, routeInfo.ecoRecommendation.color]"
+                      ></i>
+                      <span>
+                        Recomendación ecológica:
+                        <strong>{{ routeInfo.ecoRecommendation.text }}</strong>
+                      </span>
+                    </div>
 
+                    <button
+                      class="btn btn-outline-success btn-sm w-100"
+                      @click="applyEcoRecommendation"
+                    >
+                      Usar recomendación ecológica
+                    </button>
+                  </div>
                 </div>
 
                 <div class="info-actions d-flex gap-2 flex-column">
@@ -220,6 +228,9 @@ export default {
       isRouteActive: false,
       geocoder: null,
       suppressDestinationSearch: false,
+      baseRouteDistanceKm: null,
+      ecoRecommendationLocked: null,
+
     }
   },
   computed: {
@@ -464,7 +475,7 @@ methods: {
       this.isRouteActive = false
     },
 
-    calculateRoute() {
+  calculateRoute() {
       if (!this.destinationInput) {
         alert('Por favor, ingresa un destino.')
         return
@@ -492,16 +503,62 @@ methods: {
           const leg = result.routes[0].legs[0]
           const destinationLatLng = leg.end_location
 
+          // Primero intentar buscar el lugar por texto (lo que escribió el usuario)
           const placesService = new google.maps.places.PlacesService(this.map)
-          const placesRequest = {
-            location: destinationLatLng,
-            radius: 50,
-          }
-
-          placesService.nearbySearch(placesRequest, (places, status) => {
-            const place = places?.[0] || {}
-            this.updateRouteInfo(place, leg)
-          })
+          
+          // Buscar usando el texto exacto que ingresó el usuario
+          placesService.textSearch(
+            {
+              query: this.destinationInput,
+              location: destinationLatLng,
+              radius: 500,
+            },
+            (textResults, textStatus) => {
+              if (textStatus === 'OK' && textResults && textResults.length > 0) {
+                // Si encontramos resultados por texto, usar el primero
+                const place = textResults[0]
+                this.selectedPlaceId = place.place_id
+                this.selectedPlaceCoordinates = destinationLatLng
+                
+                this.updateRouteInfo({
+                  name: place.name,
+                  formatted_address: place.formatted_address || leg.end_address,
+                  rating: place.rating || 'N/A',
+                  place_id: place.place_id
+                }, leg)
+              } else {
+                // Si no hay resultados por texto, buscar por coordenadas cercanas
+                placesService.nearbySearch(
+                  {
+                    location: destinationLatLng,
+                    radius: 50,
+                  },
+                  (places, placesStatus) => {
+                    if (placesStatus === 'OK' && places && places.length > 0) {
+                      const place = places[0]
+                      this.selectedPlaceId = place.place_id
+                      this.selectedPlaceCoordinates = destinationLatLng
+                      
+                      this.updateRouteInfo({
+                        name: place.name,
+                        formatted_address: place.vicinity || leg.end_address,
+                        rating: place.rating || 'N/A',
+                        place_id: place.place_id
+                      }, leg)
+                    } else {
+                      // Último recurso: usar el texto que escribió el usuario
+                      this.updateRouteInfo({
+                        name: this.destinationInput,
+                        formatted_address: leg.end_address,
+                        rating: 'N/A',
+                        place_id: null
+                      }, leg)
+                    }
+                  }
+                )
+              }
+            }
+          )
         } else {
           console.error('Error al calcular la ruta:', status)
           alert('No se pudo calcular la ruta.')
@@ -520,66 +577,72 @@ methods: {
     },
 
     getEcoRecommendation(distanceKm) {
-      if (distanceKm <= 2) {
-        return {
-          mode: 'WALKING',
-          text: 'A pie (cero emisiones)',
-          icon: 'fa-person-walking',
-          color: 'text-success',
-        }
-      }
-      if (distanceKm <= 5) {
-        return {
-          mode: 'BICYCLING',
-          text: 'Bicicleta (baja huella de carbono)',
-          icon: 'fa-bicycle',
-          color: 'text-warning',
-        }
-      }
-      if (distanceKm <= 15) {
-        return {
-          mode: 'TRANSIT',
-          text: 'Transporte público (opción sostenible)',
-          icon: 'fa-bus',
-          color: 'text-info',
-        }
-      }
+    if (distanceKm <= 1.5) {
       return {
-        mode: 'DRIVING',
-        text: 'Automóvil (puedes escoger una opción menos contaminante)',
-        icon: 'fa-car',
-        color: 'text-danger',
+        mode: 'WALKING',
+        text: 'A pie (trayecto corto y cero emisiones)',
+        icon: 'fa-person-walking',
+        color: 'text-success',
       }
-    },
+    }
 
+    if (distanceKm > 1.5 && distanceKm <= 4) {
+      return {
+        mode: 'BICYCLING',
+        text: 'Bicicleta (ideal para esta distancia)',
+        icon: 'fa-bicycle',
+        color: 'text-warning',
+      }
+    }
+
+    if (distanceKm > 4 && distanceKm <= 15) {
+      return {
+        mode: 'TRANSIT',
+        text: 'Transporte público (opción sostenible)',
+        icon: 'fa-bus',
+        color: 'text-info',
+      }
+    }
+
+    return {
+      mode: 'DRIVING',
+      text: 'Automóvil (mayor impacto ambiental)',
+      icon: 'fa-car',
+      color: 'text-danger',
+    }
+  },
     updateRouteInfo(place, leg) {
       const distanceKm = this.getDistanceInKm(leg.distance.text)
-      const eco = this.getEcoRecommendation(distanceKm)
+
+      // 🔒 Calcula recomendación SOLO una vez
+      if (this.baseRouteDistanceKm === null) {
+        this.baseRouteDistanceKm = distanceKm
+        this.ecoRecommendationLocked =
+          this.getEcoRecommendation(distanceKm)
+      }
 
       this.routeInfo = {
-        name: place.name || leg.end_address.split(',')[0],
-        address: leg.end_address,
-        rating: place.rating || 'N/A',
+        name: this.routeInfo?.name || place?.name || 'Destino',
+        address:
+          this.routeInfo?.address ||
+          place?.formatted_address ||
+          leg.end_address ||
+          'Dirección no disponible',
+        rating: this.routeInfo?.rating || place?.rating || 'N/A',
+        placeId: this.routeInfo?.placeId || place?.place_id,
         distance: leg.distance.text,
         duration: leg.duration.text,
-        placeId: place.place_id || null,
-        ecoRecommendation: eco,
+        ecoRecommendation: this.ecoRecommendationLocked,
       }
 
-      // Solo cambiar automáticamente al modo ecológico en la PRIMERA vez
-      // Si el usuario ya seleccionó manualmente un modo, respetar su elección
-      if (!this.isRouteActive) {
-        this.travelMode = eco.mode
-      }
-
-      this.selectedPlaceId = place.place_id || null
-      this.isCardExpanded = true
       this.isRouteActive = true
     },
 
     setAsDestination() {
       if (this.routeInfo && this.selectedPlaceCoordinates) {
         this.clearAllPlaceMarkers()
+        this.baseRouteDistanceKm = null
+        this.ecoRecommendationLocked = null
 
         const origin = this.originInput.trim() !== '' ? this.originInput : this.userLocation
 
@@ -606,9 +669,6 @@ methods: {
               placeId: this.routeInfo.placeId,
               ecoRecommendation: eco,
             }
-
-            // Cambiar al modo más ecológico sugerido
-            this.travelMode = eco.mode
 
             this.suppressDestinationSearch = true
             this.destinationInput = this.routeInfo.name
@@ -688,6 +748,11 @@ methods: {
       this.setSelectedPlaceId(this.selectedPlaceId)
       this.$router.push({ name: 'site_description' })
     },
+    applyEcoRecommendation() {
+      if (!this.ecoRecommendationLocked) return
+
+      this.setTravelMode(this.ecoRecommendationLocked.mode)
+    }
   }
 }
 </script>
