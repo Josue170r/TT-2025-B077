@@ -9,6 +9,16 @@
             <div class="col-12 col-lg-10 col-xl-9">
               <div class="row g-4 g-lg-5">
                 <div class="col-12 col-md-6 order-1 order-md-1">
+                  <div class="alert alert-warning border-0 rounded-3 py-3 px-3 mb-3">
+                    <small>
+                      <i class="fas fa-info-circle me-2"></i>
+                      Para una mejor experiencia, solo puedes crear itinerarios de máximo 7 días. 
+                      <span class="d-block d-sm-inline mt-1 mt-sm-0">
+                        Si tu viaje es más largo, puedes crear múltiples itinerarios y eliminar o añadir lugares de acuerdo a tus preferencias.
+                      </span>
+                    </small>
+                  </div>
+
                   <div v-if="!isFormValid" class="mt-3">
                     <div class="alert alert-info border-0 rounded-3 py-2 px-3">
                       <small>
@@ -108,11 +118,13 @@
                     </div>
                   </form>
 
-                  <div class="d-none d-lg-block mt-4">
+                  <!-- Botón visible en todas las resoluciones -->
+                  <div class="mt-4">
                     <div class="d-flex justify-content-center">
                       <button
                         type="button"
-                        class="btn btn-primary btn-lg"
+                        class="btn btn-lg px-4"
+                        :class="buttonClass"
                         @click="viewAccommodations"
                         :disabled="!isFormValid"
                       >
@@ -129,19 +141,6 @@
                     @rangeApplied="handleDateRangeApplied"
                     @rangeCleared="handleDateRangeCleared"
                   />
-
-                  <div class="d-grid mt-4 d-lg-none">
-                    <button
-                      type="button"
-                      class="btn btn-lg px-4"
-                      :class="buttonClass"
-                      @click="viewAccommodations"
-                      :disabled="!isFormValid"
-                    >
-                      <i class="fas fa-bed me-2"></i>
-                      Ver lugares de hospedaje
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -470,5 +469,11 @@ export default {
   background-color: rgba(27, 81, 94, 0.1);
   color: #1b515e;
   border: 1px solid rgba(27, 81, 94, 0.2);
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  border: 1px solid rgba(255, 193, 7, 0.3);
 }
 </style>
