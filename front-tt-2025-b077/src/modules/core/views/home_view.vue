@@ -91,6 +91,10 @@
     </div>
 
     <BottomNavbar />
+    <preferences-modal 
+      :show="showPreferencesModal" 
+      @close="showPreferencesModal = false" 
+    />
   </div>
 </template>
 
@@ -101,6 +105,7 @@ import BottomNavbar from '@/components/bottomnavbar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
 import Inputexplore from '@/components/inputexplore.vue'
 import PlaceCard from '@/components/placecard.vue'
+import PreferencesModal from '@/components/PreferencesModal .vue'
 
 export default {
   components: {
@@ -108,6 +113,7 @@ export default {
     hamburgermenu,
     Inputexplore,
     PlaceCard,
+    PreferencesModal,
   },
   data() {
     return {
@@ -203,6 +209,7 @@ export default {
       forceRefresh: false,
       logoUrl: '/logo-letras.png',
     }
+    showPreferencesModal: false
   },
   computed: {
     ...mapGetters('places', [
@@ -227,6 +234,7 @@ export default {
     if (nav) {
       document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px')
     }
+    this.checkUserPreferences()
   },
   methods: {
     ...mapActions('places', {
@@ -394,6 +402,24 @@ export default {
 
     isFavorite(placeId) {
       return this.favoriteIds.includes(placeId)
+    },
+    ...mapActions('user', {
+      fetchUserPreferences: 'fetchUserPreferences',
+    }),
+    
+    checkUserPreferences() {
+      this.fetchUserPreferences()
+        .then((response) => {
+          const userPreferences = response.data.data || []
+          
+          // Si no hay preferencias, mostrar el modal
+          if (userPreferences.length === 0) {
+            this.showPreferencesModal = true
+          }
+        })
+        .catch((error) => {
+          console.error('Error checking preferences:', error)
+        })
     },
   },
 }

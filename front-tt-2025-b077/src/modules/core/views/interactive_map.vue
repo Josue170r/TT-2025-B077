@@ -83,6 +83,19 @@
                       </div>
                     </div>
                   </div>
+<div
+  v-if="routeInfo.ecoRecommendation"
+  class="alert alert-success py-2 px-3 small d-flex align-items-center gap-2 mt-2"
+>
+  <i
+    class="fa-solid"
+    :class="[routeInfo.ecoRecommendation.icon, routeInfo.ecoRecommendation.color]"
+  ></i>
+  <span>
+    Recomendación ecológica:
+    <strong>{{ routeInfo.ecoRecommendation.text }}</strong>
+  </span>
+</div>
 
                 </div>
 
@@ -244,10 +257,12 @@ export default {
 
     this.handleRouteQuery(this.$route.query)
   },
-  methods: {
-    ...mapMutations('places', {
-      setSelectedPlaceId: 'setSelectedPlaceId',
-    }),
+  // REEMPLAZA TODA la sección methods de tu componente con esta versión corregida:
+
+methods: {
+  ...mapMutations('places', {
+    setSelectedPlaceId: 'setSelectedPlaceId',
+  }),
 
     loadBootstrap() {
       if (!document.querySelector('link[href*="bootstrap"]')) {
@@ -485,7 +500,6 @@ export default {
 
           placesService.nearbySearch(placesRequest, (places, status) => {
             const place = places?.[0] || {}
-
             this.updateRouteInfo(place, leg)
           })
         } else {
@@ -495,7 +509,53 @@ export default {
       })
     },
 
+    getDistanceInKm(distanceText) {
+      const match = distanceText.match(/(\d+\.?\d*)\s*(km|m)/i)
+      if (!match) return 0
+      
+      const value = parseFloat(match[1])
+      const unit = match[2].toLowerCase()
+      
+      return unit === 'km' ? value : value / 1000
+    },
+
+    getEcoRecommendation(distanceKm) {
+      if (distanceKm <= 2) {
+        return {
+          mode: 'WALKING',
+          text: 'A pie (cero emisiones)',
+          icon: 'fa-person-walking',
+          color: 'text-success',
+        }
+      }
+      if (distanceKm <= 5) {
+        return {
+          mode: 'BICYCLING',
+          text: 'Bicicleta (baja huella de carbono)',
+          icon: 'fa-bicycle',
+          color: 'text-warning',
+        }
+      }
+      if (distanceKm <= 15) {
+        return {
+          mode: 'TRANSIT',
+          text: 'Transporte público (opción sostenible)',
+          icon: 'fa-bus',
+          color: 'text-info',
+        }
+      }
+      return {
+        mode: 'DRIVING',
+        text: 'Automóvil (puedes escoger una opción menos contaminante)',
+        icon: 'fa-car',
+        color: 'text-danger',
+      }
+    },
+
     updateRouteInfo(place, leg) {
+      const distanceKm = this.getDistanceInKm(leg.distance.text)
+      const eco = this.getEcoRecommendation(distanceKm)
+
       this.routeInfo = {
         name: place.name || leg.end_address.split(',')[0],
         address: leg.end_address,
@@ -503,6 +563,13 @@ export default {
         distance: leg.distance.text,
         duration: leg.duration.text,
         placeId: place.place_id || null,
+        ecoRecommendation: eco,
+      }
+
+      // Solo cambiar automáticamente al modo ecológico en la PRIMERA vez
+      // Si el usuario ya seleccionó manualmente un modo, respetar su elección
+      if (!this.isRouteActive) {
+        this.travelMode = eco.mode
       }
 
       this.selectedPlaceId = place.place_id || null
@@ -527,6 +594,8 @@ export default {
             this.directionsRenderer.setDirections(result)
 
             const leg = result.routes[0].legs[0]
+            const distanceKm = this.getDistanceInKm(leg.distance.text)
+            const eco = this.getEcoRecommendation(distanceKm)
 
             this.routeInfo = {
               name: this.routeInfo.name,
@@ -535,7 +604,11 @@ export default {
               distance: leg.distance.text,
               duration: leg.duration.text,
               placeId: this.routeInfo.placeId,
+              ecoRecommendation: eco,
             }
+
+            // Cambiar al modo más ecológico sugerido
+            this.travelMode = eco.mode
 
             this.suppressDestinationSearch = true
             this.destinationInput = this.routeInfo.name
@@ -615,7 +688,7 @@ export default {
       this.setSelectedPlaceId(this.selectedPlaceId)
       this.$router.push({ name: 'site_description' })
     },
-  },
+  }
 }
 </script>
 
