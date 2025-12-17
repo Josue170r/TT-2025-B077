@@ -10,6 +10,9 @@ export default {
     state.tokenAccess = null
     state.tokenRefresh = null
   },
+  setUserPreferences: (state, { preferences }) => {
+    state.userPreferences = preferences
+  },
   setUser: (state, user) => {
     state.user = user
   },

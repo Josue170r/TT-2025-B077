@@ -9,3 +9,8 @@ export function isLogged(state) {
 export function getUsername(state) {
   return state.user.username
 }
+
+export function userPreferences(state) {
+  return state.userPreferences
+}
+

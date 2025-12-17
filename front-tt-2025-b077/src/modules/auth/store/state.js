@@ -14,4 +14,5 @@ export default {
       picture: '#',
     },
   },
+  userPreferences: null,
 }
