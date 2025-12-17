@@ -638,7 +638,7 @@ export default {
 
 .filters-chips-container {
   position: fixed;
-  top: 130px;
+  top: 110px;
   left: 0;
   right: 0;
   background: white;
@@ -648,6 +648,7 @@ export default {
   height: 60px;
   overflow-y: auto;
   overflow-x: hidden;
+  margin: 0 auto;
 }
 
 .filters-chips-wrapper {
@@ -664,6 +665,7 @@ export default {
 }
 
 .filter-chip {
+  margin-top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -699,6 +701,7 @@ export default {
 }
 
 .clear-filters-btn {
+  margin-top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -950,7 +953,7 @@ export default {
     width: 100%;
     position: static;
     max-height: none;
-    margin-bottom: 20px;
+    top: 100px;
   }
 
   .filters-sidebar-content {
@@ -982,7 +985,7 @@ export default {
 
   .filters-chips-container {
     position: fixed;
-    top: 100px;
+    top: 90px;
     left: 0;
     right: 0;
     background: white;
@@ -1063,6 +1066,7 @@ export default {
   .clear-filters-btn {
     font-size: 0.8rem;
     padding: 5px 10px;
+    top: 110px;
   }
 
   .hotels-list {
