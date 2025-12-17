@@ -32,5 +32,6 @@ public class ItineraryDay extends BaseModel {
     private Itinerary itinerary;
 
     @OneToMany(mappedBy = "itineraryDay", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("visitOrder ASC")
     private List<ItineraryPlace> places;
 }
