@@ -14,7 +14,7 @@
           :key="index"
           :src="getPlaceImage(image)"
           cover
-          @click="handlePlaceClick"
+          @click.stop="showPlaceDetails"
         />
       </v-carousel>
 
@@ -48,16 +48,10 @@
       </div>
     </v-card-text>
 
-     <v-divider class="my-1"></v-divider>
+    <v-divider class="my-1"></v-divider>
 
     <v-card-actions class="pa-2 pt-1 pb-1">
-      <v-btn
-        color="#1b515e"
-        variant="text"
-        size="small"
-        block
-        @click="handlePlaceClick"
-      >
+      <v-btn color="#1b515e" variant="text" size="small" block @click.stop="handlePlaceClick">
         Ver detalles
       </v-btn>
     </v-card-actions>
@@ -81,7 +75,7 @@ export default {
       default: '/logo-letras.png  ',
     },
   },
-  emits: ['select-place', 'toggle-favorite'],
+  emits: ['select-place', 'show-details', 'toggle-favorite'],
   computed: {
     hasMultipleImages() {
       return Array.isArray(this.place?.images) && this.place.images.length > 1
@@ -113,9 +107,11 @@ export default {
     },
   },
   methods: {
-    handlePlaceClick() {
-      console.log('HOLA')
+    showPlaceDetails() {
       this.$emit('select-place', this.place)
+    },
+    handlePlaceClick() {
+      this.$emit('show-details', this.place)
     },
     handleToggleFavorite() {
       this.$emit('toggle-favorite', this.place)
