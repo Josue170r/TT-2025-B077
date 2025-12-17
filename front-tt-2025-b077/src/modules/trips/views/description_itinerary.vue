@@ -53,6 +53,7 @@
                   :logo-url="getDefaultImage()"
                   @select-place="selectPlace"
                   @toggle-favorite="toggleFavorite"
+                  @show-details="showDetails"
                 />
               </div>
 
@@ -104,33 +105,20 @@
               @end="onDragEnd(day)"
               item-key="id"
               :animation="200"
-              handle=".drag-handle"
+              :disabled="!reorderMode"
               class="drag-area"
             >
               <template #item="{ element: itineraryPlace }">
-                <div class="draggable-item">
-                  <div class="drag-handle-wrapper">
-                    <div class="drag-handle">
-                      <i class="fa-solid fa-grip-vertical"></i>
-                    </div>
-                  </div>
-
+                <div 
+                  class="draggable-item" 
+                  :class="{ 'reorder-active': reorderMode }"
+                >
                   <div v-if="itineraryPlace.isVisited" class="visited-badge">
                     <i class="fa-solid fa-check-circle"></i>
                     <span>Visitado</span>
                   </div>
 
-                  <div class="place-card-wrapper">
-                    <PlaceCard
-                      v-if="itineraryPlace.place"
-                      :place="itineraryPlace.place"
-                      :is-favorite="isFavorite(itineraryPlace.place.id)"
-                      :logo-url="getDefaultImage()"
-                      @select-place="selectPlace"
-                      @toggle-favorite="toggleFavorite"
-                    />
-                  </div>
-
+                  <!-- Módulo de tiempo arriba del card -->
                   <div class="time-info">
                     <div class="time-display">
                       <i class="fa-regular fa-clock"></i>
@@ -140,10 +128,7 @@
                       >
                     </div>
                     <div class="place-actions">
-                      <v-menu
-                        offset-y
-                        transition="slide-y-transition"
-                      >
+                      <v-menu offset-y transition="slide-y-transition">
                         <template v-slot:activator="{ props }">
                           <button class="btn-icon btn-menu" v-bind="props">
                             <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -151,6 +136,17 @@
                         </template>
 
                         <v-list class="actions-menu-list">
+                          <v-list-item @click="toggleReorderMode(day.id)">
+                            <template v-slot:prepend>
+                              <i class="fa-solid fa-arrows-up-down menu-icon"></i>
+                            </template>
+                            <v-list-item-title>
+                              {{ reorderMode ? 'Terminar reorden' : 'Reordenar' }}
+                            </v-list-item-title>
+                          </v-list-item>
+
+                          <v-divider class="my-2"></v-divider>
+
                           <v-list-item @click="openTimeModal(day.id, itineraryPlace)">
                             <template v-slot:prepend>
                               <i class="fa-regular fa-clock menu-icon"></i>
@@ -197,11 +193,28 @@
                       </v-menu>
                     </div>
                   </div>
+
+                  <!-- Card del lugar -->
+                  <div class="place-card-wrapper">
+                    <PlaceCard
+                      v-if="itineraryPlace.place"
+                      :place="itineraryPlace.place"
+                      :is-favorite="isFavorite(itineraryPlace.place.id)"
+                      :logo-url="getDefaultImage()"
+                      @select-place="selectPlace"
+                      @toggle-favorite="toggleFavorite"
+                      @show-details="showDetails"
+                    />
+                  </div>
                 </div>
               </template>
             </draggable>
 
-            <div v-if="(day.places?.length || 0) < 6" class="add-place-card" @click="openAddPlaceModal(day.id)">
+            <div
+              v-if="(day.places?.length || 0) < 6"
+              class="add-place-card"
+              @click="openAddPlaceModal(day.id)"
+            >
               <div class="add-place-content">
                 <i class="fa-solid fa-plus"></i>
                 <span>Agregar lugar</span>
@@ -227,10 +240,7 @@
             <label class="time-label">Hora de llegada</label>
             <div class="time-input-wrapper">
               <span class="time-display-value">{{ editingTime.arrivalTime || '--:--' }}</span>
-              <button
-                class="time-input-btn"
-                @click="openTimePickerModal('arrival')"
-              >
+              <button class="time-input-btn" @click="openTimePickerModal('arrival')">
                 <i class="fa-regular fa-clock"></i>
               </button>
             </div>
@@ -242,10 +252,7 @@
             <label class="time-label">Hora de salida</label>
             <div class="time-input-wrapper">
               <span class="time-display-value">{{ editingTime.leavingTime || '--:--' }}</span>
-              <button
-                class="time-input-btn"
-                @click="openTimePickerModal('leaving')"
-              >
+              <button class="time-input-btn" @click="openTimePickerModal('leaving')">
                 <i class="fa-regular fa-clock"></i>
               </button>
             </div>
@@ -268,9 +275,7 @@
         </v-card-title>
 
         <v-card-text class="modal-picker-body">
-          <v-time-picker
-            v-model="tempTime"
-          ></v-time-picker>
+          <v-time-picker v-model="tempTime"></v-time-picker>
         </v-card-text>
 
         <v-card-actions>
@@ -333,6 +338,8 @@ export default {
       showTimePickerModal: false,
       timePickerType: null,
       tempTime: '',
+      reorderMode: false,
+      currentReorderDayId: null,
       editingTime: {
         dayId: null,
         placeId: null,
@@ -403,11 +410,35 @@ export default {
         })
     },
 
+    toggleReorderMode(dayId) {
+      this.reorderMode = !this.reorderMode
+      this.currentReorderDayId = this.reorderMode ? dayId : null
+      
+      if (this.reorderMode) {
+        this.$alert.info({
+          title: 'Modo reordenar activado',
+          text: 'Ahora puedes arrastrar los lugares para cambiar su orden',
+        })
+      }
+    },
+
     isFavorite(placeId) {
       return this.favoriteIds?.includes(placeId) || false
     },
 
     selectPlace(place) {
+      if (this.reorderMode) return
+      
+      this.setSelectedPlaceId(place.placeId)
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'description-itinerary' },
+      })
+    },
+
+    showDetails(place) {
+      if (this.reorderMode) return
+      
       this.setSelectedPlaceId(place.placeId)
       this.$router.push({
         name: 'site_description',
@@ -416,6 +447,8 @@ export default {
     },
 
     async toggleFavorite(place) {
+      if (this.reorderMode) return
+      
       this.toggleFavoritePlace(place.id)
         .then(() => {
           const isFav = this.isFavorite(place.id)
@@ -452,6 +485,7 @@ export default {
             text: response.message,
           })
           this.loadItinerary(this.currentItinerary.id)
+          this.reorderMode = false
         })
         .catch((error) => {
           this.$alert.error({
@@ -480,7 +514,8 @@ export default {
 
     openTimePickerModal(type) {
       this.timePickerType = type
-      this.tempTime = type === 'arrival' ? this.editingTime.arrivalTime : this.editingTime.leavingTime
+      this.tempTime =
+        type === 'arrival' ? this.editingTime.arrivalTime : this.editingTime.leavingTime
       this.showTimePickerModal = true
     },
 
@@ -770,44 +805,35 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   min-width: 0;
+  transition: all 0.3s ease;
 }
 
-.drag-handle-wrapper {
-  position: absolute;
-  top: -15px;
-  right: -18px;
-  z-index: 10;
-  height: 0;
-}
-
-.drag-handle {
+.draggable-item.reorder-active {
+  animation: shake 0.5s infinite;
   cursor: grab;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 6px 10px;
-  border-radius: 6px;
-  color: #999;
-  font-size: 1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e0e0e0;
-  transition: all 0.3s;
 }
 
-.drag-handle:hover {
-  background: #fff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-  color: #666;
-}
-
-.drag-handle:active {
+.draggable-item.reorder-active:active {
   cursor: grabbing;
-  transform: scale(0.95);
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-2px) rotate(-1deg);
+  }
+  75% {
+    transform: translateX(2px) rotate(1deg);
+  }
 }
 
 .visited-badge {
   position: absolute;
-  top: -20px;
+  top: -8px;
   left: 5px;
   z-index: 10;
   background: #28a745;
@@ -824,6 +850,11 @@ export default {
 .place-card-wrapper {
   width: 100%;
   min-width: 0;
+  pointer-events: auto;
+}
+
+.reorder-active .place-card-wrapper {
+  pointer-events: none;
 }
 
 .time-info {
@@ -833,7 +864,7 @@ export default {
   background: #f8f9fa;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  margin-bottom: 0.2rem;
+  border: 1px solid #e0e0e0;
 }
 
 .time-display {
@@ -1199,16 +1230,6 @@ export default {
     overflow: visible;
   }
 
-  .drag-handle-wrapper {
-    top: -10px;
-    right: 6px;
-  }
-
-  .drag-handle {
-    padding: 5px 8px;
-    font-size: 0.9rem;
-  }
-
   .draggable-item {
     width: 100%;
     max-width: 100%;
@@ -1240,7 +1261,7 @@ export default {
   }
 
   .visited-badge {
-    top: -8px;
+    top: -6px;
     left: 5px;
     padding: 4px 8px;
     font-size: 0.8rem;
@@ -1315,16 +1336,6 @@ export default {
     max-width: 100%;
   }
 
-  .drag-handle-wrapper {
-    right: -10px;
-    top: -10px;
-  }
-
-  .drag-handle {
-    padding: 5px 8px;
-    font-size: 0.85rem;
-  }
-
   .draggable-item {
     max-width: 100%;
   }
@@ -1354,7 +1365,7 @@ export default {
   }
 
   .visited-badge {
-    top: -6px;
+    top: -4px;
     left: 3px;
     padding: 3px 6px;
     font-size: 0.75rem;
