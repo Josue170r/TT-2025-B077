@@ -37,7 +37,7 @@ export default {
       show: true,
       message: '',
       type: 'success',
-      timeout: 2500,
+      timeout:3500,
       customTitle: '',
       nextRoute: null,
     }
