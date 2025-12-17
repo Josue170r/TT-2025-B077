@@ -110,7 +110,7 @@ export default {
   data() {
     return {
       showChangePassword: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',

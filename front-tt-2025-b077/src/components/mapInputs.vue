@@ -16,8 +16,18 @@
             v-model="localOrigin"
             placeholder="Tu ubicación"
             class="form-control route-input border-0"
+            :readonly="suppressOriginSearch"
           />
-          <div v-if="showOriginSuggestions" class="autocomplete-dropdown origin-dropdown">
+          <button
+            v-if="localOrigin"
+            class="btn-clear-origin p-0"
+            @click="clearOrigin"
+            type="button"
+            title="Limpiar origen"
+          >
+            ✕
+          </button>
+          <div v-if="showOriginSuggestions && !suppressOriginSearch" class="autocomplete-dropdown origin-dropdown">
             <div
               v-for="suggestion in originSuggestions"
               :key="suggestion.place_id"
@@ -42,6 +52,7 @@
             v-model="localDestination"
             placeholder="Destino"
             class="form-control route-input border-0"
+            :readonly="suppressDestinationSearch"
           />
           <button
             v-if="localDestination"
@@ -52,7 +63,7 @@
           >
             ✕
           </button>
-          <div v-if="showDestinationSuggestions" class="autocomplete-dropdown destination-dropdown">
+          <div v-if="showDestinationSuggestions && !suppressDestinationSearch" class="autocomplete-dropdown destination-dropdown">
             <div
               v-for="suggestion in destinationSuggestions"
               :key="suggestion.place_id"
@@ -109,11 +120,15 @@ export default {
       showDestinationSuggestions: false,
       isSelectingOrigin: false,
       isSelectingDestination: false,
+      suppressOriginSearch: false,
     }
   },
   watch: {
     origin(newVal) {
       this.localOrigin = newVal
+      if (newVal && newVal.length > 10) {
+        this.suppressOriginSearch = true
+      }
     },
     destination(newVal) {
       this.localDestination = newVal
@@ -123,6 +138,12 @@ export default {
 
       if (this.isSelectingOrigin) {
         this.isSelectingOrigin = false
+        return
+      }
+
+      if (this.suppressOriginSearch) {
+        this.showOriginSuggestions = false
+        this.originSuggestions = []
         return
       }
 
@@ -222,6 +243,12 @@ export default {
       this.showDestinationSuggestions = false
       this.destinationSuggestions = []
     },
+    clearOrigin() {
+      this.localOrigin = ''
+      this.showOriginSuggestions = false
+      this.originSuggestions = []
+      this.suppressOriginSearch = false
+    },
     clearDestination() {
       this.localDestination = ''
       this.showDestinationSuggestions = false
@@ -234,6 +261,7 @@ export default {
       this.localDestination = temp
       this.showOriginSuggestions = false
       this.showDestinationSuggestions = false
+      this.suppressOriginSearch = false
     },
     handleClickOutside(event) {
       if (!this.$el.contains(event.target)) {
@@ -288,6 +316,11 @@ export default {
   padding: 0.375rem 0 0.375rem 0 !important;
   padding-right: 40px !important;
   line-height: 1.3 !important;
+}
+
+.route-input:read-only {
+  cursor: default;
+  background: transparent !important;
 }
 
 .route-input::placeholder {
@@ -403,6 +436,32 @@ export default {
   color: #1b515e;
 }
 
+.btn-clear-origin {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #1b515e;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 5;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+}
+
+.btn-clear-origin:hover {
+  color: #1b515e;
+  transform: translateY(-50%) scale(1.3);
+}
+
 .btn-clear-destination {
   position: absolute;
   right: 8px;
@@ -490,7 +549,7 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   color: #1b515e;
   font-size: 1.2rem;
-  flex-shrink: 0; /* NO se encoge nunca */
+  flex-shrink: 0;
 }
 
 .btn-back-inside:hover {
@@ -502,7 +561,6 @@ export default {
   transform: scale(0.95);
 }
 
-/* Tamaños responsivos */
 @media (max-width: 768px) {
   .btn-back-inside {
     width: 44px;

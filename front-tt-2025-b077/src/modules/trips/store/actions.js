@@ -123,15 +123,17 @@ export async function fetchSettlements({ commit }, stateId) {
   })
 }
 
-export async function fetchHotels({ commit, state }, { page = 0, size = 10 }) {
-  commit(
-    'setLoading',
-    {
-      isLoading: true,
-      msg: 'Buscando hoteles',
-    },
-    { root: true },
-  )
+export async function fetchHotels({ commit, state }, { page = 0, size = 10, showLoading = true }) {
+  if (showLoading) {
+    commit(
+      'setLoading',
+      {
+        isLoading: true,
+        msg: 'Cargando hoteles',
+      },
+      { root: true },
+    )
+  }
   return new Promise((resolve, reject) => {
     const params = {
       state: state.newItinerary.selectedState,
@@ -319,7 +321,9 @@ export async function updateVisitOrder({ commit }, { itineraryId, dayId, placeId
     axios
       .put(`/itineraries/${itineraryId}/days/${dayId}/order`, { placeIds })
       .then((response) => {
-        const updatedDay = response.data
+        const data = response.data
+        const updatedDay = data.data
+        console.log(updatedDay)
         commit('updateItineraryDay', { dayId, updatedDay })
         resolve(updatedDay)
       })
@@ -345,9 +349,10 @@ export async function updatePlace({ commit }, { itineraryId, dayId, placeId, pla
     axios
       .put(`/itineraries/${itineraryId}/days/${dayId}/places/${placeId}`, placeData)
       .then((response) => {
-        const updatedPlace = response.data
+        const data = response.data
+        const updatedPlace = data.data
         commit('updateItineraryPlace', { dayId, placeId, updatedPlace })
-        resolve(updatedPlace)
+        resolve(data)
       })
       .catch((error) => {
         reject(error)
@@ -401,9 +406,10 @@ export async function updatePlaceTime(
         leavingTime,
       })
       .then((response) => {
-        const updatedPlace = response.data
+        const data = response.data
+        const updatedPlace = data.data
         commit('updateItineraryPlace', { dayId, placeId, updatedPlace })
-        resolve(updatedPlace)
+        resolve(data)
       })
       .catch((error) => {
         reject(error)
@@ -428,6 +434,7 @@ export async function setPlaceVisited({ commit }, { itineraryId, dayId, placeId 
       .put(`/itineraries/${itineraryId}/days/${dayId}/places/${placeId}/visit`)
       .then((response) => {
         const data = response.data
+        commit('setPlaceAsVisited', { dayId, placeId })
         resolve(data)
       })
       .catch((error) => {
@@ -453,6 +460,7 @@ export async function deletePlaceFromDay({ commit }, { itineraryId, dayId, place
       .delete(`/itineraries/${itineraryId}/days/${dayId}/places/${placeId}`)
       .then((response) => {
         const data = response.data
+        commit('removePlaceFromDay', { dayId, placeId })
         resolve(data)
       })
       .catch((error) => {

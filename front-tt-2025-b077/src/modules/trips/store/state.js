@@ -17,6 +17,7 @@ export default function () {
       hotelPlaceId: null,
       isCertificatedHotel: false,
     },
+    isSustainable: true,
     userItineraries: [],
     currentItinerary: null,
     currentItineraryId: null,

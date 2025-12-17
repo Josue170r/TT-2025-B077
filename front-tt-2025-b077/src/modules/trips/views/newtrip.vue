@@ -258,10 +258,13 @@ export default {
   methods: {
     ...mapActions('trips', {
       fetchStates: 'fetchStates',
+      fetchHotels: 'fetchHotels',
     }),
     ...mapMutations('trips', {
       setSelectedState: 'setSelectedState',
       setStartDate: 'setStartDate',
+      setIsSustainable: 'setIsSustainable',
+      clearFilters: 'clearFilters',
       setEndDate: 'setEndDate',
       setTripTitle: 'setTripTitle',
     }),
@@ -313,11 +316,13 @@ export default {
     toggleStateMenu() {
       this.stateMenuOpen = !this.stateMenuOpen
     },
-
     selectState(stateId) {
       this.selectedState = stateId
       this.setSelectedState(stateId)
       this.stateMenuOpen = false
+      this.clearFilters()
+      this.setIsSustainable(true)
+      this.fetchHotels({ page: 0, size: 10, showLoading: false })
     },
 
     updateTripTitle() {

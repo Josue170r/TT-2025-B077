@@ -5,7 +5,7 @@
     <!-- Logo -->
     <div class="mb-5 fade-in-element" style="animation-delay: 0.2s">
       <img
-        src="/logo-letras.png"
+        src="/logo-letras.png  "
         alt="Logo Huellas por México"
         class="img-fluid"
         style="max-height: 100px"

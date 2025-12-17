@@ -94,15 +94,17 @@ export async function fetchCategoryPlaces({ commit }, data) {
   })
 }
 
-export async function fetchUserPreferences({ commit }) {
-  commit(
-    'setLoading',
-    {
-      isLoading: true,
-      msg: 'Cargando preferencias',
-    },
-    { root: true },
-  )
+export async function fetchUserPreferences({ commit }, { showLoading = true }) {
+  if (showLoading) {
+    commit(
+      'setLoading',
+      {
+        isLoading: true,
+        msg: 'Cargando preferencias',
+      },
+      { root: true },
+    )
+  }
   return new Promise((resolve, reject) => {
     axios
       .get('/preferences')
@@ -195,4 +197,3 @@ export async function fetchTotalCo2({ commit }, { startDate = null, endDate = nu
       })
   })
 }
-

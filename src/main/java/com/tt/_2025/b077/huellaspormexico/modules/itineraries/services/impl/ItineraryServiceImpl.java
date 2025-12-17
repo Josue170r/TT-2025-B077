@@ -9,10 +9,7 @@ import com.tt._2025.b077.huellaspormexico.modules.itineraries.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.Itinerary;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryDay;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryPlace;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.ItineraryDayNotFound;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.ItineraryNotFound;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.ItineraryPlaceNotFound;
-import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.PlaceVisited;
+import com.tt._2025.b077.huellaspormexico.modules.itineraries.exceptions.*;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.repositories.ItineraryDayRepository;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.repositories.ItineraryPlaceRepository;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.repositories.ItineraryRepository;
@@ -23,6 +20,7 @@ import com.tt._2025.b077.huellaspormexico.modules.places.exceptions.PlaceNotFoun
 import com.tt._2025.b077.huellaspormexico.modules.places.reporsitories.PlaceRepository;
 import com.tt._2025.b077.huellaspormexico.modules.users.entities.User;
 import com.tt._2025.b077.huellaspormexico.modules.users.repositories.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,6 +43,7 @@ public class ItineraryServiceImpl implements ItineraryService {
     private final PostalCodeRepository postalCodeRepository;
     private final CertificatedHotelRepository certificatedHotelRepository;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
     public ItineraryServiceImpl(
             ItineraryRepository itineraryRepository,
@@ -52,7 +52,7 @@ public class ItineraryServiceImpl implements ItineraryService {
             PlaceRepository placeRepository,
             PostalCodeRepository postalCodeRepository,
             CertificatedHotelRepository certificatedHotelRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository, EntityManager entityManager) {
         this.itineraryRepository = itineraryRepository;
         this.itineraryDayRepository = itineraryDayRepository;
         this.itineraryPlaceRepository = itineraryPlaceRepository;
@@ -60,6 +60,7 @@ public class ItineraryServiceImpl implements ItineraryService {
         this.postalCodeRepository = postalCodeRepository;
         this.certificatedHotelRepository = certificatedHotelRepository;
         this.userRepository = userRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -135,17 +136,8 @@ public class ItineraryServiceImpl implements ItineraryService {
     @Override
     @Transactional(readOnly = true)
     public Itinerary getItineraryById(Long id) {
-        Itinerary itinerary = itineraryRepository.findById(id)
+        return itineraryRepository.findById(id)
                 .orElseThrow(() -> new ItineraryNotFound("Itinerario no encontrado"));
-
-        itinerary.getItineraryDays().forEach(day -> {
-            List<ItineraryPlace> sortedPlaces = day.getPlaces().stream()
-                    .sorted(Comparator.comparing(ItineraryPlace::getVisitOrder))
-                    .collect(Collectors.toList());
-            day.setPlaces(sortedPlaces);
-        });
-
-        return itinerary;
     }
 
     @Override
@@ -205,8 +197,8 @@ public class ItineraryServiceImpl implements ItineraryService {
 
     @Override
     @Transactional
-    public void updateVisitOrder(Long itineraryId, Long dayId, UpdateVisitOrderDTO dto) {
-        itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
+    public ItineraryDay updateVisitOrder(Long itineraryId, Long dayId, UpdateVisitOrderDTO dto) {
+        ItineraryDay day = itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
                 .orElseThrow(() -> new ItineraryDayNotFound(
                         "Día no encontrado en este itinerario"));
 
@@ -240,6 +232,9 @@ public class ItineraryServiceImpl implements ItineraryService {
             place.setLeavingTime(leavingTimeMap.get(originalPlaceIdAtPosition));
             itineraryPlaceRepository.save(place);
         }
+        entityManager.flush();
+        entityManager.refresh(day);
+        return day;
     }
 
     @Override
@@ -262,7 +257,7 @@ public class ItineraryServiceImpl implements ItineraryService {
 
     @Override
     @Transactional
-    public void updatePlace(Long itineraryId, Long dayId, Long placeId, UpdatePlaceDTO dto) {
+    public ItineraryPlace updatePlace(Long itineraryId, Long dayId, Long placeId, UpdatePlaceDTO dto) {
         itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
                 .orElseThrow(() -> new ItineraryDayNotFound(
                         "Día no encontrado en este itinerario"));
@@ -278,6 +273,9 @@ public class ItineraryServiceImpl implements ItineraryService {
         itineraryPlace.setPlace(newPlace);
         itineraryPlace.setArrivalTime(dto.getArrivalTime());
         itineraryPlace.setLeavingTime(dto.getLeavingTime());
+        if (itineraryPlace.getIsVisited()) {
+            itineraryPlace.setIsVisited(false);
+        }
 
         if (dto.getPostalCode() != null) {
             PostalCodeCatalog postalCode = postalCodeRepository
@@ -285,8 +283,7 @@ public class ItineraryServiceImpl implements ItineraryService {
                     .orElse(null);
             itineraryPlace.setPostalCode(postalCode);
         }
-
-        itineraryPlaceRepository.save(itineraryPlace);
+        return itineraryPlaceRepository.save(itineraryPlace);
     }
 
     @Override
@@ -295,16 +292,61 @@ public class ItineraryServiceImpl implements ItineraryService {
         itineraryDayRepository.findByIdAndItineraryId(dayId, itineraryId)
                 .orElseThrow(() -> new ItineraryNotFound(
                         "Día no encontrado en este itinerario"));
-        
+
         ItineraryPlace itineraryPlace = itineraryPlaceRepository
                 .findByIdAndItineraryDayId(placeId, dayId)
                 .orElseThrow(() -> new ItineraryPlaceNotFound(
                         "Lugar no encontrado en este día"));
 
-        itineraryPlace.setArrivalTime(dto.getArrivalTime());
-        itineraryPlace.setLeavingTime(dto.getLeavingTime());
+        LocalTime arrivalTime = dto.getArrivalTime();
+        LocalTime leavingTime = dto.getLeavingTime();
+
+        validateTimeRange(arrivalTime, leavingTime);
+        validateNoTimeOverlap(dayId, placeId, arrivalTime, leavingTime);
+
+        itineraryPlace.setArrivalTime(arrivalTime);
+        itineraryPlace.setLeavingTime(leavingTime);
 
         return itineraryPlaceRepository.save(itineraryPlace);
+    }
+
+    private void validateTimeRange(LocalTime arrivalTime, LocalTime leavingTime) {
+        if (arrivalTime != null && leavingTime != null && arrivalTime.isAfter(leavingTime)) {
+            throw new IllegalArgumentException(
+                    "La hora de llegada debe ser anterior a la hora de salida");
+        }
+    }
+
+    private void validateNoTimeOverlap(Long dayId, Long placeId, LocalTime arrivalTime, LocalTime leavingTime) {
+        if (arrivalTime == null || leavingTime == null) {
+            return;
+        }
+        List<ItineraryPlace> otherPlaces = itineraryPlaceRepository
+                .findByItineraryDayIdOrderByVisitOrder(dayId)
+                .stream()
+                .filter(p -> !p.getId().equals(placeId))
+                .filter(p -> p.getArrivalTime() != null && p.getLeavingTime() != null)
+                .toList();
+
+        for (ItineraryPlace otherPlace : otherPlaces) {
+            LocalTime otherArrival = otherPlace.getArrivalTime();
+            LocalTime otherLeaving = otherPlace.getLeavingTime();
+
+            if (timesOverlap(arrivalTime, leavingTime, otherArrival, otherLeaving)) {
+                throw new TimeOverlapException(
+                        "El horario se traslapa con el lugar '" + otherPlace.getPlace().getName() +
+                                "' (" + formatTime(otherArrival) + " - " + formatTime(otherLeaving) + ")");
+            }
+        }
+    }
+
+    private boolean timesOverlap(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
+        return (start1.isBefore(end2) && end1.isAfter(start2)) ||
+                start1.equals(start2) || end1.equals(end2);
+    }
+
+    private String formatTime(LocalTime time) {
+        return time.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
     @Override

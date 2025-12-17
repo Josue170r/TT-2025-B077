@@ -21,6 +21,8 @@ export default {
     }
   },
   setSelectedPlaceId(state, placeId) {
+    state.selectedPlaceDetails = {}
+    state.selectedPlaceName = ''
     state.selectedPlaceId = placeId
   },
   setSelectedPlaceDetails(state, data) {

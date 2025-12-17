@@ -266,7 +266,7 @@ export default {
   data() {
     return {
       showRegister: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       user: {
         email: '',
         username: '',
