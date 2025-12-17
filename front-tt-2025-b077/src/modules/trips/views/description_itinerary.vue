@@ -1,5 +1,12 @@
 <template>
   <div class="itinerary-container">
+    
+    <div v-if="isLoading" class="loading-container">
+      <img src="/icons8-hilandero.gif" alt="Cargando..." />
+      <h3>Cargando itinerario...</h3>
+      <p>Por favor espera un momento</p>
+    </div>
+    
     <div v-if="!currentItinerary" class="error-container">
       <i class="fa-solid fa-exclamation-triangle"></i>
       <h3>Itinerario no encontrado</h3>
@@ -333,6 +340,7 @@ export default {
 
   data() {
     return {
+      isLoading: true,
       showTimeModal: false,
       showDeleteConfirmDialog: false,
       showTimePickerModal: false,
@@ -400,9 +408,13 @@ export default {
     }),
 
     async loadItinerary(id) {
+      this.isLoading = true
       this.fetchItineraryById(id)
-        .then(() => {})
+        .then(() => {
+          this.isLoading = false
+        })
         .catch((error) => {
+          this.isLoading = false
           this.$alert.error({
             title: 'Error al cargar el itinerario',
             text: getErrorDetails(error),
@@ -706,6 +718,26 @@ export default {
   min-height: 100vh;
   background-color: #f8f9fa;
   padding-top: 100px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-container h3 {
+  color: #1b515e;
+  margin-bottom: 0.5rem;
+}
+
+.loading-container p {
+  color: #666;
+  margin-bottom: 1.5rem;
 }
 
 .error-container {

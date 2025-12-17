@@ -889,23 +889,17 @@ export default {
 
 .filters-chips-container {
   position: fixed;
-  top: 130px;
+  top: 110px;
   left: 0;
   right: 0;
   background: white;
   border-bottom: 1px solid #e0e0e0;
   padding: 8px 0;
   z-index: 90;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.filters-chips-container::-webkit-scrollbar {
-  display: none;
+  height: 60px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0 auto;
 }
 
 .filters-chips-wrapper {
@@ -923,6 +917,7 @@ export default {
 }
 
 .filter-chip {
+  margin-top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -960,6 +955,7 @@ export default {
 }
 
 .clear-filters-btn {
+  margin-top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1290,7 +1286,14 @@ export default {
   }
 
   .filters-sidebar {
-    display: none;
+    width: 100%;
+    position: static;
+    max-height: none;
+    top: 100px;
+  }
+
+  .filters-sidebar-content {
+    padding: 15px;
   }
 
   .hotels-list {
@@ -1320,6 +1323,22 @@ export default {
     border-bottom: 1px solid #e0e0e0;
     z-index: 100;
     box-shadow: none;
+  }
+
+  .filters-chips-container {
+    position: fixed;
+    top: 90px;
+    left: 0;
+    right: 0;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px 0;
+    z-index: 90;
+    height: 60px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 0;
+    border-top: none;
   }
 
   .filters-chips-wrapper {
@@ -1381,6 +1400,7 @@ export default {
   .clear-filters-btn {
     font-size: 0.8rem;
     padding: 5px 10px;
+    top: 110px;
   }
 
   .hotels-list {
