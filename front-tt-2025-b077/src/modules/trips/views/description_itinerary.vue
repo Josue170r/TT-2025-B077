@@ -682,6 +682,26 @@ export default {
   padding-top: 100px;
 }
 
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-container h3 {
+  color: #1b515e;
+  margin-bottom: 0.5rem;
+}
+
+.loading-container p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
 .error-container {
   display: flex;
   flex-direction: column;
