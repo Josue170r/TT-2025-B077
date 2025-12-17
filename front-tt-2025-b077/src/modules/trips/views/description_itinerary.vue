@@ -7,7 +7,7 @@
       <p>Por favor espera un momento</p>
     </div>
     
-    <div v-if="!currentItinerary" class="error-container">
+    <div v-else-if="!isLoading && !currentItinerary" class="error-container">
       <i class="fa-solid fa-exclamation-triangle"></i>
       <h3>Itinerario no encontrado</h3>
       <p>El itinerario que buscas no existe o no pudo ser cargado.</p>
@@ -17,7 +17,7 @@
       </button>
     </div>
 
-    <template v-else>
+    <template v-else-if="!isLoading && currentItinerary">
       <NavTopIDescription
         :travelTitle="currentItinerary.tripTitle"
         :placesCount="`[${totalPlaces} lugares]`"
@@ -125,7 +125,6 @@
                     <span>Visitado</span>
                   </div>
 
-                  <!-- Módulo de tiempo arriba del card -->
                   <div class="time-info">
                     <div class="time-display">
                       <i class="fa-regular fa-clock"></i>
@@ -329,6 +328,7 @@ import PlaceCard from '@/components/placecard.vue'
 import draggable from 'vuedraggable'
 import { getErrorDetails } from '@/utils/utils'
 import { mapActions, mapGetters, mapMutations } from 'vuex'
+import { isLogged } from '@/modules/auth/store/getters'
 
 export default {
   name: 'ItineraryView',
@@ -496,7 +496,6 @@ export default {
             title: 'Orden actualizado',
             text: response.message,
           })
-          this.loadItinerary(this.currentItinerary.id)
           this.reorderMode = false
         })
         .catch((error) => {
@@ -560,7 +559,6 @@ export default {
             text: response.message,
           })
           this.closeTimeModal()
-          this.loadItinerary(this.currentItinerary.id)
         })
         .catch((error) => {
           this.$alert.error({
@@ -630,7 +628,6 @@ export default {
             title: 'Lugar visitado',
             text: response.message,
           })
-          this.loadItinerary(this.currentItinerary.id)
         })
         .catch((error) => {
           this.$alert.error({
@@ -661,7 +658,6 @@ export default {
             text: response.message,
           })
           this.showDeleteConfirmDialog = false
-          this.loadItinerary(this.currentItinerary.id)
         })
         .catch((error) => {
           this.$alert.error({
