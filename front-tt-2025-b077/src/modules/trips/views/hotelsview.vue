@@ -284,7 +284,6 @@
 
         <v-card-actions class="filters-modal-actions">
           <v-btn
-            color="#ef5350"
             variant="flat"
             size="large"
             @click="clearAllFiltersAndClose"
@@ -896,10 +895,16 @@ export default {
   border-bottom: 1px solid #e0e0e0;
   padding: 8px 0;
   z-index: 90;
-  height: 60px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  margin: 0 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.filters-chips-container::-webkit-scrollbar {
+  display: none;
 }
 
 .filters-chips-wrapper {
@@ -1045,7 +1050,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
-  margin-bottom: 30px;
+  margin-bottom: 5px;
   padding: 0.5rem 0;
 }
 
@@ -1247,8 +1252,7 @@ export default {
 }
 
 .clear-filters-modal-btn {
-  background-color: #ef5350 !important;
-  color: white !important;
+  color: #1b515e !important;
   font-weight: 600 !important;
   letter-spacing: 0.5px !important;
   height: 52px !important;
@@ -1286,14 +1290,7 @@ export default {
   }
 
   .filters-sidebar {
-    width: 100%;
-    position: static;
-    max-height: none;
-    top: 100px;
-  }
-
-  .filters-sidebar-content {
-    padding: 15px;
+    display: none;
   }
 
   .hotels-list {
@@ -1325,22 +1322,6 @@ export default {
     box-shadow: none;
   }
 
-  .filters-chips-container {
-    position: fixed;
-    top: 90px;
-    left: 0;
-    right: 0;
-    background: white;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 8px 0;
-    z-index: 90;
-    height: 60px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    margin: 0;
-    border-top: none;
-  }
-
   .filters-chips-wrapper {
     padding: 0 10px;
   }
@@ -1354,7 +1335,7 @@ export default {
   .hotels-list {
     grid-template-columns: 1fr;
     gap: 0.75rem;
-    margin-bottom: 100px;
+    margin-bottom: 10px;
   }
 
   .hotel-card-wrapper {
