@@ -92,10 +92,7 @@
     </div>
 
     <BottomNavbar />
-    <preferences-modal 
-      :show="showPreferencesModal" 
-      @close="showPreferencesModal = false" 
-    />
+    <preferences-modal :show="showPreferencesModal" @close="showPreferencesModal = false" />
   </div>
 </template>
 
@@ -210,7 +207,6 @@ export default {
       forceRefresh: false,
       logoUrl: '/logo-letras.png  ',
     }
-    showPreferencesModal: false
   },
   computed: {
     ...mapGetters('places', [
@@ -221,6 +217,7 @@ export default {
       'currentFilterIndex',
     ]),
     ...mapGetters('trips', ['favoriteIds']),
+    ...mapGetters('auth', ['userPreferences']),
     currentFilter() {
       return this.filters[this.currentFilterIndex]
     },
@@ -253,6 +250,12 @@ export default {
       setPlaces: 'setPlaces',
       setPagination: 'setPagination',
       setCurrentFilterIndex: 'setCurrentFilterIndex',
+    }),
+    ...mapMutations('auth', {
+      setUserPreferences: 'setUserPreferences',
+    }),
+    ...mapActions('user', {
+      fetchUserPreferences: 'fetchUserPreferences',
     }),
     async getUserLocation() {
       try {
@@ -415,18 +418,15 @@ export default {
     isFavorite(placeId) {
       return this.favoriteIds.includes(placeId)
     },
-    ...mapActions('user', {
-      fetchUserPreferences: 'fetchUserPreferences',
-    }),
-    
+
     checkUserPreferences() {
-      this.fetchUserPreferences()
+      this.fetchUserPreferences({showLoading: false})
         .then((response) => {
-          const userPreferences = response.data.data || []
-          
-          // Si no hay preferencias, mostrar el modal
-          if (userPreferences.length === 0) {
+          const preferences = response.data.data || []
+          if (preferences.length === 0) {
             this.showPreferencesModal = true
+          } else {
+            this.setUserPreferences({ preferences })
           }
         })
         .catch((error) => {
