@@ -41,6 +41,7 @@
           :logo-url="logoUrl"
           @select-place="selectPlace"
           @toggle-favorite="toggleFavorite"
+          @show-details="showDetails"
         />
       </div>
 
@@ -113,6 +114,14 @@ export default {
     },
 
     selectPlace(place) {
+      this.setSelectedPlaceId(place.placeId)
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'favorites' },
+      })
+    },
+
+    showDetails(place) {
       this.setSelectedPlaceId(place.placeId)
       this.$router.push({
         name: 'site_description',
