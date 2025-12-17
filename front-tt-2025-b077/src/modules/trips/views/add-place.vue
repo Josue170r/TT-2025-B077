@@ -48,6 +48,7 @@
               :logo-url="getDefaultImage()"
               @select-place="selectPlace"
               @toggle-favorite="toggleFavorite"
+              @show-details="showDetails"
             />
             <button class="btn-select-place" @click="openConfirmModal(place)">
               <i class="fa-solid fa-check me-2"></i>
@@ -130,9 +131,7 @@
         </v-card-title>
 
         <v-card-text class="modal-picker-body">
-          <v-time-picker
-            v-model="tempTime"
-          ></v-time-picker>
+          <v-time-picker v-model="tempTime"></v-time-picker>
         </v-card-text>
 
         <v-card-actions>
@@ -237,13 +236,15 @@ export default {
         place_ids: this.placesIds,
         page: page - 1,
         size: this.pagination.pageSize,
-      }).then((response) => {
-        this.setPlaces(response.content)
-        this.setPagination(response)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      }).catch((error) => {
-        console.error('Error al cambiar página:', error)
       })
+        .then((response) => {
+          this.setPlaces(response.content)
+          this.setPagination(response)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        })
+        .catch((error) => {
+          console.error('Error al cambiar página:', error)
+        })
     },
 
     isFavorite(placeId) {
@@ -254,12 +255,17 @@ export default {
       return 'https://www.turismomexico.es/wp-content/uploads/2015/07/chichen_itza.jpg'
     },
 
-    selectPlace(place) {
+    showDetails(place) {
       this.setSelectedPlaceId(place.placeId)
       this.$router.push({
         name: 'site_description',
         query: { from: 'add-place' },
       })
+    },
+
+    selectPlace(place) {
+      this.selectedNewPlace = place
+      this.showConfirmModal = true
     },
 
     toggleFavorite(place) {
@@ -294,7 +300,8 @@ export default {
 
     openTimePickerModal(type) {
       this.timePickerType = type
-      this.tempTime = type === 'arrival' ? this.newPlaceData.arrivalTime : this.newPlaceData.leavingTime
+      this.tempTime =
+        type === 'arrival' ? this.newPlaceData.arrivalTime : this.newPlaceData.leavingTime
       this.showTimePickerModal = true
     },
 
@@ -337,21 +344,23 @@ export default {
           itineraryId: this.itineraryId,
           dayId: this.dayId,
           placeData: placeData,
-        }).then((response) => {
-          this.$alert.success({
-            title: 'Lugar agregado',
-            text: response.message,
-          })
-
-          setTimeout(() => {
-            this.$router.push({ name: 'description-itinerary' })
-          }, 1000)
-        }).catch((error) => {
-          this.$alert.error({
-            title: 'Error al agregar el lugar',
-            text: getErrorDetails(error),
-          })
         })
+          .then((response) => {
+            this.$alert.success({
+              title: 'Lugar agregado',
+              text: response.message,
+            })
+
+            setTimeout(() => {
+              this.$router.push({ name: 'description-itinerary' })
+            }, 1000)
+          })
+          .catch((error) => {
+            this.$alert.error({
+              title: 'Error al agregar el lugar',
+              text: getErrorDetails(error),
+            })
+          })
       } catch (error) {
         this.$alert.error({
           title: 'Error al agregar el lugar',
