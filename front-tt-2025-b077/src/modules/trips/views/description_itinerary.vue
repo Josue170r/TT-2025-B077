@@ -1,12 +1,11 @@
 <template>
   <div class="itinerary-container">
-    
     <div v-if="isLoading" class="loading-container">
       <img src="/icons8-hilandero.gif" alt="Cargando..." />
       <h3>Cargando itinerario...</h3>
       <p>Por favor espera un momento</p>
     </div>
-    
+
     <div v-else-if="!isLoading && !currentItinerary" class="error-container">
       <i class="fa-solid fa-exclamation-triangle"></i>
       <h3>Itinerario no encontrado</h3>
@@ -116,10 +115,7 @@
               class="drag-area"
             >
               <template #item="{ element: itineraryPlace }">
-                <div 
-                  class="draggable-item" 
-                  :class="{ 'reorder-active': reorderMode }"
-                >
+                <div class="draggable-item" :class="{ 'reorder-active': reorderMode }">
                   <div v-if="itineraryPlace.isVisited" class="visited-badge">
                     <i class="fa-solid fa-check-circle"></i>
                     <span>Visitado</span>
@@ -328,7 +324,6 @@ import PlaceCard from '@/components/placecard.vue'
 import draggable from 'vuedraggable'
 import { getErrorDetails } from '@/utils/utils'
 import { mapActions, mapGetters, mapMutations } from 'vuex'
-import { isLogged } from '@/modules/auth/store/getters'
 
 export default {
   name: 'ItineraryView',
@@ -409,7 +404,7 @@ export default {
 
     async loadItinerary(id) {
       this.isLoading = true
-      this.fetchItineraryById(id)
+      this.fetchItineraryById({ itineraryId: id, showLoading: false })
         .then(() => {
           this.isLoading = false
         })
@@ -425,7 +420,7 @@ export default {
     toggleReorderMode(dayId) {
       this.reorderMode = !this.reorderMode
       this.currentReorderDayId = this.reorderMode ? dayId : null
-      
+
       if (this.reorderMode) {
         this.$alert.info({
           title: 'Modo reordenar activado',
@@ -440,7 +435,7 @@ export default {
 
     selectPlace(place) {
       if (this.reorderMode) return
-      
+
       this.setSelectedPlaceId(place.placeId)
       this.$router.push({
         name: 'site_description',
@@ -450,7 +445,7 @@ export default {
 
     showDetails(place) {
       if (this.reorderMode) return
-      
+
       this.setSelectedPlaceId(place.placeId)
       this.$router.push({
         name: 'site_description',
@@ -460,7 +455,7 @@ export default {
 
     async toggleFavorite(place) {
       if (this.reorderMode) return
-      
+
       this.toggleFavoritePlace(place.id)
         .then(() => {
           const isFav = this.isFavorite(place.id)
@@ -848,7 +843,8 @@ export default {
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0) rotate(0deg);
   }
   25% {

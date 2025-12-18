@@ -257,15 +257,17 @@ export async function fetchUserItineraries(
   })
 }
 
-export async function fetchItineraryById({ commit }, itineraryId) {
-  commit(
-    'setLoading',
-    {
-      isLoading: true,
-      msg: 'Cargando itinerario',
-    },
-    { root: true },
-  )
+export async function fetchItineraryById({ commit }, { itineraryId, showLoading = true }) {
+  if (showLoading) {
+    commit(
+      'setLoading',
+      {
+        isLoading: true,
+        msg: 'Cargando itinerario',
+      },
+      { root: true },
+    )
+  }
   return new Promise((resolve, reject) => {
     axios
       .get(`/itineraries/${itineraryId}`)

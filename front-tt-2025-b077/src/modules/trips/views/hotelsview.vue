@@ -522,7 +522,6 @@ export default {
           empty: false,
         })
 
-        this.setIsSustainable(false)
         this.tempCertifications = []
         this.tempSettlement = null
         this.locationType = 'none'
@@ -596,26 +595,24 @@ export default {
 
     selectPlace(place) {
       const hotelId = place.id
-
       if (this.selectedHotel === hotelId) {
         this.setSelectedHotel({ hotelPlaceId: null, isCertificatedHotel: false })
       } else {
         this.setSelectedHotel({
           hotelPlaceId: hotelId,
-          isCertificatedHotel: this.sustainableFilter,
+          isCertificatedHotel: this.isSustainable,
         })
       }
     },
 
     selectHotel(hotel) {
       const hotelId = hotel.place.id
-
       if (this.selectedHotel === hotelId) {
         this.setSelectedHotel({ hotelPlaceId: null, isCertificatedHotel: false })
       } else {
         this.setSelectedHotel({
           hotelPlaceId: hotelId,
-          isCertificatedHotel: this.sustainableFilter,
+          isCertificatedHotel: this.isSustainable,
         })
       }
     },

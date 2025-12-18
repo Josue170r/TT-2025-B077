@@ -224,8 +224,8 @@ export default {
   },
   async created() {
     await this.getUserLocation()
-    await this.loadFavorites()
     await this.loadRecommendedPlaces()
+    await this.loadFavorites()
   },
   mounted() {
     const nav = document.getElementById('mainNav')
