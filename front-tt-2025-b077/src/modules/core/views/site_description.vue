@@ -157,6 +157,25 @@
     </div>
 
     <div class="container-lg content-section">
+      <div v-if="matchingPreferences.length > 0" class="bg-white rounded-3 shadow-sm p-4 p-lg-5 mb-4">
+        <h5 class="section-title mb-4">Este lugar es para ti</h5>
+        <div class="preferences-match-container">
+          <p class="match-description mb-3">
+            Este lugar coincide con tus preferencias de viaje
+          </p>
+          <div class="matched-categories">
+            <div
+              v-for="(preference, index) in matchingPreferences"
+              :key="index"
+              class="category-badge"
+            >
+              <i class="fa-solid fa-check-circle me-2"></i>
+              <span>{{ preference.categoryName }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="bg-white rounded-3 shadow-sm p-4 p-lg-5 mb-4">
         <h5 class="section-title mb-4">Datos básicos</h5>
         <p class="basic-info-text mb-0">{{ basicInfo }}</p>
@@ -369,7 +388,7 @@ export default {
         temperature: '--',
         iconClass: 'fa-solid fa-sun',
       },
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       reviewModalOpen: false,
       selectedReview: null,
       addReviewModalOpen: false,
@@ -385,6 +404,35 @@ export default {
       selectedPlaceDetails: 'selectedPlaceDetails',
     }),
     ...mapGetters('trips', ['favoriteIds', 'userItineraries']),
+    ...mapGetters('auth', ['userPreferences']),
+    
+    matchingPreferences() {
+      if (!this.userPreferences || !this.selectedPlaceDetails?.placeTypes) {
+        return []
+      }
+
+      const placeTypes = this.selectedPlaceDetails.placeTypes
+      const matches = []
+
+      this.userPreferences.forEach(preference => {
+        const categoryPlaceTypes = preference.category.placeTypes.map(pt => pt.type)
+        
+        const hasMatch = placeTypes.some(placeType => 
+          categoryPlaceTypes.includes(placeType)
+        )
+
+        if (hasMatch) {
+          matches.push({
+            categoryId: preference.category.id,
+            categoryName: preference.category.category,
+            categoryPicture: preference.category.picture
+          })
+        }
+      })
+
+      return matches
+    },
+
     placeName() {
       return this.selectedPlaceDetails?.name || 'Cargando...'
     },
@@ -454,7 +502,12 @@ export default {
       }
     },
     goBack() {
-      this.$router.push({ name: 'home' })
+      const from = this.$route.query.from
+      if (from) {
+        this.$router.push({ name: from })
+      } else {
+        this.$router.push({ name: 'home' })
+      }
     },
     goToMap() {
       const place = this.selectedPlaceDetails
@@ -467,6 +520,7 @@ export default {
           placeId: place.placeId,
           address: place.formattedAddress,
           rating: place.rating,
+          autoRoute: 'true'
         },
       })
     },
@@ -475,7 +529,7 @@ export default {
         ? 'http://127.0.0.1:8080/api/'
         : import.meta.env.VITE_API_BACK
 
-      if (image.origin === "Google") {
+      if (image.origin === 'Google') {
         return `${baseURL}place/photo?photoReference=${image.photoReference}`
       } else {
         return image.photoUrl
@@ -851,6 +905,73 @@ export default {
   border-radius: 2px;
 }
 
+.preferences-match-container {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.match-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.match-icon {
+  font-size: 3rem;
+  color: #28a745;
+  animation: heartBeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  10%, 30% {
+    transform: scale(1.1);
+  }
+  20%, 40% {
+    transform: scale(1);
+  }
+}
+
+.match-description {
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.matched-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #1b515e 0%, #2d6b7a 100%);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(27, 81, 94, 0.3);
+  transition: all 0.3s ease;
+}
+
+.category-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(27, 81, 94, 0.4);
+}
+
+.category-badge i {
+  color: #28a745;
+  font-size: 1rem;
+}
+
 .basic-info-text {
   text-align: justify;
   line-height: 1.7;
@@ -1087,6 +1208,23 @@ export default {
   .day-hours {
     font-size: 0.8rem;
   }
+
+  .match-icon {
+    font-size: 2.5rem;
+  }
+
+  .match-description {
+    font-size: 1rem;
+  }
+
+  .category-badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .matched-categories {
+    gap: 0.5rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -1131,6 +1269,19 @@ export default {
 
   .header-title p {
     font-size: 0.9rem;
+  }
+
+  .match-icon {
+    font-size: 2rem;
+  }
+
+  .match-description {
+    font-size: 0.9rem;
+  }
+
+  .category-badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
   }
 }
 </style>

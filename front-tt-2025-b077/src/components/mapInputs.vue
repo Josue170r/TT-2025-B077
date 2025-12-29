@@ -1,69 +1,90 @@
 <template>
-  <div class="floating-controls d-flex align-items-center gap-3">
-    <div class="route-card flex-fill p-3">
-      <div class="d-flex align-items-center mb-1 position-relative">
-        <span class="icon origin me-3 d-inline-block"></span>
-        <input
-          v-model="localOrigin"
-          placeholder="Tu ubicación"
-          class="form-control route-input border-0"
-        />
-        <div v-if="showOriginSuggestions" class="autocomplete-dropdown origin-dropdown">
-          <div
-            v-for="suggestion in originSuggestions"
-            :key="suggestion.place_id"
-            class="autocomplete-item"
-            @click="selectOrigin(suggestion)"
-          >
-            {{ suggestion.description }}
-          </div>
-        </div>
-      </div>
-
-      <div class="d-flex align-items-center justify-content-between my-1">
-        <span class="route-line flex-fill me-3"></span>
-        <button class="btn swap-btn p-2" @click="handleSwap">⇆</button>
-      </div>
-
-      <div class="d-flex align-items-center position-relative">
-        <span class="icon destination me-3">
-          <i class="fa-solid fa-location-dot"></i>
-        </span>
-        <input
-          v-model="localDestination"
-          placeholder="Destino"
-          class="form-control route-input border-0"
-        />
-        <button
-          v-if="localDestination"
-          class="btn-clear-destination p-0"
-          @click="clearDestination"
-          type="button"
-          title="Limpiar destino"
-        >
-          ✕
-        </button>
-        <div v-if="showDestinationSuggestions" class="autocomplete-dropdown destination-dropdown">
-          <div
-            v-for="suggestion in destinationSuggestions"
-            :key="suggestion.place_id"
-            class="autocomplete-item"
-            @click="selectDestination(suggestion)"
-          >
-            {{ suggestion.description }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button
-      class="btn search-btn-circular d-flex align-items-center justify-content-center"
-      @click="$emit('search')"
-      :disabled="disabled"
-      :class="{ disabled: disabled }"
+  <div class="inputs-wrapper">    
+    <div class="floating-controls d-flex align-items-center gap-3">
+      
+    <button 
+      class="btn-back-inside"
+      @click="goBack"
+      title="Regresar"
     >
-      🔍
+      <i class="fa-solid fa-arrow-left"></i>
     </button>
+      <div class="route-card flex-fill p-3">
+        <div class="d-flex align-items-center mb-1 position-relative">
+          <span class="icon origin me-3 d-inline-block"></span>
+          <input
+            v-model="localOrigin"
+            placeholder="Tu ubicación"
+            class="form-control route-input border-0"
+            :readonly="suppressOriginSearch"
+          />
+          <button
+            v-if="localOrigin"
+            class="btn-clear-origin p-0"
+            @click="clearOrigin"
+            type="button"
+            title="Limpiar origen"
+          >
+            ✕
+          </button>
+          <div v-if="showOriginSuggestions && !suppressOriginSearch" class="autocomplete-dropdown origin-dropdown">
+            <div
+              v-for="suggestion in originSuggestions"
+              :key="suggestion.place_id"
+              class="autocomplete-item"
+              @click="selectOrigin(suggestion)"
+            >
+              {{ suggestion.description }}
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between my-1">
+          <span class="route-line flex-fill me-3"></span>
+          <button class="btn swap-btn p-2" @click="handleSwap">⇆</button>
+        </div>
+
+        <div class="d-flex align-items-center position-relative">
+          <span class="icon destination me-3">
+            <i class="fa-solid fa-location-dot"></i>
+          </span>
+          <input
+            v-model="localDestination"
+            placeholder="Destino"
+            class="form-control route-input border-0"
+            :readonly="suppressDestinationSearch"
+          />
+          <button
+            v-if="localDestination"
+            class="btn-clear-destination p-0"
+            @click="clearDestination"
+            type="button"
+            title="Limpiar destino"
+          >
+            ✕
+          </button>
+          <div v-if="showDestinationSuggestions && !suppressDestinationSearch" class="autocomplete-dropdown destination-dropdown">
+            <div
+              v-for="suggestion in destinationSuggestions"
+              :key="suggestion.place_id"
+              class="autocomplete-item"
+              @click="selectDestination(suggestion)"
+            >
+              {{ suggestion.description }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        class="btn search-btn-circular d-flex align-items-center justify-content-center"
+        @click="$emit('search')"
+        :disabled="disabled"
+        :class="{ disabled: disabled }"
+      >
+        🔍
+      </button>
+    </div>
   </div>
 </template>
 
@@ -99,11 +120,15 @@ export default {
       showDestinationSuggestions: false,
       isSelectingOrigin: false,
       isSelectingDestination: false,
+      suppressOriginSearch: false,
     }
   },
   watch: {
     origin(newVal) {
       this.localOrigin = newVal
+      if (newVal && newVal.length > 10) {
+        this.suppressOriginSearch = true
+      }
     },
     destination(newVal) {
       this.localDestination = newVal
@@ -113,6 +138,12 @@ export default {
 
       if (this.isSelectingOrigin) {
         this.isSelectingOrigin = false
+        return
+      }
+
+      if (this.suppressOriginSearch) {
+        this.showOriginSuggestions = false
+        this.originSuggestions = []
         return
       }
 
@@ -212,6 +243,12 @@ export default {
       this.showDestinationSuggestions = false
       this.destinationSuggestions = []
     },
+    clearOrigin() {
+      this.localOrigin = ''
+      this.showOriginSuggestions = false
+      this.originSuggestions = []
+      this.suppressOriginSearch = false
+    },
     clearDestination() {
       this.localDestination = ''
       this.showDestinationSuggestions = false
@@ -224,12 +261,16 @@ export default {
       this.localDestination = temp
       this.showOriginSuggestions = false
       this.showDestinationSuggestions = false
+      this.suppressOriginSearch = false
     },
     handleClickOutside(event) {
       if (!this.$el.contains(event.target)) {
         this.showOriginSuggestions = false
         this.showDestinationSuggestions = false
       }
+    },
+    goBack() {
+      this.$router.back()
     },
   },
 }
@@ -275,6 +316,11 @@ export default {
   padding: 0.375rem 0 0.375rem 0 !important;
   padding-right: 40px !important;
   line-height: 1.3 !important;
+}
+
+.route-input:read-only {
+  cursor: default;
+  background: transparent !important;
 }
 
 .route-input::placeholder {
@@ -390,6 +436,32 @@ export default {
   color: #1b515e;
 }
 
+.btn-clear-origin {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #1b515e;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 5;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+}
+
+.btn-clear-origin:hover {
+  color: #1b515e;
+  transform: translateY(-50%) scale(1.3);
+}
+
 .btn-clear-destination {
   position: absolute;
   right: 8px;
@@ -459,6 +531,49 @@ export default {
   .search-btn-circular {
     width: 72px !important;
     height: 72px !important;
+  }
+}
+
+.btn-back-inside {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(27, 81, 94, 0.2);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: #1b515e;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.btn-back-inside:hover {
+  background: rgba(27, 81, 94, 0.1);
+  transform: scale(1.1);
+}
+
+.btn-back-inside:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+  .btn-back-inside {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-back-inside {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
   }
 }
 </style>

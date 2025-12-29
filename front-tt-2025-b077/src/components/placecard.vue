@@ -1,11 +1,5 @@
 <template>
-  <v-card
-    class="place-card-vertical mb-4"
-    elevation="3"
-    rounded="lg"
-    hover
-    @click="handlePlaceClick"
-  >
+  <v-card class="place-card-vertical mb-4" elevation="3" rounded="lg" hover>
     <div class="place-image-container-vertical">
       <v-carousel
         v-if="place.images && place.images.length > 0"
@@ -20,10 +14,11 @@
           :key="index"
           :src="getPlaceImage(image)"
           cover
+          @click.stop="showPlaceDetails"
         />
       </v-carousel>
 
-      <div v-else class="default-image-container">
+      <div v-else class="default-image-container" @click="handlePlaceClick">
         <img :src="defaultImage" alt="Imagen por defecto" class="default-image" />
       </div>
 
@@ -39,9 +34,9 @@
       </div>
     </div>
 
-    <v-card-text class="place-info-vertical">
+    <v-card-text class="place-info-vertical pb-2" @click="handlePlaceClick">
       <v-card-title class="place-name pa-0 pb-2">{{ place.name }}</v-card-title>
-      <p class="place-address mb-3">
+      <p class="place-address mb-2">
         <i class="mdi mdi-map-marker me-1"></i>
         {{ shortAddress }}
       </p>
@@ -52,6 +47,14 @@
         <span v-if="reviewsCount > 0" class="reviews-count"> {{ reviewsCount }} reseñas </span>
       </div>
     </v-card-text>
+
+    <v-divider class="my-1"></v-divider>
+
+    <v-card-actions class="pa-2 pt-1 pb-1">
+      <v-btn color="#1b515e" variant="text" size="small" block @click.stop="handlePlaceClick">
+        Ver detalles
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -69,10 +72,10 @@ export default {
     },
     logoUrl: {
       type: String,
-      default: '/logo-letras.png',
+      default: '/logo-letras.png  ',
     },
   },
-  emits: ['select-place', 'toggle-favorite'],
+  emits: ['select-place', 'show-details', 'toggle-favorite'],
   computed: {
     hasMultipleImages() {
       return Array.isArray(this.place?.images) && this.place.images.length > 1
@@ -104,8 +107,11 @@ export default {
     },
   },
   methods: {
-    handlePlaceClick() {
+    showPlaceDetails() {
       this.$emit('select-place', this.place)
+    },
+    handlePlaceClick() {
+      this.$emit('show-details', this.place)
     },
     handleToggleFavorite() {
       this.$emit('toggle-favorite', this.place)
@@ -129,7 +135,7 @@ export default {
         church: 'Iglesia',
         university: 'Universidad',
         store: 'Tienda',
-        library: "Biblioteca",
+        library: 'Biblioteca',
       }
       return typeTranslations[type] || type.replace(/_/g, ' ')
     },
@@ -138,12 +144,12 @@ export default {
         ? 'http://127.0.0.1:8080/api/'
         : import.meta.env.VITE_API_BACK
 
-      if (image.origin === "Google") {
+      if (image.origin === 'Google') {
         return `${baseURL}place/photo?photoReference=${image.photoReference}`
       } else {
         return image.photoUrl
       }
-    }
+    },
   },
 }
 </script>

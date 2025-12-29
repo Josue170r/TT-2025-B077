@@ -31,13 +31,13 @@
 
 <script>
 export default {
-  name: 'Alert',
+  name: 'AlertComponent',
   data() {
     return {
       show: true,
       message: '',
       type: 'success',
-      timeout: 2500,
+      timeout:3500,
       customTitle: '',
       nextRoute: null,
     }

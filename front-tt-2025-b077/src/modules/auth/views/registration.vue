@@ -27,7 +27,7 @@
                         type="text"
                         id="username"
                         v-model="user.username"
-                        class="form-control floating-input mt-4"
+                        class="form-control floating-input"
                         :class="{ 'has-content': user.username }"
                         @focus="setFocus('username', true)"
                         @blur="setFocus('username', false)"
@@ -38,7 +38,7 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ active: usernameFocused || !!user.username }"
                       >
-                        Nombre de usuario
+                        Nombre de usuario *
                       </label>
                     </div>
 
@@ -49,7 +49,7 @@
                         type="text"
                         id="name"
                         v-model="user.name"
-                        class="form-control floating-input mt-4"
+                        class="form-control floating-input"
                         :class="{ 'has-content': user.name }"
                         @focus="setFocus('name', true)"
                         @blur="setFocus('name', false)"
@@ -60,7 +60,7 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ active: nameFocused || !!user.name }"
                       >
-                        Nombre(s)
+                        Nombre(s) *
                       </label>
                     </div>
 
@@ -71,7 +71,7 @@
                         type="text"
                         id="lastName"
                         v-model="user.lastName"
-                        class="form-control floating-input mt-4"
+                        class="form-control floating-input"
                         :class="{ 'has-content': user.lastName }"
                         @focus="setFocus('lastName', true)"
                         @blur="setFocus('lastName', false)"
@@ -82,7 +82,7 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ active: lastNameFocused || !!user.lastName }"
                       >
-                        Primer apellido
+                        Primer apellido *
                       </label>
                     </div>
 
@@ -93,7 +93,7 @@
                         type="text"
                         id="secondLastName"
                         v-model="user.secondLastName"
-                        class="form-control floating-input mt-4"
+                        class="form-control floating-input"
                         :class="{ 'has-content': user.secondLastName }"
                         @focus="setFocus('secondLastName', true)"
                         @blur="setFocus('secondLastName', false)"
@@ -103,7 +103,7 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ active: secondLastNameFocused || !!user.secondLastName }"
                       >
-                        Segundo apellido
+                        Segundo apellido (opcional)
                       </label>
                     </div>
 
@@ -114,17 +114,18 @@
                         type="tel"
                         id="phoneNumber"
                         v-model="user.phoneNumber"
-                        class="form-control floating-input mt-4"
+                        class="form-control floating-input"
                         :class="{ 'has-content': user.phoneNumber }"
                         @focus="setFocus('phoneNumber', true)"
                         @blur="setFocus('phoneNumber', false)"
+                        required
                       />
                       <label
                         for="phoneNumber"
                         class="floating-label position-absolute fs-6"
                         :class="{ active: phoneNumberFocused || !!user.phoneNumber }"
                       >
-                        Número de teléfono
+                        Número de teléfono *
                       </label>
                     </div>
 
@@ -135,7 +136,7 @@
                         type="email"
                         id="email"
                         v-model="user.email"
-                        class="form-control floating-input mt-4"
+                        class="form-control floating-input"
                         :class="{ 'has-content': user.email }"
                         @focus="setFocus('email', true)"
                         @blur="setFocus('email', false)"
@@ -146,15 +147,15 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ active: emailFocused || !!user.email }"
                       >
-                        Correo electrónico
+                        Correo electrónico *
                       </label>
                     </div>
 
                     <!-- Contraseña -->
-                    <div class="mb-4 position-relative has-icon">
+                    <div class="mb-2 position-relative has-icon">
                       <i class="fas fa-lock position-absolute icon-input"></i>
                       <input
-                        type="password"
+                        :type="showPassword ? 'text' : 'password'"
                         id="password"
                         v-model="user.password"
                         class="form-control floating-input"
@@ -168,15 +169,44 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ active: passwordFocused || !!user.password }"
                       >
-                        Contraseña
+                        Contraseña *
                       </label>
+                      <i 
+                        :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                        class="position-absolute eye-icon"
+                        @click="showPassword = !showPassword"
+                      ></i>
+                    </div>
+
+                    <!-- Validaciones de contraseña -->
+                    <div class="password-requirements mb-3" v-if="user.password || passwordFocused">
+                      <small class="d-block" :class="passwordValidation.minLength ? 'text-success' : 'text-danger'">
+                        <i :class="passwordValidation.minLength ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        Mínimo 8 caracteres
+                      </small>
+                      <small class="d-block" :class="passwordValidation.hasUpperCase ? 'text-success' : 'text-danger'">
+                        <i :class="passwordValidation.hasUpperCase ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        Al menos una letra mayúscula
+                      </small>
+                      <small class="d-block" :class="passwordValidation.hasLowerCase ? 'text-success' : 'text-danger'">
+                        <i :class="passwordValidation.hasLowerCase ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        Al menos una letra minúscula
+                      </small>
+                      <small class="d-block" :class="passwordValidation.hasNumber ? 'text-success' : 'text-danger'">
+                        <i :class="passwordValidation.hasNumber ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        Al menos un número
+                      </small>
+                      <small class="d-block" :class="passwordValidation.hasSpecialChar ? 'text-success' : 'text-danger'">
+                        <i :class="passwordValidation.hasSpecialChar ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        Al menos un carácter especial (@, #, $, %, etc.)
+                      </small>
                     </div>
 
                     <!-- Confirmar contraseña -->
-                    <div class="mb-4 position-relative has-icon">
+                    <div class="mb-2 position-relative has-icon">
                       <i class="fas fa-lock position-absolute icon-input"></i>
                       <input
-                        type="password"
+                        :type="showConfirmPassword ? 'text' : 'password'"
                         id="confirmPassword"
                         v-model="confirmPassword"
                         class="form-control floating-input"
@@ -190,15 +220,28 @@
                         class="floating-label position-absolute fs-6"
                         :class="{ active: confirmPasswordFocused || !!confirmPassword }"
                       >
-                        Confirmar contraseña
+                        Confirmar contraseña *
                       </label>
+                      <i 
+                        :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" 
+                        class="position-absolute eye-icon"
+                        @click="showConfirmPassword = !showConfirmPassword"
+                      ></i>
+                    </div>
+
+                    <!-- Validación de coincidencia de contraseñas -->
+                    <div class="password-match mb-4" v-if="confirmPassword">
+                      <small :class="passwordsMatch ? 'text-success' : 'text-danger'">
+                        <i :class="passwordsMatch ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        {{ passwordsMatch ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden' }}
+                      </small>
                     </div>
 
                     <div class="d-flex justify-content-between mt-3">
                       <button type="button" class="btn btn-outline-secondary" @click="goToLogin">
                         Cancelar
                       </button>
-                      <button type="submit" class="btn btn-success">Registrarse</button>
+                      <button type="submit" class="btn btn-success" :disabled="!isFormValid">Registrarse</button>
                     </div>
                   </form>
                   <div class="mt-4 mb-5 d-flex justify-content-end align-items-center">
@@ -223,7 +266,7 @@ export default {
   data() {
     return {
       showRegister: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       user: {
         email: '',
         username: '',
@@ -234,6 +277,8 @@ export default {
         password: '',
       },
       confirmPassword: '',
+      showPassword: false,
+      showConfirmPassword: false,
       usernameFocused: false,
       nameFocused: false,
       lastNameFocused: false,
@@ -243,6 +288,33 @@ export default {
       passwordFocused: false,
       confirmPasswordFocused: false,
       isNavigating: false,
+    }
+  },
+  computed: {
+    passwordValidation() {
+      const password = this.user.password
+      return {
+        minLength: password.length >= 8,
+        hasUpperCase: /[A-Z]/.test(password),
+        hasLowerCase: /[a-z]/.test(password),
+        hasNumber: /[0-9]/.test(password),
+        hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+      }
+    },
+    isPasswordValid() {
+      return Object.values(this.passwordValidation).every(v => v === true)
+    },
+    passwordsMatch() {
+      return this.user.password === this.confirmPassword && this.confirmPassword !== ''
+    },
+    isFormValid() {
+      return this.isPasswordValid && 
+             this.passwordsMatch && 
+             this.user.username && 
+             this.user.name && 
+             this.user.lastName && 
+             this.user.phoneNumber && 
+             this.user.email
     }
   },
   mounted() {
@@ -255,8 +327,12 @@ export default {
       singUp: 'singUp',
     }),
     register() {
+      if (!this.isPasswordValid) {
+        this.$alert.error('La contraseña no cumple con los requisitos de seguridad')
+        return
+      }
       if (this.user.password !== this.confirmPassword) {
-        this.$alert.error('Las contraseñas no conciden')
+        this.$alert.error('Las contraseñas no coinciden')
         return
       }
       this.singUp(this.user)
@@ -359,8 +435,24 @@ export default {
   pointer-events: none;
 }
 
+.eye-icon {
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1b515e;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 3;
+  transition: color 0.3s ease;
+}
+
+.eye-icon:hover {
+  color: #35aa06;
+}
+
 .has-icon .floating-input {
-  padding-left: 2.2rem !important;
+  padding-left: 2.5rem !important;
+  padding-right: 2.8rem !important;
 }
 
 .has-icon .floating-label {
@@ -368,12 +460,38 @@ export default {
   z-index: 2 !important;
 }
 
-.has-icon .floating-input.has-content {
-  padding-left: 2.8rem !important; /* Más espacio cuando hay contenido */
+.password-requirements {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #1b515e;
 }
 
-.has-icon .floating-input:focus.has-content {
-  padding-left: 2.8rem !important; /* Mantiene espacio cuando está enfocado Y tiene contenido */
+.password-requirements small {
+  font-size: 11px;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.password-requirements i {
+  margin-right: 6px;
+  font-size: 10px;
+}
+
+.password-match {
+  padding: 8px 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.password-match small {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.password-match i {
+  margin-right: 6px;
+  font-size: 11px;
 }
 
 hr {
@@ -412,6 +530,10 @@ hr {
   color: #1b515e !important;
   background-color: #abcd9e !important;
   border-color: #abcd9e !important;
+}
+.btn-success:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .green-link {
   color: #35aa06 !important;

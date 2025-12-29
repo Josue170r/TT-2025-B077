@@ -1,16 +1,33 @@
 <template>
-  <div class="main-container">
+  <div class="main-container" :style="mainContainerStyle">
     <div class="header-container">
       <SearchHotels
         :user-location="userLocation"
         @place-selected="handlePlaceSelected"
         @navigate="handleNavigation"
       />
+      
+      <button 
+        v-if="isMobile" 
+        class="mobile-filters-btn" 
+        @click="showFiltersModal = true"
+      >
+        <i class="mdi mdi-tune"></i>
+      </button>
     </div>
 
-    <div class="filters-chips-container">
+    <button class="back-button" @click="goBack">
+      <i class="mdi mdi-arrow-left"></i>
+    </button>
+
+    <div v-if="hasActiveFilters" class="filters-chips-container">
       <div class="filters-chips-wrapper">
         <div class="filter-chips">
+          <button v-if="hasActiveFilters" @click="clearAllFilters" class="clear-filters-btn">
+            <i class="mdi mdi-filter-remove"></i>
+            Limpiar filtros
+          </button>
+
           <div v-for="cert in selectedCertifications" :key="cert.id" class="filter-chip">
             <span>{{ cert.certification }}</span>
             <button @click="removeCertification(cert.id)" class="chip-remove">
@@ -38,23 +55,18 @@
               <i class="mdi mdi-close"></i>
             </button>
           </div>
-
-          <button v-if="hasActiveFilters" @click="clearAllFilters" class="clear-filters-btn">
-            <i class="mdi mdi-filter-remove"></i>
-            Limpiar filtros
-          </button>
         </div>
       </div>
     </div>
 
     <div class="content-layout">
-      <aside class="filters-sidebar">
+      <aside v-if="!isMobile" class="filters-sidebar" :style="sidebarStyle">
         <div class="filters-sidebar-content">
           <h3 class="sidebar-title">Filtros</h3>
 
           <div class="filter-section sustainable-toggle">
             <v-switch
-              v-model="isSustainable"
+              v-model="sustainableFilter"
               color="success"
               label="Sostenibles"
               hide-details
@@ -73,7 +85,7 @@
               v-model="tempCertifications"
               :value="cert.id"
               :label="cert.certification"
-              :disabled="!isSustainable"
+              :disabled="!sustainableFilter"
               color="success"
               hide-details
               dense
@@ -90,7 +102,7 @@
             <v-radio-group
               v-model="locationType"
               @change="handleLocationTypeChange"
-              :disabled="!isSustainable"
+              :disabled="!sustainableFilter"
             >
               <v-radio label="Por municipio" value="settlement" color="success"></v-radio>
 
@@ -109,7 +121,7 @@
               label="Selecciona un municipio"
               outlined
               dense
-              :disabled="!isSustainable"
+              :disabled="!sustainableFilter"
               color="success"
               @update:modelValue="applyFilters"
               class="mt-2"
@@ -158,6 +170,7 @@
               :logo-url="logoUrl"
               @select-place="selectPlace"
               @toggle-favorite="toggleFavorite"
+              @show-details="showDetails"
             />
 
             <button
@@ -190,6 +203,109 @@
       </main>
     </div>
 
+    <v-bottom-sheet
+      v-model="showFiltersModal"
+      fullscreen
+      persistent
+    >
+      <v-card class="filters-modal">
+        <v-card-title class="filters-modal-header">
+          <span>Filtros</span>
+          <v-btn icon variant="text" @click="showFiltersModal = false">
+            <i class="mdi mdi-close"></i>
+          </v-btn>
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-card-text class="filters-modal-content">
+          <div class="filter-section sustainable-toggle">
+            <v-switch
+              v-model="sustainableFilter"
+              color="success"
+              label="Sostenibles"
+              hide-details
+              dense
+              @change="handleSustainableChange"
+            ></v-switch>
+          </div>
+
+          <div class="filter-divider"></div>
+
+          <div class="filter-section">
+            <h4 class="filter-section-title">Certificaciones</h4>
+            <v-checkbox
+              v-for="cert in certifications"
+              :key="cert.id"
+              v-model="tempCertifications"
+              :value="cert.id"
+              :label="cert.certification"
+              :disabled="!sustainableFilter"
+              color="success"
+              hide-details
+              dense
+              class="certification-checkbox-item"
+            ></v-checkbox>
+          </div>
+
+          <div class="filter-divider"></div>
+
+          <div class="filter-section">
+            <h4 class="filter-section-title">Ubicación</h4>
+
+            <v-radio-group
+              v-model="locationType"
+              @change="handleLocationTypeChange"
+              :disabled="!sustainableFilter"
+            >
+              <v-radio label="Por municipio" value="settlement" color="success"></v-radio>
+
+              <v-radio label="Cerca de mí" value="location" color="success"></v-radio>
+
+              <v-radio label="Sin filtro de ubicación" value="none" color="success"></v-radio>
+            </v-radio-group>
+
+            <v-select
+              v-if="locationType === 'settlement'"
+              v-model="tempSettlement"
+              :items="settlements"
+              item-title="settlement"
+              item-value="id"
+              label="Selecciona un municipio"
+              outlined
+              dense
+              :disabled="!sustainableFilter"
+              color="success"
+              class="mt-2"
+              :menu-props="{ auto: true, offsetY: true }"
+            ></v-select>
+          </div>
+        </v-card-text>
+
+        <v-card-actions class="filters-modal-actions">
+          <v-btn
+            variant="flat"
+            size="large"
+            @click="clearAllFiltersAndClose"
+            class="clear-filters-modal-btn"
+          >
+            <i class="mdi mdi-filter-remove"></i>
+            Limpiar
+          </v-btn>
+          <v-btn
+            color="#1b515e"
+            variant="flat"
+            size="large"
+            @click="applyFiltersAndClose"
+            class="apply-filters-btn"
+          >
+            <i class="mdi mdi-check-circle"></i>
+            Aplicar filtros
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-bottom-sheet>
+
     <NavButtom :has-hotel-selected="!!selectedHotel" />
   </div>
 </template>
@@ -209,13 +325,15 @@ export default {
   },
   data() {
     return {
-      isSustainable: true,
       tempCertifications: [],
       tempSettlement: null,
       locationType: 'none',
       currentPageModel: 1,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       userLocation: null,
+      sustainableFilter: null,
+      showFiltersModal: false,
+      isMobile: false,
     }
   },
   computed: {
@@ -228,6 +346,7 @@ export default {
       'currentPage',
       'filters',
       'newItinerary',
+      'isSustainable',
       'favoriteIds',
       'textSearchMode',
       'textSearchQuery',
@@ -249,24 +368,29 @@ export default {
         this.textSearchMode
       )
     },
-  },
-  async mounted() {
-    try {
-      await this.getUserLocation()
-      await this.fetchCertifications()
-
-      if (this.newItinerary.selectedState) {
-        await this.fetchSettlements(this.newItinerary.selectedState)
-
-        await this.$nextTick()
-        this.restoreFilters()
-
-        await this.loadHotels()
+    mainContainerStyle() {
+      if (this.isMobile) {
+        return {
+          paddingTop: this.hasActiveFilters ? '170px' : '110px',
+        }
       }
-    } catch (error) {
-      console.error('Error al cargar datos:', error)
-      this.$alert.error('Error al cargar la información')
-    }
+      return {
+        paddingTop: this.hasActiveFilters ? '200px' : '140px',
+      }
+    },
+    sidebarStyle() {
+      return {
+        top: this.hasActiveFilters ? '200px' : '140px',
+      }
+    },
+  },
+  mounted() {
+    this.checkMobile()
+    window.addEventListener('resize', this.checkMobile)
+    this.initComponent()
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile)
   },
   methods: {
     ...mapActions('trips', {
@@ -291,6 +415,7 @@ export default {
       setHotelIds: 'setHotelIds',
       setPagination: 'setPagination',
       setSelectedHotel: 'setSelectedHotel',
+      setIsSustainable: 'setIsSustainable',
       setTextSearchMode: 'setTextSearchMode',
       setTextSearchQuery: 'setTextSearchQuery',
       setTextSearchPlaceId: 'setTextSearchPlaceId',
@@ -299,6 +424,33 @@ export default {
     ...mapMutations('places', {
       setSelectedPlaceId: 'setSelectedPlaceId',
     }),
+
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 768
+    },
+
+    goBack() {
+      this.$router.push({ name: 'new-trips' })
+    },
+
+    async initComponent() {
+      try {
+        await this.getUserLocation()
+        await this.fetchCertifications()
+
+        if (this.newItinerary.selectedState) {
+          await this.fetchSettlements(this.newItinerary.selectedState)
+
+          await this.$nextTick()
+          this.restoreFilters()
+          this.sustainableFilter = this.isSustainable
+        }
+      } catch (error) {
+        console.error('Error al cargar datos:', error)
+        this.$alert.error('Error al cargar la información')
+      }
+    },
+
     async getUserLocation() {
       try {
         if (!navigator.geolocation) {
@@ -347,6 +499,9 @@ export default {
         this.setTextSearchQuery(place.mainText)
         this.setTextSearchPlaceId(place.placeId)
         this.setSelectedPlaceId(place.placeId)
+        this.setIsSustainable(false)
+        this.sustainableFilter = false
+        this.clearFilters()
 
         await this.fetchPlaceDetails()
 
@@ -367,7 +522,6 @@ export default {
           empty: false,
         })
 
-        this.isSustainable = false
         this.tempCertifications = []
         this.tempSettlement = null
         this.locationType = 'none'
@@ -379,15 +533,18 @@ export default {
 
     removeTextSearch() {
       this.clearTextSearch()
-      this.isSustainable = true
+      this.setIsSustainable(true)
+      this.sustainableFilter = true
       this.reloadHotels()
     },
 
     async handleSustainableChange() {
-      if (!this.isSustainable) {
+      if (!this.sustainableFilter) {
         this.clearAllFilters()
+        this.setIsSustainable(false)
       } else {
         await this.reloadHotels()
+        this.setIsSustainable(true)
       }
     },
 
@@ -428,19 +585,31 @@ export default {
         })
     },
 
-    selectPlace(place) {
+    showDetails(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({ name: 'site_description' })
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'hotels' },
+      })
+    },
+
+    selectPlace(place) {
+      const hotelId = place.id
+      if (this.selectedHotel === hotelId) {
+        this.setSelectedHotel({ hotelPlaceId: null, isCertificatedHotel: false })
+      } else {
+        this.setSelectedHotel({
+          hotelPlaceId: hotelId,
+          isCertificatedHotel: this.isSustainable,
+        })
+      }
     },
 
     selectHotel(hotel) {
       const hotelId = hotel.place.id
-
       if (this.selectedHotel === hotelId) {
-        this.selectedHotel = null
         this.setSelectedHotel({ hotelPlaceId: null, isCertificatedHotel: false })
       } else {
-        this.selectedHotel = hotelId
         this.setSelectedHotel({
           hotelPlaceId: hotelId,
           isCertificatedHotel: this.isSustainable,
@@ -450,7 +619,7 @@ export default {
 
     async handlePageChange(page) {
       try {
-        if (this.isSustainable) {
+        if (this.sustainableFilter) {
           await this.fetchHotels({
             page: page - 1,
             size: this.pagination.pageSize,
@@ -481,12 +650,16 @@ export default {
     removeCertification(certId) {
       const updated = this.filters.certifications.filter((id) => id !== certId)
       this.setFilterCertifications(updated)
+      this.setIsSustainable(true)
+      this.sustainableFilter = true
       this.tempCertifications = updated
       this.reloadHotels()
     },
 
     removeSettlement() {
       this.setFilterSettlement(null)
+      this.setIsSustainable(true)
+      this.sustainableFilter = true
       this.tempSettlement = null
       this.locationType = 'none'
       this.reloadHotels()
@@ -494,13 +667,15 @@ export default {
 
     removeLocation() {
       this.setFilterUseLocation(false)
+      this.setIsSustainable(true)
+      this.sustainableFilter = true
       this.setFilterCoordinates({ latitude: null, longitude: null })
       this.locationType = 'none'
       this.reloadHotels()
     },
 
     async applyFilters() {
-      if (!this.isSustainable) return
+      if (!this.sustainableFilter) return
 
       try {
         this.setFilterCertifications(this.tempCertifications)
@@ -523,6 +698,16 @@ export default {
         console.error('Error al aplicar filtros:', error)
         this.$alert.error('Error al aplicar los filtros')
       }
+    },
+
+    async applyFiltersAndClose() {
+      await this.applyFilters()
+      this.showFiltersModal = false
+    },
+
+    clearAllFiltersAndClose() {
+      this.clearAllFilters()
+      this.showFiltersModal = false
     },
 
     async applyUserLocation() {
@@ -565,7 +750,7 @@ export default {
     },
 
     async loadHotels() {
-      if (this.isSustainable) {
+      if (this.sustainableFilter) {
         await this.fetchHotels({ page: 0, size: 10 })
       } else {
         await this.loadNearbyHotels()
@@ -621,8 +806,8 @@ export default {
 .main-container {
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-top: 200px;
   padding-bottom: 80px;
+  transition: padding-top 0.3s ease;
 }
 
 .header-container {
@@ -634,20 +819,89 @@ export default {
   border-bottom: 1px solid #e0e0e0;
   z-index: 100;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+}
+
+/* Botón de regresar flotante - inferior derecha */
+.back-button {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: #1b515e;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(27, 81, 94, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 98;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: #164450;
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(27, 81, 94, 0.5);
+}
+
+.back-button i {
+  font-size: 28px;
+  color: white;
+}
+
+.mobile-filters-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1b515e;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(27, 81, 94, 0.3);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.mobile-filters-btn:hover {
+  background: #164450;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.mobile-filters-btn i {
+  font-size: 24px;
 }
 
 .filters-chips-container {
   position: fixed;
-  top: 130px;
+  top: 110px;
   left: 0;
   right: 0;
   background: white;
   border-bottom: 1px solid #e0e0e0;
-  padding: 1px 0;
+  padding: 8px 0;
   z-index: 90;
-  height: 60px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.filters-chips-container::-webkit-scrollbar {
+  display: none;
 }
 
 .filters-chips-wrapper {
@@ -659,11 +913,13 @@ export default {
 .filter-chips {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  padding: 0 15px;
 }
 
 .filter-chip {
+  margin-top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -674,6 +930,8 @@ export default {
   padding: 6px 12px;
   font-size: 0.875rem;
   font-weight: 500;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .text-search-chip {
@@ -699,6 +957,7 @@ export default {
 }
 
 .clear-filters-btn {
+  margin-top: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -711,6 +970,8 @@ export default {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .clear-filters-btn:hover {
@@ -730,10 +991,10 @@ export default {
   width: 280px;
   flex-shrink: 0;
   position: sticky;
-  top: 200px;
   height: fit-content;
   max-height: calc(100vh - 220px);
   overflow-y: auto;
+  transition: top 0.3s ease;
 }
 
 .filters-sidebar-content {
@@ -786,7 +1047,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
-  margin-bottom: 30px;
+  margin-bottom: 5px;
   padding: 0.5rem 0;
 }
 
@@ -929,6 +1190,80 @@ export default {
   color: #999;
 }
 
+.filters-modal {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-radius: 0 !important;
+}
+
+.filters-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px !important;
+  background: #1b515e;
+  color: white;
+  border-radius: 0;
+}
+
+.filters-modal-header span {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.filters-modal-header .v-btn {
+  color: white !important;
+}
+
+.filters-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px !important;
+}
+
+.filters-modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px 20px 20px !important;
+  border-top: 1px solid #e0e0e0;
+  background: white;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.apply-filters-btn {
+  background-color: #1b515e !important;
+  color: white !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 52px !important;
+  font-size: 16px !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  flex: 1;
+}
+
+.apply-filters-btn i {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.clear-filters-modal-btn {
+  color: #1b515e !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 52px !important;
+  font-size: 16px !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  flex: 1;
+}
+
+.clear-filters-modal-btn i {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
 @media (max-width: 1024px) {
   .filters-sidebar {
     width: 240px;
@@ -940,6 +1275,11 @@ export default {
 }
 
 @media (max-width: 768px) {
+  .filters-chips-container {
+    top: 100px;
+    padding: 10px 0;
+  }
+
   .content-layout {
     flex-direction: column;
     margin-top: 0;
@@ -947,28 +1287,27 @@ export default {
   }
 
   .filters-sidebar {
-    width: 100%;
-    position: static;
-    max-height: none;
-    margin-bottom: 20px;
-  }
-
-  .filters-sidebar-content {
-    padding: 15px;
+    display: none;
   }
 
   .hotels-list {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
+
+  .back-button {
+    bottom: 90px;
+    right: 15px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .back-button i {
+    font-size: 26px;
+  }
 }
 
 @media (max-width: 576px) {
-  .main-container {
-    padding-top: 170px;
-    padding-bottom: 85px;
-  }
-
   .header-container {
     position: fixed;
     top: 0;
@@ -978,22 +1317,6 @@ export default {
     border-bottom: 1px solid #e0e0e0;
     z-index: 100;
     box-shadow: none;
-  }
-
-  .filters-chips-container {
-    position: fixed;
-    top: 100px;
-    left: 0;
-    right: 0;
-    background: white;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 8px 0;
-    z-index: 90;
-    height: 60px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    margin: 0;
-    border-top: none;
   }
 
   .filters-chips-wrapper {
@@ -1006,29 +1329,10 @@ export default {
     margin-top: 0;
   }
 
-  .filters-sidebar {
-    width: 100%;
-    position: static;
-    max-height: none;
-    margin-bottom: 20px;
-  }
-
-  .filters-sidebar-content {
-    padding: 12px;
-  }
-
-  .sidebar-title {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-  }
-
-  .filter-section-title {
-    font-size: 0.9rem;
-  }
-
   .hotels-list {
     grid-template-columns: 1fr;
     gap: 0.75rem;
+    margin-bottom: 10px;
   }
 
   .hotel-card-wrapper {
@@ -1049,6 +1353,17 @@ export default {
     font-size: 0.9rem;
     padding: 10px 14px;
   }
+
+  .back-button {
+    bottom: 85px;
+    right: 12px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .back-button i {
+    font-size: 24px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1063,16 +1378,31 @@ export default {
   .clear-filters-btn {
     font-size: 0.8rem;
     padding: 5px 10px;
+    top: 110px;
   }
 
   .hotels-list {
     gap: 0.75rem;
+  }
+
+  .back-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .back-button i {
+    font-size: 22px;
   }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
   .hotels-list {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+
+  .back-button {
+    bottom: 100px;
+    right: 25px;
   }
 }
 
@@ -1081,12 +1411,22 @@ export default {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1.25rem;
   }
+
+  .back-button {
+    bottom: 110px;
+    right: 30px;
+  }
 }
 
 @media (min-width: 1441px) {
   .hotels-list {
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 1.5rem;
+  }
+
+  .back-button {
+    bottom: 120px;
+    right: 40px;
   }
 }
 </style>

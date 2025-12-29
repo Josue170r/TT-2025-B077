@@ -113,7 +113,7 @@ export default {
   data() {
     return {
       showLogin: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       username: '',
       password: '',
       usernameFocused: false,

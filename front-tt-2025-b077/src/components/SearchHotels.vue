@@ -169,21 +169,6 @@ export default {
   text-align: center;
 }
 
-.menu-wrapper {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-wrapper :deep(svg),
-.menu-wrapper :deep(i) {
-  color: #1b515e !important;
-  font-size: 28px;
-}
-
 .spacer {
   width: 40px;
   flex-shrink: 0;

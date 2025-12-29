@@ -69,6 +69,7 @@
           :logo-url="logoUrl"
           @select-place="selectPlace"
           @toggle-favorite="toggleFavorite"
+          @show-details="showDetails"
         />
       </div>
 
@@ -91,6 +92,7 @@
     </div>
 
     <BottomNavbar />
+    <preferences-modal :show="showPreferencesModal" @close="showPreferencesModal = false" />
   </div>
 </template>
 
@@ -101,6 +103,7 @@ import BottomNavbar from '@/components/bottomnavbar.vue'
 import hamburgermenu from '@/components/hamburgermenu.vue'
 import Inputexplore from '@/components/inputexplore.vue'
 import PlaceCard from '@/components/placecard.vue'
+import PreferencesModal from '@/components/PreferencesModal .vue'
 
 export default {
   components: {
@@ -108,6 +111,7 @@ export default {
     hamburgermenu,
     Inputexplore,
     PlaceCard,
+    PreferencesModal,
   },
   data() {
     return {
@@ -201,7 +205,7 @@ export default {
       error: null,
       userLocation: null,
       forceRefresh: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
     }
   },
   computed: {
@@ -213,20 +217,22 @@ export default {
       'currentFilterIndex',
     ]),
     ...mapGetters('trips', ['favoriteIds']),
+    ...mapGetters('auth', ['userPreferences']),
     currentFilter() {
       return this.filters[this.currentFilterIndex]
     },
   },
   async created() {
     await this.getUserLocation()
-    await this.loadFavorites()
     await this.loadRecommendedPlaces()
+    await this.loadFavorites()
   },
   mounted() {
     const nav = document.getElementById('mainNav')
     if (nav) {
       document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px')
     }
+    this.checkUserPreferences()
   },
   methods: {
     ...mapActions('places', {
@@ -244,6 +250,12 @@ export default {
       setPlaces: 'setPlaces',
       setPagination: 'setPagination',
       setCurrentFilterIndex: 'setCurrentFilterIndex',
+    }),
+    ...mapMutations('auth', {
+      setUserPreferences: 'setUserPreferences',
+    }),
+    ...mapActions('user', {
+      fetchUserPreferences: 'fetchUserPreferences',
     }),
     async getUserLocation() {
       try {
@@ -366,7 +378,18 @@ export default {
 
     selectPlace(place) {
       this.setSelectedPlaceId(place.placeId)
-      this.$router.push({ name: 'site_description' })
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'home' },
+      })
+    },
+
+    showDetails(place) {
+      this.setSelectedPlaceId(place.placeId)
+      this.$router.push({
+        name: 'site_description',
+        query: { from: 'home' },
+      })
     },
 
     handleSearchError(error) {
@@ -394,6 +417,21 @@ export default {
 
     isFavorite(placeId) {
       return this.favoriteIds.includes(placeId)
+    },
+
+    checkUserPreferences() {
+      this.fetchUserPreferences({showLoading: false})
+        .then((response) => {
+          const preferences = response.data.data || []
+          if (preferences.length === 0) {
+            this.showPreferencesModal = true
+          } else {
+            this.setUserPreferences({ preferences })
+          }
+        })
+        .catch((error) => {
+          console.error('Error checking preferences:', error)
+        })
     },
   },
 }

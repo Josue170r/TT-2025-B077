@@ -3,6 +3,7 @@ package com.tt._2025.b077.huellaspormexico.modules.itineraries.controllers;
 import com.tt._2025.b077.huellaspormexico.models.ApiResponse;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.dto.*;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.Itinerary;
+import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryDay;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.entities.ItineraryPlace;
 import com.tt._2025.b077.huellaspormexico.modules.itineraries.services.ItineraryService;
 import jakarta.validation.Valid;
@@ -72,10 +73,10 @@ public class ItineraryController {
             @PathVariable Long dayId,
             @Valid @RequestBody UpdateVisitOrderDTO dto) {
 
-        itineraryService.updateVisitOrder(itineraryId, dayId, dto);
+        ItineraryDay day = itineraryService.updateVisitOrder(itineraryId, dayId, dto);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, "Orden actualizado exitosamente", null));
+                .body(ApiResponse.of(HttpStatus.OK, "Orden actualizado exitosamente", day));
     }
 
     @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/{placeId}", method = RequestMethod.PUT)
@@ -85,10 +86,10 @@ public class ItineraryController {
             @PathVariable Long placeId,
             @Valid @RequestBody UpdatePlaceDTO dto) {
 
-        itineraryService.updatePlace(itineraryId, dayId, placeId, dto);
+        ItineraryPlace place = itineraryService.updatePlace(itineraryId, dayId, placeId, dto);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of(HttpStatus.OK, "Lugar actualizado exitosamente", null));
+                .body(ApiResponse.of(HttpStatus.OK, "Lugar actualizado exitosamente", place));
     }
 
     @RequestMapping(path = "/{itineraryId}/days/{dayId}/places/add", method = RequestMethod.PUT)

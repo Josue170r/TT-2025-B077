@@ -64,7 +64,7 @@ export default {
   setPlaces(state, places) {
     state.places = places
   },
-  
+
   setPlaceIds(state, ids) {
     state.placeIds = ids
   },
@@ -97,6 +97,10 @@ export default {
   setFilterCoordinates(state, { latitude, longitude }) {
     state.filters.latitude = latitude
     state.filters.longitude = longitude
+  },
+
+  setIsSustainable(state, value) {
+    state.isSustainable = value
   },
 
   clearFilters(state) {
@@ -141,7 +145,7 @@ export default {
 
   updateItineraryDay(state, { dayId, updatedDay }) {
     if (state.currentItinerary) {
-      const dayIndex = state.currentItinerary.itineraryDays.findIndex(d => d.id === dayId)
+      const dayIndex = state.currentItinerary.itineraryDays.findIndex((d) => d.id === dayId)
       if (dayIndex !== -1) {
         state.currentItinerary.itineraryDays[dayIndex] = updatedDay
       }
@@ -150,9 +154,9 @@ export default {
 
   updateItineraryPlace(state, { dayId, placeId, updatedPlace }) {
     if (state.currentItinerary) {
-      const day = state.currentItinerary.itineraryDays.find(d => d.id === dayId)
+      const day = state.currentItinerary.itineraryDays.find((d) => d.id === dayId)
       if (day) {
-        const placeIndex = day.places.findIndex(p => p.id === placeId)
+        const placeIndex = day.places.findIndex((p) => p.id === placeId)
         if (placeIndex !== -1) {
           day.places[placeIndex] = updatedPlace
         }
@@ -160,15 +164,30 @@ export default {
     }
   },
 
-  deleteItinerayById(state, { itineraryId }) {
-    const index = state.userItineraries.findIndex((itinerary) => {
-      return itinerary.id == itineraryId
-    })
-    if (index != -1) {
-      state.userItineraries.splice(index, 1)
+  setPlaceAsVisited(state, { dayId, placeId }) {
+    if (state.currentItinerary) {
+      const day = state.currentItinerary.itineraryDays.find((d) => d.id === dayId)
+      if (day) {
+        const place = day.places.find((p) => p.id === placeId)
+        if (place) {
+          place.isVisited = true
+        }
+      }
     }
   },
 
+  removePlaceFromDay(state, { dayId, placeId }) {
+    if (state.currentItinerary) {
+      const day = state.currentItinerary.itineraryDays.find((d) => d.id === dayId)
+      if (day) {
+        const placeIndex = day.places.findIndex((p) => p.id === placeId)
+        if (placeIndex !== -1) {
+          day.places.splice(placeIndex, 1)
+        }
+      }
+    }
+  },
+  
   clearCurrentItinerary(state) {
     state.currentItinerary = null
   },

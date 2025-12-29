@@ -40,6 +40,5 @@ public class CategoryPlacesCatalog extends BaseModel {
             joinColumns = @JoinColumn(name = "category_id"),
             inverseJoinColumns = @JoinColumn(name = "place_type_id")
     )
-    @JsonIgnore
     private List<PlaceTypes> placeTypes;
 }

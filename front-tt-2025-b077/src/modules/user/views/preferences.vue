@@ -118,7 +118,7 @@ export default {
     },
 
     loadUserPreferences() {
-      return this.fetchUserPreferences()
+      return this.fetchUserPreferences({ showLoading: true })
         .then((response) => {
           this.userPreferences = response.data.data || []
           this.selectedCategoryIds = this.userPreferences.map((pref) => pref.category.id)

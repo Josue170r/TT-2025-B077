@@ -102,7 +102,7 @@ export default {
   data() {
     return {
       showForm: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       passwordForm: {
         password: '',
         confirmPassword: '',

@@ -83,7 +83,7 @@ export default {
   data() {
     return {
       showForgot: false,
-      logoUrl: '/logo-letras.png',
+      logoUrl: '/logo-letras.png  ',
       correoRecuperacion: '',
       correoRecuperacionFocused: false,
       mensajeRecuperacion: '',
